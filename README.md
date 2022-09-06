@@ -14,6 +14,10 @@ https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf
 // Programming model
 https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#programming-model
 
+// Parallel programming with CUDA
+http://www.davidmuench.de/studienarbeit.pdf
+
+// 
 
 // Intorduction
 - https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_01.pdf
