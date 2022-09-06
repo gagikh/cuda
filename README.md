@@ -28,3 +28,6 @@ https://iis-people.ee.ethz.ch/~gmichi/asocd_2014/exercises/ex_03.pdf
 
 // Usefull links
 http://www.mat.unimi.it/users/sansotte/cuda/CUDA_by_Example.pdf
+
+// Nvidia lectures
+https://developer.nvidia.com/educators/existing-courses#2
