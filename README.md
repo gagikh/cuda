@@ -1,4 +1,4 @@
-# cuda
+# CUDA course (Compute Unified Device Architecture)
 
 // Oxford course link
 https://people.maths.ox.ac.uk/~gilesm/cuda/
