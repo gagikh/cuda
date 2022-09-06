@@ -7,6 +7,14 @@ https://people.maths.ox.ac.uk/~gilesm/cuda/
 https://iis-people.ee.ethz.ch/~gmichi/asocd_2014/exercises/ex_03.pdf
 // lectures from the link
 
+// Nvidia official c programming guide
+https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html
+https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf
+
+// Programming model
+https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#programming-model
+
+
 // Intorduction
 - https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_01.pdf
 - tasks, trivial vector addition example
@@ -31,3 +39,9 @@ http://www.mat.unimi.it/users/sansotte/cuda/CUDA_by_Example.pdf
 
 // Nvidia lectures
 https://developer.nvidia.com/educators/existing-courses#2
+
+
+// cuda-gdb
+set cuda break_on_launch application
+cuda device sm warp lane block thread
+//step
