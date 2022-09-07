@@ -1,4 +1,5 @@
 # CUDA course (Compute Unified Device Architecture)
+Title: Fundamentals of Accelerated Computation Using CUDA C/C++
 
 // Oxford course link
 https://people.maths.ox.ac.uk/~gilesm/cuda/
