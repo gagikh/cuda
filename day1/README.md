@@ -1,3 +1,7 @@
+Lecture: https://harmanani.github.io/csc447.html
+
+https://harmanani.github.io/classes/csc447/Notes/Lecture02.pdf
+
 // Resources
 https://developer.nvidia.com/cuda-education
 
