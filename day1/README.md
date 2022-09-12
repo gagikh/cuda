@@ -6,3 +6,7 @@ http://developer.download.nvidia.com/compute/developertrainingmaterials/presenta
 
 // Programming model
 https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
+
+
+Bank conflict
+http://cuda-programming.blogspot.com/2013/02/bank-conflicts-in-shared-memory-in-cuda.html
