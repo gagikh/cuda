@@ -6,3 +6,4 @@ Constant memory
 Pitched memory 
 
 Task - use shmem for 2d filter
+https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_02.pdf
