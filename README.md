@@ -50,3 +50,16 @@ https://developer.nvidia.com/educators/existing-courses#2
 set cuda break_on_launch application
 cuda device sm warp lane block thread
 //step
+
+Exam notes
+- kernels and launch
+- warp and operations
+- shared memory
+- paged/pinned memory
+- atomic operations and global memory
+- mapped memory
+- memory transfers, sync/async launch
+- streams and stream synchronization
+- graph and graph record
+- texture memory and binding
+- texture memory
