@@ -1,5 +1,7 @@
-Lecture: https://harmanani.github.io/csc447.html
+Lecture: 
 
+https://ww2.cs.fsu.edu/~guidry/cuda.ppt
+https://harmanani.github.io/csc447.html
 https://harmanani.github.io/classes/csc447/Notes/Lecture02.pdf
 
 // Resources
