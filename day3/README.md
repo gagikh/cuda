@@ -30,6 +30,7 @@ https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_03.pdf
 
 Task: large vector addition and time estimation, ignore warp logic at this moment
 
+```c++
 // Kernel
 __global__ void add_vectors(double *a, double *b, double *c)
 {
@@ -52,3 +53,4 @@ add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C);
 
 // Copy data from device array d_C to host array C
 cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
+```
