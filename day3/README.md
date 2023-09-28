@@ -10,6 +10,7 @@ https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_03.pdf
 - switch-case
 + loop unrolling
 
+```c++
 // --- Allocate temporary storage in shared memory 
 #ifdef NDEBUG
 	typedef cub::WarpReduce<int> WarpReduceT;
@@ -24,7 +25,7 @@ https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_03.pdf
 		result += __shfl_xor_sync(0xFFFFFFFF, result, i);
 	}
 #endif
-
+```
 ![image](https://github.com/gagikh/cuda/assets/7694001/d483440c-3828-4ae7-8f7a-f6601242d0a5)
 
 
