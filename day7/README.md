@@ -1,4 +1,6 @@
-https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_06.pdf
+Matrix transpose using shared memory
+
+https://developer.nvidia.com/blog/efficient-matrix-transpose-cuda-cc/
 
 Sync and asyn execution
 Memcopy, sync/async memcopy
