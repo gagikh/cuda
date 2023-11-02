@@ -9,3 +9,7 @@ Memcopy, sync/async memcopy
 Async kernel execution
 Streams
 Events
+
+
+Task for examination:
+Compute vector mean and std, compare with CPU version.
