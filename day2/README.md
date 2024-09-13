@@ -1,3 +1,6 @@
+Instructions pipeline
+https://lowyx.com/posts/gt-gpu-notes/
+
 Threads, blocks, grids
 - How to enumerate
 - How to devide
