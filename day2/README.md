@@ -6,3 +6,5 @@ Threads, blocks, grids
 - How to devide
 
 https://slideplayer.com/slide/15057888/
+
+example project using VS
