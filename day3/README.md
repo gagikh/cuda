@@ -1,6 +1,7 @@
 Warp execution and control flow
 
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
+
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 
 Hint: https://people.maths.ox.ac.uk/~gilesm/cuda/
