@@ -57,3 +57,4 @@ add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C);
 // Copy data from device array d_C to host array C
 cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
 ```
+BGR to grayscale conversion with CUDA
