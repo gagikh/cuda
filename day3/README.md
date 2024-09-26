@@ -1,8 +1,9 @@
 Warp execution and control flow
 
+https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 
-https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_03.pdf
+Hint: https://people.maths.ox.ac.uk/~gilesm/cuda/
 
 - If/else
 - for loop
