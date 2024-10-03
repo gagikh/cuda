@@ -5,3 +5,5 @@ Memory management system
 - mapped memory (zero-copy memory) - cudaHostAlloc with cudaHostAllocMapped flag set, pros, cons, 
 - unified memory - cudaMallocManaged, pros, cons - __managed__
 https://medium.com/analytics-vidhya/cuda-memory-model-823f02cef0bf
+
+Improve BGR2Grayscale convertor using pinned memory and monitor using nsight systems
