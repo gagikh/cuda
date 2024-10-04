@@ -9,3 +9,5 @@ http://homepages.math.uic.edu/~jan/mcs572f16/mcs572notes/lec35.html
 
 Task - use shmem for 2d filter
 https://developer.download.nvidia.com/compute/DevZone/C/html_x64/3_Imaging/convolutionSeparable/doc/convolutionSeparable.pdf
+
+Final Task -> 2D sobel filter implementation on video stream
