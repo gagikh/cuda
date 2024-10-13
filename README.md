@@ -59,7 +59,9 @@ Exam notes
 - atomic operations and global memory
 - mapped memory
 - memory transfers, sync/async launch
-- streams and stream synchronization
+- streams and events, synchronization
 - graph and graph record
 - texture memory and binding
 - texture memory
+
+Task: opencv filters and optimizations - remove kernel matrices and provide parameters instead
