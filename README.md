@@ -65,3 +65,5 @@ Exam notes
 - texture memory
 
 Task: opencv filters and optimizations - remove kernel matrices and provide parameters instead
+Compute Beblid descriptors with cuda
+https://github.com/opencv/opencv_contrib/blob/80f1ca2442982ed518076cd88cf08c71155b30f6/modules/xfeatures2d/src/beblid.cpp
