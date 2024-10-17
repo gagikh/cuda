@@ -76,4 +76,4 @@ Tasks:
 5) find assignement vector V, such that sum(P(V)) -> min (solve with cuda) 
 // comment: this is kuhn muknres problem with restrictions, if L[i] is assigned to T[j], then L[i + 1] can be assigned to T[j+1], ... T[n] only
 // sould solved for large Ps, so cuda is needed.
-
+- Transformer TrTr with batches ??
