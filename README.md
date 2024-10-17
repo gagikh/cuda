@@ -64,6 +64,16 @@ Exam notes
 - texture memory and binding
 - texture memory
 
-Task: opencv filters and optimizations - remove kernel matrices and provide parameters instead
-Compute Beblid descriptors with cuda
-https://github.com/opencv/opencv_contrib/blob/80f1ca2442982ed518076cd88cf08c71155b30f6/modules/xfeatures2d/src/beblid.cpp
+Tasks:
+- opencv filters and optimizations - remove kernel matrices and provide parameters instead
+- Compute Beblid descriptors with cuda - https://github.com/opencv/opencv_contrib/blob/80f1ca2442982ed518076cd88cf08c71155b30f6/modules/xfeatures2d/src/beblid.cpp
+- optimze RANSAC taking into account that camera moves toward to the scene (use cuda to solve liear equations)
+- given 
+1) reference objects T1, T2, .. Tn, 
+2) some operator <, that T1 < T2 < ... Tn
+3) L1 < L2 < ..... Lm
+4) P = {Pij, i = 1, ...m, j = 1, ... m} and Pij is the probability that Li is close to Tj
+5) find assignement vector V, such that sum(P(V)) -> min (solve with cuda) 
+// comment: this is kuhn muknres problem with restrictions, if L[i] is assigned to T[j], then L[i + 1] can be assigned to T[j+1], ... T[n] only
+// sould solved for large Ps, so cuda is needed.
+
