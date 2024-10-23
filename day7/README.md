@@ -14,4 +14,5 @@ Task for examination:
 - Compute vector mean and std, compare with CPU version.
 - Implement sobel filter
 - Implement dilation and erosion filters
-- Optimize one of OCV 1D/2D filters 
+- Optimize one of OCV 1D/2D filters
+- Matrix multiplication
