@@ -11,3 +11,4 @@ Task for examination:
 - Optimize one of OCV 1D/2D filters
 - Matrix multiplication
 - Image zoom (TODO:)
+- DFT N = 32
