@@ -1,3 +1,3 @@
-Matrix transpose (rotate by 90, 180, 270 degrees)
+Matrix multiplication
 
-RGB to greyscale and Canny edge detection.
+https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
