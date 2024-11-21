@@ -58,3 +58,5 @@ template<class T>
 				texture_ = 0;
 			}
 		}
+// From the kernel
+  tex2D<float4>(texture_, fx, fy);
