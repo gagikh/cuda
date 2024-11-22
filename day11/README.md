@@ -5,8 +5,7 @@ http://cuda-programming.blogspot.com/2013/02/texture-memory-in-cuda-what-is-text
 
 Zoom image
 
-
-template<class T>
+        template<class T>
 	struct filter_texture_t
 	{
 		typedef T value_type;
