@@ -51,3 +51,6 @@ struct graph_t
         m_status = GRAPH_CRATED;
     }
 };
+
+manual creation:
+https://github.com/hummingtree/cuda-graph-with-dynamic-parameters/tree/release
