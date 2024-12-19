@@ -62,7 +62,7 @@ Exam notes
 - streams and events, synchronization
 - graph and graph record
 - texture memory and binding
-- texture memory
+- bank conflicts and cache control
 
 Tasks:
 - opencv filters and optimizations - remove kernel matrices and provide parameters instead
