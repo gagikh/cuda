@@ -170,29 +170,58 @@ set cuda break_on_launch application
 cuda device sm warp lane block thread
 //step
 
-Exam notes
-- kernels and launch
-- warp and operations
-- shared memory
-- paged/pinned memory
-- atomic operations and global memory
-- mapped memory
-- memory transfers, sync/async launch
-- streams and events, synchronization
-- graph and graph record
-- texture memory and binding
-- bank conflicts and cache control
+## 📝 CUDA Exam Topics
 
-Tasks:
-- opencv filters and optimizations - remove kernel matrices and provide parameters instead
-- Compute Beblid descriptors with cuda - https://github.com/opencv/opencv_contrib/blob/80f1ca2442982ed518076cd88cf08c71155b30f6/modules/xfeatures2d/src/beblid.cpp
-- optimze RANSAC taking into account that camera moves toward to the scene (use cuda to solve liear equations)
-- given 
-1) reference objects T1, T2, .. Tn, 
-2) some operator <, that T1 < T2 < ... Tn
-3) L1 < L2 < ..... Lm
-4) P = {Pij, i = 1, ...m, j = 1, ... m} and Pij is the probability that Li is close to Tj
-5) find assignement vector V, such that sum(P(V)) -> min (solve with cuda) 
-// comment: this is kuhn muknres problem with restrictions, if L[i] is assigned to T[j], then L[i + 1] can be assigned to T[j+1], ... T[n] only
-// sould solved for large Ps, so cuda is needed.
-- Transformer TrTr with batches ??
+The final exam covers both theory and practice based on the following core CUDA programming topics:
+
+- **Kernels and Launch**
+  - Kernel declaration and invocation
+  - Thread indexing and grid configuration
+
+- **Warp and Operations**
+  - Warp execution model
+  - Control flow and warp divergence
+  - Warp shuffle and vote functions
+
+- **Shared Memory**
+  - Shared memory declaration and access
+  - Synchronization with `__syncthreads()`
+  - Optimization techniques and bank conflict avoidance
+
+- **Paged and Pinned Memory**
+  - Differences between paged and pinned memory
+  - Performance implications and allocation methods
+
+- **Atomic Operations and Global Memory**
+  - Atomic functions in global memory
+  - Use cases for avoiding race conditions
+
+- **Mapped Memory**
+  - Zero-copy memory
+  - Host-device memory mapping using `cudaHostAlloc`
+
+- **Memory Transfers and Sync/Async Launch**
+  - `cudaMemcpy` synchronous and asynchronous usage
+  - Stream-based memory copy and overlap with execution
+
+- **Streams and Events, Synchronization**
+  - Creating and managing CUDA streams
+  - Events for timing and synchronization
+  - Stream dependencies
+
+- **CUDA Graphs**
+  - Graph creation, capture, and launch
+  - Performance benefits and use cases
+
+- **Texture Memory and Binding**
+  - Texture reference and binding to arrays
+  - Filtering, addressing modes
+  - Use in image processing and interpolation
+
+- **Bank Conflicts and Cache Control**
+  - Shared memory bank conflict causes and solutions
+  - L1/L2 cache tuning and control APIs
+
+---
+
+> **Note:** All exam questions are based on materials covered in lectures and labs. Hands-on familiarity with coding patterns, memory strategies, and debugging tools is essential.
