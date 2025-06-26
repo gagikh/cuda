@@ -1,5 +1,124 @@
 # CUDA course (Compute Unified Device Architecture)
 Title: Fundamentals of Accelerated Computation Using CUDA C/C++
+**Armenian Slavonic University – Lectures & Labs (14 Days)**  
+Instructor: Gagik Hakobyan
+
+---
+
+## Course Outline
+
+### **Day 1: CUDA Basics and Programming Model**
+- CUDA programming model overview  
+- Host vs Device  
+- GPU architecture fundamentals  
+- Thread hierarchy overview
+
+---
+
+### **Day 2: Thread Hierarchy & Execution Model**
+- SIMD architecture  
+- Threads, blocks, grids: structure and enumeration  
+- Launch configuration and kernel invocation  
+- Thread indexing patterns
+
+---
+
+### **Day 3: Warp-Level Execution and Control Flow**
+- Warp definition and behavior  
+- Control flow: `if`, `else`, `for`, `while`  
+- Loop unrolling (manual and compiler-assisted)  
+- Divergence impact and avoidance
+
+---
+
+### **Day 4: CUDA Memory Types and Management**
+- Paged, pinned (page-locked), and mapped memory  
+- Unified memory (`cudaMallocManaged`)  
+- Memory allocation strategies
+
+---
+
+### **Day 5: Memory Conflicts and Shared Memory**
+- Bank conflicts in shared memory  
+- Synchronized memory access inside kernels  
+- Shared, constant, and pitched memory  
+- Memory padding techniques
+
+---
+
+### **Day 6: Streams and Events**
+- Global memory usage in real applications  
+- Streams for concurrent execution  
+- Events for timing and synchronization  
+- Streamed read/write patterns
+
+---
+
+### **Day 7: Asynchronous Execution Techniques**
+- `cudaMemcpy`: sync vs async  
+- Asynchronous kernel launches  
+- Stream priorities and dependencies  
+- Event-based execution timing
+
+---
+
+### **Day 8: Warp-Level Intrinsics – Reduction**
+- Warp shuffle functions (`__shfl_*`)  
+- Intra-warp communication  
+- Parallel reduction techniques  
+- Performance tuning
+
+---
+
+### **Day 9: Warp-Level Data Exchange**
+- Inter-thread data exchange  
+- Warp vote functions (`__ballot_sync`, etc.)  
+- Advanced warp shuffle patterns  
+- Cooperative operations
+
+---
+
+### **Day 10: Practical Algorithms**
+- Feature descriptor matching using Hamming distance  
+- Bitwise operations in CUDA  
+- Matrix multiplication (thread tiling, shared memory)
+
+---
+
+### **Day 11: Textures and Surfaces**
+- Using textures for 2D spatial data  
+- Surface memory usage  
+- Texture filtering and addressing modes  
+- Zoom and image processing example
+
+---
+
+### **Day 12: CUDA Graph API**
+- Graph creation and capture  
+- Recording kernels and memory operations  
+- Launching graphs  
+- Use cases for dynamic workloads
+
+---
+
+### **Day 13: Cache Behavior and Optimization**
+- L1 and L2 cache control  
+- Cache tuning APIs  
+- Persistent L2 cache example  
+- Measuring memory throughput
+
+---
+
+### **Day 14: CUDA Libraries and Applications**
+- cuRAND: random number generation  
+- cuBLAS: linear algebra basics  
+- cuFFT: FFT usage  
+- Estimating π using Monte Carlo with cuRAND
+
+---
+
+## Links
+
 
 // Oxford course link
 https://people.maths.ox.ac.uk/~gilesm/cuda/
