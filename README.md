@@ -225,3 +225,21 @@ The final exam covers both theory and practice based on the following core CUDA 
 ---
 
 > **Note:** All exam questions are based on materials covered in lectures and labs. Hands-on familiarity with coding patterns, memory strategies, and debugging tools is essential.
+
+## 🧠 CUDA Exam Topics
+
+Prepare for the exam by mastering the following key CUDA concepts and practices:
+
+- **Kernels & Launch** — syntax, launch parameters, thread indexing  
+- **Warp & Operations** — warp execution, divergence, shuffle/vote intrinsics  
+- **Shared Memory** — declaration, access, `__syncthreads()`, optimization strategies  
+- **Paged vs Pinned Memory** — allocation methods, performance impact  
+- **Atomic Operations & Global Memory** — using atomics to manage concurrency  
+- **Mapped Memory** — zero‑copy memory and host–device mapping  
+- **Memory Transfers & Sync/Async Launch** — `cudaMemcpy`, stream overlap, kernel launch modes  
+- **Streams, Events & Synchronization** — managing concurrency, inter-stream sync, timing  
+- **CUDA Graphs** — creating, recording, and launching graphs  
+- **Texture Memory & Binding** — binding textures, filtering modes, addressing  
+- **Bank Conflicts & Cache Control** — avoiding bank conflicts, L1/L2 cache configuration
+
+> 📝 **Tip:** Hands‑on fluency—such as writing small CUDA kernels, optimizing memory access, and setting correct launch configurations—is crucial for exam success.
