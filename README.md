@@ -15,7 +15,7 @@
 - Thread hierarchy overview
 
 ### **Day 2: Thread Hierarchy & Execution Model**
-- SIMD architecture  
+- SIMD architecture and instructions pipeline
 - Threads, blocks, grids: structure and enumeration  
 - Launch configuration and kernel invocation  
 - Thread indexing patterns
