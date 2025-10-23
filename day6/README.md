@@ -10,6 +10,7 @@ Overview
 
 Task: Implement image derivatives
 Task: Implement conv via shared memory
+Task: Image transform
 
 https://www.cse.iitd.ac.in/~rijurekha/col730_2022/cudastreams_aug25_aug29.pdf
 https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
