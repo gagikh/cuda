@@ -6,4 +6,4 @@ https://tschmidt23.github.io/cse599i/CSE%20599%20I%20Accelerated%20Computing%20-
 
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 
-Task: 32 order FFT, extract indices of and image with threshold (use scan)
+Task: 32 order FFT, extract indices of an image with threshold (use scan)
