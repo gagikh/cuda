@@ -3,9 +3,9 @@ https://www.google.com/url?sa=t&source=web&rct=j&url=https://on-demand.gputechco
 
 http://cuda-programming.blogspot.com/2013/02/texture-memory-in-cuda-what-is-texture.html?m=1
 
-Zoom image
+Task: Zoom image, rotate
 
-        template<class T>
+    template<class T>
 	struct filter_texture_t
 	{
 		typedef T value_type;
