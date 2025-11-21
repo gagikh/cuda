@@ -1,6 +1,6 @@
 Tesxtures and surfaces
 
-chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://developer.download.nvidia.com/CUDA/training/texture_webinar_aug_2011.pdf
+https://developer.download.nvidia.com/CUDA/training/texture_webinar_aug_2011.pdf
 
 http://cuda-programming.blogspot.com/2013/02/texture-memory-in-cuda-what-is-texture.html?m=1
 
