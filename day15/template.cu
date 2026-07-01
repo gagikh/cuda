@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
+#include "../common/cuda_check.h"
 
 // TODO 1: contrast adjustment kernel: out = clamp((in - 128) * contrast + 128, 0, 255).
 // `in`/`out` are flat (non-pitched) buffers -- allocated ourselves with
@@ -27,18 +28,20 @@ void run_with_malloc_async(cudaStream_t stream, const unsigned char *h_in,
 {
     unsigned char *d_in = nullptr, *d_out = nullptr;
 
-    // TODO 1: allocate d_in/d_out with cudaMallocAsync(&ptr, n, stream) instead of cudaMalloc.
-    // TODO: cudaMemcpyAsync(d_in, h_in, n, cudaMemcpyHostToDevice, stream);
+    // TODO 1: allocate d_in/d_out with CUDA_CHECK(cudaMallocAsync(&ptr, n, stream))
+    //         instead of cudaMalloc.
+    // TODO: CUDA_CHECK(cudaMemcpyAsync(d_in, h_in, n, cudaMemcpyHostToDevice, stream));
     // TODO: launch adjust_contrast<<<grid, block, 0, stream>>>(d_in, d_out, n, contrast);
-    // TODO: cudaMemcpyAsync(h_out, d_out, n, cudaMemcpyDeviceToHost, stream);
-    // TODO: free d_in/d_out with cudaFreeAsync(ptr, stream) instead of cudaFree.
+    //       CUDA_CHECK_LAST_ERROR();
+    // TODO: CUDA_CHECK(cudaMemcpyAsync(h_out, d_out, n, cudaMemcpyDeviceToHost, stream));
+    // TODO: free d_in/d_out with CUDA_CHECK(cudaFreeAsync(ptr, stream)) instead of cudaFree.
 }
 
 void benchmark_alloc_overhead(int iterations, size_t bytes)
 {
     // TODO 2 (self-learning #2): time `iterations` iterations of cudaMalloc+cudaFree
     // vs. cudaMallocAsync+cudaFreeAsync for a small `bytes` allocation, using
-    // cudaEvents around each loop. Which one wins, and by how much?
+    // cudaEvents around each loop (CUDA_CHECK every call). Which one wins, and by how much?
 }
 
 int main(int argc, char **argv)
@@ -57,13 +60,13 @@ int main(int argc, char **argv)
     const int n = h_img.rows * h_img.cols;
 
     unsigned char *h_out;
-    cudaMallocHost(&h_out, n); // pinned, for a clean async copy-out (see Day 4/7)
+    CUDA_CHECK(cudaMallocHost(&h_out, n)); // pinned, for a clean async copy-out (see Day 4/7)
 
     cudaStream_t stream;
-    cudaStreamCreate(&stream);
+    CUDA_CHECK(cudaStreamCreate(&stream));
 
     run_with_malloc_async(stream, h_img.data, h_out, n, /*contrast=*/1.5f);
-    cudaStreamSynchronize(stream);
+    CUDA_CHECK(cudaStreamSynchronize(stream));
 
     cv::Mat h_result(h_img.size(), h_img.type(), h_out);
     cv::imshow("input", h_img);
@@ -75,8 +78,8 @@ int main(int argc, char **argv)
     // TODO (self-learning #3): create an explicit cudaMemPool_t with cudaDeviceGetDefaultMemPool
     // or cudaMemPoolCreate, and drive allocations on it from two different streams.
 
-    cudaFreeHost(h_out);
-    cudaStreamDestroy(stream);
+    CUDA_CHECK(cudaFreeHost(h_out));
+    CUDA_CHECK(cudaStreamDestroy(stream));
 
     return 0;
 }

@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 #define TILE_DIM 16
 #define RADIUS 1
@@ -79,37 +80,40 @@ int main(int argc, char **argv)
     dim3 grid(cv::cudev::divUp(d_in.cols, TILE_DIM), cv::cudev::divUp(d_in.rows, TILE_DIM));
 
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
 
-    cudaEventRecord(start);
+    CUDA_CHECK(cudaEventRecord(start));
     tiled_filter_baseline<<<grid, block>>>(d_in.ptr<unsigned char>(), d_in.step,
                                             d_out.ptr<unsigned char>(), d_out.step,
                                             d_in.cols, d_in.rows);
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
     float ms_baseline = 0.0f;
-    cudaEventElapsedTime(&ms_baseline, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&ms_baseline, start, stop));
     printf("baseline: %.3f ms\n", ms_baseline);
 
-    cudaEventRecord(start);
+    CUDA_CHECK(cudaEventRecord(start));
     tiled_filter_ldg<<<grid, block>>>(d_in.ptr<unsigned char>(), d_in.step,
                                        d_out.ptr<unsigned char>(), d_out.step,
                                        d_in.cols, d_in.rows);
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
     float ms_ldg = 0.0f;
-    cudaEventElapsedTime(&ms_ldg, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&ms_ldg, start, stop));
     printf("__ldg:    %.3f ms\n", ms_ldg);
 
-    cudaEventRecord(start);
+    CUDA_CHECK(cudaEventRecord(start));
     tiled_filter_swizzled<<<grid, block>>>(d_in.ptr<unsigned char>(), d_in.step,
                                             d_out.ptr<unsigned char>(), d_out.step,
                                             d_in.cols, d_in.rows);
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
     float ms_swizzled = 0.0f;
-    cudaEventElapsedTime(&ms_swizzled, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&ms_swizzled, start, stop));
     printf("swizzled: %.3f ms\n", ms_swizzled);
 
     cv::Mat h_out;

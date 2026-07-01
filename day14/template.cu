@@ -11,6 +11,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 // TODO 1: initialize one curandState per thread, seeded uniquely per thread.
 __global__ void setup_rng(curandState *states, unsigned long long seed, int n)
@@ -58,49 +59,53 @@ int main()
     const int samples_per_thread = 1000;
 
     curandState *d_states;
-    cudaMalloc(&d_states, n * sizeof(curandState));
+    CUDA_CHECK(cudaMalloc(&d_states, n * sizeof(curandState)));
 
     unsigned long long *d_inside_count;
-    cudaMalloc(&d_inside_count, sizeof(unsigned long long));
-    cudaMemset(d_inside_count, 0, sizeof(unsigned long long));
+    CUDA_CHECK(cudaMalloc(&d_inside_count, sizeof(unsigned long long)));
+    CUDA_CHECK(cudaMemset(d_inside_count, 0, sizeof(unsigned long long)));
 
     const int threads = 256;
     const int blocks = cv::cudev::divUp(n, threads);
 
     setup_rng<<<blocks, threads>>>(d_states, 1234ULL, n);
+    CUDA_CHECK_LAST_ERROR();
     monte_carlo_pi<<<blocks, threads>>>(d_states, d_inside_count, samples_per_thread, n);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     unsigned long long h_inside_count = 0;
-    cudaMemcpy(&h_inside_count, d_inside_count, sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(&h_inside_count, d_inside_count, sizeof(unsigned long long), cudaMemcpyDeviceToHost));
 
     double total_samples = (double)n * samples_per_thread;
     double pi_estimate = 4.0 * (double)h_inside_count / total_samples;
     printf("pi estimate: %f\n", pi_estimate);
 
-    cudaFree(d_states);
-    cudaFree(d_inside_count);
+    CUDA_CHECK(cudaFree(d_states));
+    CUDA_CHECK(cudaFree(d_inside_count));
 
     // TODO (self-learning #2/#3): add cuBLAS matrix-vector multiply and cuFFT examples here.
 
     // --- Part 2 (bonus): random noise image via GpuMat ---
     const int width = 256, height = 256;
     curandState *d_img_states;
-    cudaMalloc(&d_img_states, width * height * sizeof(curandState));
+    CUDA_CHECK(cudaMalloc(&d_img_states, width * height * sizeof(curandState)));
     setup_rng<<<cv::cudev::divUp(width * height, 256), 256>>>(d_img_states, 5678ULL, width * height);
+    CUDA_CHECK_LAST_ERROR();
 
     cv::cuda::GpuMat d_noise(height, width, CV_8UC1);
     dim3 block(16, 16);
     dim3 grid(cv::cudev::divUp(width, block.x), cv::cudev::divUp(height, block.y));
     fill_noise_image<<<grid, block>>>(d_img_states, d_noise.ptr<unsigned char>(), d_noise.step, width, height);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     cv::Mat h_noise;
     d_noise.download(h_noise);
     cv::imshow("cuRAND noise", h_noise);
     cv::waitKey(0);
 
-    cudaFree(d_img_states);
+    CUDA_CHECK(cudaFree(d_img_states));
 
     return 0;
 }
