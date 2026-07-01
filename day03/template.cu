@@ -1,12 +1,13 @@
 // Day 3: Warp-Level Execution and Control Flow
 // Goal: large vector addition with timing, then BGR->grayscale conversion.
 //
-// Compile:  nvcc -arch=sm_50 day3_template.cu -o day3
-// Run:      ./day3
+// Compile:  nvcc -arch=sm_50 day03_template.cu -o day03
+// Run:      ./day03
 
 #include <cstdio>
 #include <chrono>
 #include <cuda_runtime.h>
+#include "../common/cuda_check.h"
 
 constexpr int N = 1 << 22;
 
@@ -30,9 +31,9 @@ int main()
     // --- Part 1: large vector add + timing ---
     size_t bytes = N * sizeof(double);
     double *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, bytes);
-    cudaMalloc(&d_B, bytes);
-    cudaMalloc(&d_C, bytes);
+    CUDA_CHECK(cudaMalloc(&d_A, bytes));
+    CUDA_CHECK(cudaMalloc(&d_B, bytes));
+    CUDA_CHECK(cudaMalloc(&d_C, bytes));
 
     // TODO: initialize d_A, d_B (host buffer + cudaMemcpy, or init kernel)
 
@@ -42,26 +43,27 @@ int main()
     // Host-side timing with <chrono> (device-side cudaEvent timing comes in Day 6/7).
     auto t0 = std::chrono::high_resolution_clock::now();
     add_vectors<<<blk_in_grid, thr_per_blk>>>(d_A, d_B, d_C, N);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
     auto t1 = std::chrono::high_resolution_clock::now();
 
     double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
     printf("add_vectors: %.3f ms\n", ms);
 
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
+    CUDA_CHECK(cudaFree(d_A));
+    CUDA_CHECK(cudaFree(d_B));
+    CUDA_CHECK(cudaFree(d_C));
 
     // --- Part 2: BGR -> grayscale ---
     const int width = 256, height = 256;
     unsigned char *d_bgr, *d_gray;
-    cudaMalloc(&d_bgr, width * height * 3);
-    cudaMalloc(&d_gray, width * height);
+    CUDA_CHECK(cudaMalloc(&d_bgr, width * height * 3));
+    CUDA_CHECK(cudaMalloc(&d_gray, width * height));
 
-    // TODO: dim3 block(...), grid(...); bgr_to_gray<<<grid, block>>>(...)
+    // TODO: dim3 block(...), grid(...); bgr_to_gray<<<grid, block>>>(...); CUDA_CHECK_LAST_ERROR();
 
-    cudaFree(d_bgr);
-    cudaFree(d_gray);
+    CUDA_CHECK(cudaFree(d_bgr));
+    CUDA_CHECK(cudaFree(d_gray));
 
     return 0;
 }

@@ -13,6 +13,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 #define TILE_DIM 16
 #define RADIUS 1
@@ -44,6 +45,9 @@ int main(int argc, char **argv)
     }
 
     // --- Load a real image and upload it to the GPU ---
+    // Note: GpuMat::upload/download/create are OpenCV methods, not raw CUDA
+    // API calls, so they don't return a cudaError_t and aren't CUDA_CHECK'd --
+    // OpenCV throws a cv::Exception internally if they fail.
     cv::Mat h_img = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
     if (h_img.empty()) {
         printf("failed to load image: %s\n", argv[1]);
@@ -60,7 +64,8 @@ int main(int argc, char **argv)
     tiled_filter<<<grid, block>>>(d_in.ptr<unsigned char>(), d_in.step,
                                    d_out.ptr<unsigned char>(), d_out.step,
                                    d_in.cols, d_in.rows);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     // --- Download and display the result ---
     cv::Mat h_out;
