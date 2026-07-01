@@ -8,6 +8,7 @@
 #include <chrono>
 #include <cuda_runtime.h>
 #include "../common/cuda_check.h"
+#include "../common/device_info.h"
 
 // TODO 1: write a kernel that prints its own block/thread index using device-side printf.
 __global__ void hello_kernel()
@@ -26,6 +27,12 @@ __global__ void identify_kernel(int *block_ids, int *thread_ids)
 
 int main()
 {
+    // --- Part 0: know your GPU ---
+    // Run this first, always. Every "max threads per block", "shared mem per
+    // SM", "warp size" number this course refers to abstractly is a concrete
+    // number for YOUR GPU, printed right here.
+    report_device_capabilities();
+
     // --- Part 1: say hello ---
     hello_kernel<<<2, 4>>>();
     // Kernel launches are asynchronous and return void -- the <<<>>> syntax

@@ -4,7 +4,7 @@
 - Explain the host/device relationship and why GPUs parallelize work differently than CPUs
 - Describe the CUDA programming model: kernels, threads, blocks, grids
 - Compile and run a first `.cu` program with `nvcc`, and understand what nvcc actually does under the hood
-- Reason about GPU architecture fundamentals (SMs, cores, warps at a high level)
+- Reason about GPU architecture fundamentals (SMs, cores, warps at a high level) using your own GPU's real numbers
 - Check every CUDA call's result, and understand why kernel launches need a different check than everything else
 
 ## Key Concepts
@@ -14,11 +14,24 @@
 - Thread hierarchy overview
 - `nvcc`: host/device code split, PTX vs SASS, virtual vs real architecture flags
 - Error checking: `CUDA_CHECK`, `CUDA_CHECK_LAST_ERROR`, and why launches need the latter
+- Querying your GPU's real capabilities with `cudaGetDeviceProperties`
 
 ## Visual
 ![Host (CPU, few fast cores, system RAM) connected via PCIe/NVLink to Device (GPU, thousands of small cores, VRAM)](host_device.svg)
 
 The CPU (host) and GPU (device) have separate memory spaces connected by a relatively slow link (PCIe or NVLink). Everything you do in CUDA — allocating device memory, copying data across, launching kernels — is about bridging that gap efficiently. This picture is the mental model for the whole course.
+
+## Know Your GPU
+Every "max threads per block", "shared memory per SM", "warp size" number this course refers to abstractly is a *concrete* number for the GPU you're actually running on — and they differ across generations. [`common/device_info.h`](../common/device_info.h) defines `report_device_capabilities()`, which queries `cudaGetDeviceProperties` and related attribute calls and prints a full report. `template.cu` calls it first thing, before anything else.
+
+A few fields worth paying attention to now, and which day they matter for:
+- **Warp size** — almost always 32, but never hardcode it; used constantly starting Day 3.
+- **Max threads per block** / **max block/grid dimensions** — the hard limits your launch configurations (Day 2 onward) must stay under.
+- **Shared memory per block** / **shared memory per SM** — the budget your Day 5/13 tiled kernels have to fit inside; shared memory per SM is also how many blocks can co-reside on one SM at once (occupancy).
+- **Registers per block** / **registers per SM** — the other occupancy constraint; too many registers per thread and fewer blocks fit on an SM at once (`-maxrregcount` from the nvcc section below is how you'd trade this off).
+- **Architecture / compute capability** — determines which features are even available (e.g. certain warp intrinsics, tensor cores).
+- **Tensor cores per SM** — relevant when you reach cuBLAS/cuFFT on Day 14; 0 on anything older than Volta (compute capability < 7.0).
+- **Theoretical memory bandwidth** — the ceiling nothing you write can beat; a useful number to compare your actual measured throughput against once you start timing kernels (Day 6 onward).
 
 ## Error Checking & Debugging
 CUDA fails quietly by default, which is the single biggest source of "my kernel ran but nothing happened" confusion for beginners. Fixing that starts today.
@@ -107,6 +120,7 @@ Small tasks to reinforce today's material, roughly in increasing difficulty:
 6. Compile with `-Xptxas -v` and read the register/shared-memory usage report for your kernel — you won't be able to act on it meaningfully until later days, but it's worth knowing where to find it now.
 7. Deliberately launch `identify_kernel` with an invalid configuration (e.g. `<<<1, 5000>>>`, over the 1024-threads-per-block limit on most GPUs). Comment out `CUDA_CHECK_LAST_ERROR()` and run it — notice nothing visibly goes wrong. Put the check back and run again — notice it now fails loudly, right where the problem is.
 8. Introduce a deliberate out-of-bounds write in `identify_kernel` (write to `block_ids[blockIdx.x + 100]`) and run `compute-sanitizer ./day01` against it. Compare the report to what `CUDA_CHECK` alone would have told you (nothing — the write itself doesn't return an error code).
+9. Run `report_device_capabilities()` and write down your GPU's warp size, max threads per block, shared memory per block, and shared memory per SM — you'll want these numbers again on Day 5 and Day 13 when reasoning about occupancy.
 
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.
