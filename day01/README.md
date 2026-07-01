@@ -122,5 +122,13 @@ Small tasks to reinforce today's material, roughly in increasing difficulty:
 8. Introduce a deliberate out-of-bounds write in `identify_kernel` (write to `block_ids[blockIdx.x + 100]`) and run `compute-sanitizer ./day01` against it. Compare the report to what `CUDA_CHECK` alone would have told you (nothing — the write itself doesn't return an error code).
 9. Run `report_device_capabilities()` and write down your GPU's warp size, max threads per block, shared memory per block, and shared memory per SM — you'll want these numbers again on Day 5 and Day 13 when reasoning about occupancy.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. What happens if you launch a kernel with more than 1024 threads per block and never call `CUDA_CHECK_LAST_ERROR()`? Why doesn't the program crash outright?
+2. Why does nvcc compile device code to PTX first instead of straight to machine code?
+3. If your program is compiled with `-arch=sm_75` but run on a GPU with an older compute capability, what happens, and why is that different from a normal C++ program targeting the wrong CPU?
+4. Why can't a kernel launch (`<<<...>>>`) return a `cudaError_t` the way `cudaMalloc` does?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

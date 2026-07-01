@@ -96,5 +96,12 @@ Large vector addition and time estimation (ignore warp logic at this point). The
 3. Deliberately introduce branch divergence (e.g. `if (threadIdx.x % 2 == 0)`) in a kernel and measure the performance hit vs. a divergence-free version.
 4. Apply `#pragma unroll` to a small fixed-trip-count loop in one of your kernels and compare generated performance.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why is warp divergence expensive even though every thread eventually does its "useful" work?
+2. In the fetch/decode/register-read/execute/memory/writeback pipeline, why are register read and memory access separate stages instead of folded into execute?
+3. If half a warp takes an `if` branch and the other half takes `else`, roughly how does that warp's execution time compare to a divergence-free warp doing the same total work?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

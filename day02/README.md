@@ -53,5 +53,12 @@ Example project using VS — add 2 vectors (block/grid config, pipeline), then c
 4. Make the kernel correct for array sizes that are *not* an exact multiple of the block size (bounds checking).
 5. Fill in `vector_add_grid_stride` in [`template.cu`](template.cu). Verify it produces the same result as `vector_add` for the current `n`, then bump `n` to something far larger than `blocks * threads` and confirm it's still correct without changing the launch configuration.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. What's the global-index formula for a 1D kernel, and what goes wrong if you compute it without `blockDim.x`?
+2. Why does a grid-stride loop keep producing correct output if you double `n` without changing the launch configuration, while a plain one-thread-per-element kernel doesn't?
+3. If you launch `<<<100, 256>>>` for an array of 20,000 elements with proper bounds checking, roughly how many threads do no work at all?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

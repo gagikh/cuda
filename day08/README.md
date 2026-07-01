@@ -32,5 +32,12 @@ https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 3. Use the scan result to extract (compact) the indices of pixels above a threshold, from a real `GpuMat`-backed image (see Part 2 of [`template.cu`](template.cu)).
 4. (Stretch) Implement a 32-point FFT butterfly using warp shuffles.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why doesn't `__shfl_down_sync` need `__syncthreads()` the way shared-memory code does?
+2. After the 5 steps of `warp_reduce_sum`, why is lane 0 specifically guaranteed to hold the correct total (and not, say, lane 16)?
+3. Why is extracting the indices of pixels above a threshold naturally suited to a scan (prefix sum) rather than a simple sequential filter loop?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

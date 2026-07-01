@@ -48,5 +48,12 @@ Use shared memory for a 2D filter, loaded from a real image via `cv::imread`. Fi
 3. Implement a 2D Sobel filter using shared memory.
 4. Extend the Sobel filter to process a video stream frame by frame using `cv::VideoCapture`, displaying the result with `cv::imshow` each frame.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why do 32 threads reading `tile[threadIdx.x][k]` for a fixed `k` all collide on the same shared-memory bank?
+2. Why does `GpuMat::step` differ from `cols * elemSize()`, and what breaks in a kernel that ignores that and assumes rows are contiguous?
+3. What does `__syncthreads()` actually guarantee, and what does it explicitly *not* guarantee?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

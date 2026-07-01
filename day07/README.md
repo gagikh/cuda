@@ -40,5 +40,12 @@ Smaller-scoped exercises to build toward the examination tasks above:
 3. Implement image dilation and/or erosion filters.
 4. Implement a small (e.g. 32x32) matrix multiplication kernel as a warm-up for the examination task.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why does `cudaMemcpyAsync` silently behave like a synchronous copy if the host buffer isn't pinned?
+2. Why does splitting work across more and more streams eventually stop improving overlap?
+3. In the chunked pipeline, what exactly is overlapping with what, cycle by cycle?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

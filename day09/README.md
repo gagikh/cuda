@@ -27,5 +27,12 @@ https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 3. Implement `pyrDown` (blur + downsample by 2) on the loaded `GpuMat`, and display the result with `cv::imshow`.
 4. Implement `pyrUp` (upsample by 2 + blur).
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. What does the 32-bit mask returned by `__ballot_sync` actually represent, bit by bit?
+2. Why does computing an image mean use `atomicAdd` into one global accumulator instead of having each warp write into its own slot of a shared array?
+3. Why does `pyrDown` blur before downsampling instead of just keeping every other pixel directly?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

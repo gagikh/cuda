@@ -27,5 +27,12 @@ https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with
 3. Implement Hamming distance between binary descriptors using `__popc`.
 4. Batch the Hamming distance computation to find the nearest descriptor match for each query descriptor. The template extracts real ORB descriptors from a loaded image and self-matches them as a sanity check (distance should be 0, match index should be itself) — try it against two *different* images instead.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why does the tiled matmul reduce global memory traffic compared to the naive version, given that both compute the exact same result?
+2. Why is `__popc` used for Hamming distance instead of a bit-by-bit comparison loop?
+3. The template self-matches a descriptor set against itself as a sanity check. What does a correct result (distance 0, `best_match_idx[i] == i`) actually verify — and what does it *not* verify about `match_descriptors`?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

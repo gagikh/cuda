@@ -82,5 +82,12 @@ Transpose a real image (loaded via `cv::imread`, uploaded to `cv::cuda::GpuMat`)
 3. Fill in `graph_t`'s `start_capture` / `create_graph` / `launch` methods in [`template.cu`](template.cu) — same wrapper as the Code Walkthrough above, genericized to a raw `cudaStream_t` so the struct itself has no OpenCV dependency.
 4. Launch the captured graph many times in a loop and compare total time against launching the same kernels sequentially without a graph — measure where the launch-overhead savings start to matter.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why doesn't capturing a kernel into a CUDA graph make the GPU compute anything faster?
+2. During `cudaStreamBeginCapture`, does the kernel you launch actually execute at that point, or something else?
+3. Under what circumstances would replaying a graph 1000 times *not* be meaningfully faster than issuing 1000 normal launches?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

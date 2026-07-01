@@ -28,5 +28,12 @@ Estimate π using Monte Carlo sampling with cuRAND. Monte Carlo estimation is ge
 4. (Stretch) Try a recursive/dynamic-parallelism kernel launch — have a kernel launch a child kernel.
 5. Fill in `fill_noise_image` in [`template.cu`](template.cu) and display the result with `cv::imshow`.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why does each thread need its own `curandState` instead of every thread sharing one?
+2. Why does the Monte Carlo pi estimate get more accurate with more samples but (in principle) never land on exactly π?
+3. Why do GPUs older than Volta have zero tensor cores, and what does that mean for cuBLAS performance on them?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

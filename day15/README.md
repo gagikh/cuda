@@ -29,5 +29,12 @@ Replace a `cudaMalloc`/`cudaFree` pair with the stream-ordered `cudaMallocAsync`
 3. Create an explicit `cudaMemPool_t` and use it across multiple streams; verify correctness with concurrent allocations.
 4. Combine stream-ordered allocation with the Day 12 CUDA graph capture — capture allocation, kernel, and free into one graph.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why does classic `cudaMalloc`/`cudaFree` act as an implicit device-wide synchronization point?
+2. "Stream-ordered" is in the name `cudaMallocAsync` — ordered relative to what, specifically?
+3. Why would you combine stream-ordered allocation with a CUDA graph (Day 12) instead of just using one or the other?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

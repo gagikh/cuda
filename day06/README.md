@@ -38,5 +38,12 @@ https://on-demand.gputechconf.com/gtc/2014/presentations/S4158-cuda-streams-best
 4. Time each kernel precisely with `cudaEvent`s (`cudaEventCreate` / `cudaEventRecord` / `cudaEventElapsedTime`) and compare against your earlier `<chrono>` measurements.
 5. (Stretch) Split the derivative + transform work across two CUDA streams and check whether they overlap.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why does the default stream serialize operations even when they don't depend on each other?
+2. What would go wrong if you called `cudaEventElapsedTime()` right after `cudaEventRecord(stop)`, without `cudaEventSynchronize(stop)` first?
+3. Why do the `dx`/`dy` gradient outputs need `cv::normalize` (or similar) before `cv::imshow`, when the filtered image from Day 5 didn't?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

@@ -90,5 +90,12 @@ Zoom a real image (loaded via `cv::imread`, uploaded to `cv::cuda::GpuMat`), rot
 3. Implement image rotation by fetching from inverse-mapped coordinates through the texture.
 4. Compare texture-based zoom against a manual shared-memory bilinear implementation (from Day 5) — which is simpler? Which is faster?
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. What does `tex2D` do differently from manually indexing a pitched array yourself?
+2. Why does zoom via texture sampling need an *inverse* coordinate mapping (output pixel → input coordinate), not a forward one?
+3. What's the visible difference at the image border between `cudaAddressModeClamp` and no addressing mode handling at all?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

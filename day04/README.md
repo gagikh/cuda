@@ -38,5 +38,12 @@ Use pinned memory. Improve the Day 2/3 vector-add algorithm using pinned memory 
 3. Rewrite the Day 2/3 vector-add to use `cudaMallocManaged` (unified memory) and compare code complexity and performance.
 4. Profile all three variants with Nsight Systems and compare the transfer timelines.
 
+## Self-Check
+No answers given — these are for you to reason through, or discuss with a classmate/instructor.
+
+1. Why is a pageable-to-device `cudaMemcpy` slower than a pinned-to-device one, even though it moves the exact same bytes?
+2. What's the downside of allocating too much pinned memory system-wide, and why doesn't everyone just pin everything?
+3. When would zero-copy (mapped) memory actually outperform copying data to the device first?
+
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.
