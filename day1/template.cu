@@ -14,11 +14,13 @@ __global__ void hello_kernel()
     // TODO: printf("Hello from block %d, thread %d\n", blockIdx.x, threadIdx.x);
 }
 
-// TODO 2: write a kernel that computes each thread's global index and stores it in `out`.
-__global__ void global_index_kernel(int *out, int n)
+// TODO 2: each thread writes its own *raw* blockIdx.x / threadIdx.x — no combined
+// "global index" formula (that's a Day 2 topic). Index each array directly by the
+// raw field: one write per block into block_ids, one write per thread into thread_ids.
+__global__ void identify_kernel(int *block_ids, int *thread_ids)
 {
-    // TODO: compute global index = blockDim.x * blockIdx.x + threadIdx.x
-    // TODO: bounds-check against n before writing
+    // TODO: if (threadIdx.x == 0) block_ids[blockIdx.x] = blockIdx.x;
+    // TODO: if (blockIdx.x == 0) thread_ids[threadIdx.x] = threadIdx.x;
 }
 
 int main()
@@ -27,23 +29,29 @@ int main()
     hello_kernel<<<2, 4>>>();
     cudaDeviceSynchronize();
 
-    // --- Part 2: compute + verify global indices ---
-    const int n = 16;
-    int *d_out = nullptr;
-    int h_out[n] = {0};
+    // --- Part 2: record + verify raw block/thread indices ---
+    const int num_blocks = 4, threads_per_block = 4;
+    int *d_block_ids = nullptr, *d_thread_ids = nullptr;
+    int h_block_ids[num_blocks] = {0};
+    int h_thread_ids[threads_per_block] = {0};
 
-    cudaMalloc(&d_out, n * sizeof(int));
+    cudaMalloc(&d_block_ids, num_blocks * sizeof(int));
+    cudaMalloc(&d_thread_ids, threads_per_block * sizeof(int));
 
-    // TODO: choose a grid/block configuration that covers `n` threads
-    // global_index_kernel<<<?, ?>>>(d_out, n);
+    identify_kernel<<<num_blocks, threads_per_block>>>(d_block_ids, d_thread_ids);
 
-    cudaMemcpy(h_out, d_out, n * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_block_ids, d_block_ids, num_blocks * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_thread_ids, d_thread_ids, threads_per_block * sizeof(int), cudaMemcpyDeviceToHost);
 
-    for (int i = 0; i < n; ++i) {
-        printf("out[%d] = %d\n", i, h_out[i]);
+    for (int i = 0; i < num_blocks; ++i) {
+        printf("block_ids[%d] = %d\n", i, h_block_ids[i]);
+    }
+    for (int i = 0; i < threads_per_block; ++i) {
+        printf("thread_ids[%d] = %d\n", i, h_thread_ids[i]);
     }
 
-    cudaFree(d_out);
+    cudaFree(d_block_ids);
+    cudaFree(d_thread_ids);
 
     // TODO (self-learning #4): time a 1-thread launch vs a many-thread launch
     // from the host side using <chrono>, e.g.:

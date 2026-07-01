@@ -37,7 +37,7 @@ Small tasks to reinforce today's material, roughly in increasing difficulty:
 
 1. Write a kernel that prints `Hello from block X, thread Y` using device-side `printf`.
 2. Launch the same kernel with different grid/block configurations (e.g. `<<<1,1>>>`, `<<<2,4>>>`, `<<<4,32>>>`) and observe how the identifiers change.
-3. Write a kernel that computes each thread's *global* index (`blockDim.x * blockIdx.x + threadIdx.x`) and writes it into an output array; copy it back and verify on the host.
+3. Write a kernel where each thread writes its own raw `blockIdx.x` and `threadIdx.x` into two small output arrays (index directly by `blockIdx.x` / `threadIdx.x`, one write per block and per thread respectively); copy back and verify on the host that they match your launch configuration. (Combining block and thread index into one flat "global index" is a Day 2 topic — not needed here.)
 4. Launch a trivial kernel with 1 thread vs. with thousands of threads and time both from the host using `<chrono>` (wrap the launch + `cudaDeviceSynchronize()`) — this is your first look at why parallelism matters. Precise device-side timing (`cudaEvent`s) is covered later.
 
 ## Code Template
