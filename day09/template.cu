@@ -9,6 +9,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudev.hpp>
 
 // TODO 1: compute image mean.
 // Each thread reads one pixel (indexing rows via `img_step`, the GpuMat
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
     cudaMemset(d_total, 0, sizeof(unsigned long long));
 
     dim3 block(32, 8); // multiple of warp size on x, matches warp-reduction assumptions
-    dim3 grid((d_img.cols + block.x - 1) / block.x, (d_img.rows + block.y - 1) / block.y);
+    dim3 grid(cv::cudev::divUp(d_img.cols, block.x), cv::cudev::divUp(d_img.rows, block.y));
     image_sum_kernel<<<grid, block>>>(d_img.ptr<unsigned char>(), d_img.step,
                                        d_img.cols, d_img.rows, d_total);
     cudaDeviceSynchronize();

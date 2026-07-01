@@ -10,6 +10,7 @@
 #include <curand_kernel.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudev.hpp>
 
 // TODO 1: initialize one curandState per thread, seeded uniquely per thread.
 __global__ void setup_rng(curandState *states, unsigned long long seed, int n)
@@ -64,7 +65,7 @@ int main()
     cudaMemset(d_inside_count, 0, sizeof(unsigned long long));
 
     const int threads = 256;
-    const int blocks = (n + threads - 1) / threads;
+    const int blocks = cv::cudev::divUp(n, threads);
 
     setup_rng<<<blocks, threads>>>(d_states, 1234ULL, n);
     monte_carlo_pi<<<blocks, threads>>>(d_states, d_inside_count, samples_per_thread, n);
@@ -86,11 +87,11 @@ int main()
     const int width = 256, height = 256;
     curandState *d_img_states;
     cudaMalloc(&d_img_states, width * height * sizeof(curandState));
-    setup_rng<<<(width * height + 255) / 256, 256>>>(d_img_states, 5678ULL, width * height);
+    setup_rng<<<cv::cudev::divUp(width * height, 256), 256>>>(d_img_states, 5678ULL, width * height);
 
     cv::cuda::GpuMat d_noise(height, width, CV_8UC1);
     dim3 block(16, 16);
-    dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
+    dim3 grid(cv::cudev::divUp(width, block.x), cv::cudev::divUp(height, block.y));
     fill_noise_image<<<grid, block>>>(d_img_states, d_noise.ptr<unsigned char>(), d_noise.step, width, height);
     cudaDeviceSynchronize();
 

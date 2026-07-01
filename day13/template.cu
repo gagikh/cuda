@@ -8,6 +8,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudev.hpp>
 
 #define TILE_DIM 16
 #define RADIUS 1
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
     d_out.create(d_in.size(), d_in.type());
 
     dim3 block(TILE_DIM, TILE_DIM);
-    dim3 grid((d_in.cols + TILE_DIM - 1) / TILE_DIM, (d_in.rows + TILE_DIM - 1) / TILE_DIM);
+    dim3 grid(cv::cudev::divUp(d_in.cols, TILE_DIM), cv::cudev::divUp(d_in.rows, TILE_DIM));
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);

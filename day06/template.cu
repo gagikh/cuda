@@ -8,6 +8,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudev.hpp>
 
 // TODO 1: image derivative kernel (simple central difference in x and y).
 // dx[y][x] = img[y][x+1] - img[y][x-1]; dy similarly. Handle borders.
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
     d_dy.create(d_img.size(), CV_32F);
 
     dim3 block(16, 16);
-    dim3 grid((d_img.cols + block.x - 1) / block.x, (d_img.rows + block.y - 1) / block.y);
+    dim3 grid(cv::cudev::divUp(d_img.cols, block.x), cv::cudev::divUp(d_img.rows, block.y));
 
     // First formal use of cudaEvent-based device-side timing.
     cudaEvent_t start, stop;

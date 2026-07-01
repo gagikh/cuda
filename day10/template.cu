@@ -10,6 +10,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/cudev.hpp>
 
 #define TILE_DIM 16
 
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
     // TODO: fill d_A, d_B with test data
 
     dim3 block(TILE_DIM, TILE_DIM);
-    dim3 grid((n + TILE_DIM - 1) / TILE_DIM, (n + TILE_DIM - 1) / TILE_DIM);
+    dim3 grid(cv::cudev::divUp(n, TILE_DIM), cv::cudev::divUp(n, TILE_DIM));
 
     matmul_naive<<<grid, block>>>(d_A, d_B, d_C, n);
     cudaDeviceSynchronize();

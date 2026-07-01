@@ -9,6 +9,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudev.hpp>
 
 // TODO 1: warp-level sum reduction.
 // Each of the 32 lanes contributes `val`; after this function every lane
@@ -95,7 +96,7 @@ int main(int argc, char **argv)
     cudaMemset(d_count, 0, sizeof(int));
 
     dim3 block(32, 8); // multiple of warp size on x for clean warp_scan_inclusive use
-    dim3 grid((d_img.cols + block.x - 1) / block.x, (d_img.rows + block.y - 1) / block.y);
+    dim3 grid(cv::cudev::divUp(d_img.cols, block.x), cv::cudev::divUp(d_img.rows, block.y));
     extract_indices_above_threshold<<<grid, block>>>(
         d_img.ptr<unsigned char>(), d_img.step, d_img.cols, d_img.rows,
         128, d_indices, d_count);

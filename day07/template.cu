@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
+#include <opencv2/cudev.hpp>
 
 constexpr int NUM_CHUNKS = 4;
 
@@ -35,7 +36,7 @@ int main(int argc, char **argv)
     CV_Assert(h_img.isContinuous()); // keeps row-chunking == flat byte-chunking below
 
     const int total = h_img.rows * h_img.cols;
-    const int rows_per_chunk = (h_img.rows + NUM_CHUNKS - 1) / NUM_CHUNKS;
+    const int rows_per_chunk = cv::cudev::divUp(h_img.rows, NUM_CHUNKS);
     const int chunk_elems = rows_per_chunk * h_img.cols;
 
     // Pinned host memory is required for true async cudaMemcpyAsync overlap (see Day 4).

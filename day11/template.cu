@@ -8,6 +8,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudev.hpp>
 
 // RAII texture wrapper, same shape as the filter_texture_t in the README's
 // Code Walkthrough -- genericized to a raw pitched device pointer, so it
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
     d_out.create(out_height, out_width, d_img.type());
 
     dim3 block(16, 16);
-    dim3 grid((out_width + block.x - 1) / block.x, (out_height + block.y - 1) / block.y);
+    dim3 grid(cv::cudev::divUp(out_width, block.x), cv::cudev::divUp(out_height, block.y));
     zoom_kernel<<<grid, block>>>(tex, d_out.ptr<unsigned char>(), d_out.step, out_width, out_height, scale);
     cudaDeviceSynchronize();
 
