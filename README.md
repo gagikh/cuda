@@ -1,91 +1,96 @@
 # CUDA Course (Compute Unified Device Architecture)
 
 **Title**: Fundamentals of Accelerated Computation Using CUDA C/C++  
-**University**: Armenian Slavonic University – Lectures & Labs (14 Days)  
+**University**: Armenian Slavonic University – Lectures & Labs (15 Days)  
 **Instructor**: Gagik Hakobyan
 
 ---
 
 ## 📘 Course Outline
 
-### **Day 1: CUDA Basics and Programming Model**
+### [Day 1: CUDA Basics and Programming Model](day1/README.md)
 - CUDA programming model overview  
 - Host vs Device  
 - GPU architecture fundamentals  
 - Thread hierarchy overview
 
-### **Day 2: Thread Hierarchy & Execution Model**
+### [Day 2: Thread Hierarchy & Execution Model](day2/README.md)
 - SIMD architecture and instructions pipeline
 - Threads, blocks, grids: structure and enumeration  
 - Launch configuration and kernel invocation  
 - Thread indexing patterns
 
-### **Day 3: Warp-Level Execution and Control Flow**
+### [Day 3: Warp-Level Execution and Control Flow](day3/README.md)
 - Warp definition and behavior  
 - Control flow: `if`, `else`, `for`, `while`  
 - Loop unrolling  
 - Divergence impact and avoidance
 
-### **Day 4: CUDA Memory Types and Management**
+### [Day 4: CUDA Memory Types and Management](day4/README.md)
 - Paged, pinned, and mapped memory  
 - Unified memory  
 - Allocation strategies
 
-### **Day 5: Memory Conflicts and Shared Memory**
+### [Day 5: Memory Conflicts and Shared Memory](day5/README.md)
 - Bank conflicts  
 - Synchronized memory access  
 - Shared, constant, and pitched memory  
 - Memory padding
 
-### **Day 6: Streams and Events**
+### [Day 6: Streams and Events](day6/README.md)
 - Global memory usage  
 - Streams and concurrent execution  
 - Events and synchronization  
 - Streamed read/write patterns
 
-### **Day 7: Asynchronous Execution Techniques**
+### [Day 7: Asynchronous Execution Techniques](day7/README.md)
 - `cudaMemcpy`: sync vs async  
 - Async kernel launches  
 - Stream dependencies  
 - Event-based timing
 
-### **Day 8: Warp-Level Intrinsics – Reduction**
+### [Day 8: Warp-Level Intrinsics – Reduction](day8/README.md)
 - Warp shuffle functions  
 - Intra-warp communication  
 - Parallel reduction  
 - Performance tuning
 
-### **Day 9: Warp-Level Data Exchange**
+### [Day 9: Warp-Level Data Exchange](day9/README.md)
 - Warp vote functions  
 - Inter-thread data exchange  
 - Cooperative operations
 
-### **Day 10: Practical Algorithms**
+### [Day 10: Practical Algorithms](day10/README.md)
 - Hamming distance matching  
 - Bitwise ops  
 - Matrix multiplication
 
-### **Day 11: Textures and Surfaces**
+### [Day 11: Textures and Surfaces](day11/README.md)
 - Texture memory  
 - Surface memory  
 - Filtering & addressing  
 - Zoom/image processing
 
-### **Day 12: CUDA Graph API**
+### [Day 12: CUDA Graph API](day12/README.md)
 - Graph recording  
 - Kernel + memory op capture  
 - Graph launch
 
-### **Day 13: Cache Behavior and Optimization**
+### [Day 13: Cache Behavior and Optimization](day13/README.md)
 - L1/L2 cache  
 - Persistent cache  
 - Memory throughput
 
-### **Day 14: CUDA Libraries**
+### [Day 14: CUDA Libraries](day14/README.md)
 - cuRAND (random generation)  
 - cuBLAS (linear algebra)  
 - cuFFT (FFT)  
 - Monte Carlo π estimation
+
+### [Day 15: Stream-Ordered Memory Allocation](day15/README.md)
+- `cudaMallocAsync` / `cudaFreeAsync`  
+- Stream-ordered allocation semantics  
+- Memory pools
 
 ---
 
@@ -124,6 +129,7 @@ cuda-gdb
 set cuda break_on_launch application
 cuda device sm warp lane block thread
 # Use 'step' to go line by line
+```
 
 ---
 

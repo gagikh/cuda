@@ -1,13 +1,28 @@
-Nvidia cuda graph programming
+# Day 12: CUDA Graph API
 
+## Objectives
+- Capture a sequence of kernel/memory operations into a CUDA graph
+- Instantiate and launch a captured graph
+- Compare matrix transpose via shared memory vs. via texture binding
+- Understand when graph launch overhead pays off vs. regular sequential launches
+
+## Key Concepts
+- Graph recording
+- Kernel + memory op capture
+- Graph launch
+
+## Resources
 https://www.olcf.ornl.gov/wp-content/uploads/2021/10/013_CUDA_Graphs.pdf
 https://developer.nvidia.com/blog/cuda-graphs/
-
-
-TODO:
-Matrix transpose via shared memory, compare with the implementation using texture binding
 https://developer.nvidia.com/blog/efficient-matrix-transpose-cuda-cc/
 
+Manual creation reference:
+https://github.com/hummingtree/cuda-graph-with-dynamic-parameters/tree/release
+
+## Code Walkthrough
+A small RAII wrapper around a captured CUDA graph:
+
+```c++
 struct graph_t
 {
     graph_creation_status_t m_status = UNINITIALIZED;
@@ -51,6 +66,16 @@ struct graph_t
         m_status = GRAPH_CRATED;
     }
 };
+```
 
-manual creation:
-https://github.com/hummingtree/cuda-graph-with-dynamic-parameters/tree/release
+## Hands-On Task
+Matrix transpose via shared memory, compared with an implementation using texture binding.
+
+## Self-Learning
+1. Implement matrix transpose using shared memory (watch for bank conflicts — pad the tile).
+2. Implement matrix transpose using texture binding (reuse Day 11), compare performance.
+3. Capture a small multi-kernel pipeline (e.g. transpose + a second kernel) into a CUDA graph via stream capture, then instantiate and launch it.
+4. Launch the captured graph many times in a loop and compare total time against launching the same kernels sequentially without a graph — measure where the launch-overhead savings start to matter.
+
+## Code Template
+See [`template.cu`](template.cu) for a skeleton to start from.

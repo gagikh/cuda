@@ -1,5 +1,18 @@
-Warp execution and control flow
+# Day 3: Warp-Level Execution and Control Flow
 
+## Objectives
+- Define what a warp is and how it executes instructions in lockstep
+- Reason about control flow (`if`/`else`, loops, `switch`) and its cost inside a warp
+- Recognize and avoid warp divergence
+- Apply loop unrolling where it helps
+
+## Key Concepts
+- Warp definition and behavior
+- Control flow: `if`, `else`, `for`, `while`
+- Loop unrolling
+- Divergence impact and avoidance
+
+## Resources
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
 
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
@@ -12,8 +25,11 @@ Hint: https://people.maths.ox.ac.uk/~gilesm/cuda/
 - switch-case
 + loop unrolling
 
+## Code Walkthrough
+Warp-level reduction, with a debug-mode fallback using `__shfl_xor_sync`:
+
 ```c++
-// --- Allocate temporary storage in shared memory 
+// --- Allocate temporary storage in shared memory
 #ifdef NDEBUG
 	typedef cub::WarpReduce<int> WarpReduceT;
 
@@ -30,8 +46,7 @@ Hint: https://people.maths.ox.ac.uk/~gilesm/cuda/
 ```
 ![image](https://github.com/gagikh/cuda/assets/7694001/d483440c-3828-4ae7-8f7a-f6601242d0a5)
 
-
-Task: large vector addition and time estimation, ignore warp logic at this moment
+Large vector addition kernel (ignore warp logic for this part — see Self-Learning below):
 
 ```c++
 // Kernel
@@ -57,4 +72,15 @@ add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C);
 // Copy data from device array d_C to host array C
 cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
 ```
-BGR to grayscale conversion with CUDA
+
+## Hands-On Task
+Large vector addition and time estimation (ignore warp logic at this point). Then: BGR to grayscale conversion with CUDA.
+
+## Self-Learning
+1. Implement the large vector addition above and time it against an equivalent CPU loop.
+2. Convert a BGR image to grayscale in a kernel (`gray = 0.114*B + 0.587*G + 0.299*R`).
+3. Deliberately introduce branch divergence (e.g. `if (threadIdx.x % 2 == 0)`) in a kernel and measure the performance hit vs. a divergence-free version.
+4. Apply `#pragma unroll` to a small fixed-trip-count loop in one of your kernels and compare generated performance.
+
+## Code Template
+See [`template.cu`](template.cu) for a skeleton to start from.
