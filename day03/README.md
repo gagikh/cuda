@@ -19,6 +19,10 @@
 
 One instruction is fetched and decoded once, then the warp scheduler issues it to all 32 threads in a warp simultaneously (SIMT). This is *why* warp divergence is expensive: if threads in a warp disagree on a branch, the hardware masks off lanes and runs each branch path separately instead of truly in parallel.
 
+![Instruction pipeline over time: a 6-stage pipeline (Fetch, Decode, Register Read, Execute, Memory, Writeback) with 4 instructions in flight at once, each one stage behind the previous](pipeline_timeline.svg)
+
+The picture above shows one instruction moving through the pipeline; this one shows *time* — at t1 only I1 is being fetched, at t2 I1 moves to Decode while I2 is fetched, and so on until the pipeline is full and a new instruction retires every cycle. Register Read and Memory are their own stages because the register file and global memory are both shared, limited resources with real access latency. When one warp stalls in Memory waiting on a slow load, the scheduler fills that cycle with a different warp's instruction instead of leaving the pipeline empty — that's the latency-hiding this whole course keeps coming back to.
+
 ## Resources
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
 

@@ -1,0 +1,101 @@
+<svg viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1000" height="480" fill="#0d1117"/>
+  <text x="500" y="32" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Instruction Pipeline Over Time</text>
+  <text x="500" y="53" text-anchor="middle" fill="#8b949e" font-size="12">Each stage works on a different instruction every cycle — the pipeline stays full even though any one instruction takes 6 cycles to finish</text>
+
+  <!-- time header -->
+  <g font-size="12" fill="#8b949e">
+    <text x="185" y="78" text-anchor="middle">t1</text>
+    <text x="275" y="78" text-anchor="middle">t2</text>
+    <text x="365" y="78" text-anchor="middle">t3</text>
+    <text x="455" y="78" text-anchor="middle">t4</text>
+    <text x="545" y="78" text-anchor="middle">t5</text>
+    <text x="635" y="78" text-anchor="middle">t6</text>
+    <text x="725" y="78" text-anchor="middle">t7</text>
+    <text x="815" y="78" text-anchor="middle">t8</text>
+    <text x="905" y="78" text-anchor="middle">t9</text>
+  </g>
+
+  <!-- stage row labels -->
+  <g font-size="12" fill="#e6edf3">
+    <text x="20" y="107">Fetch</text>
+    <text x="20" y="152">Decode</text>
+    <text x="20" y="197">Register Read</text>
+    <text x="20" y="242">Execute (ALU)</text>
+    <text x="20" y="287">Memory (LSU)</text>
+    <text x="20" y="332">Writeback</text>
+  </g>
+
+  <!-- grid lines -->
+  <g stroke="#21262d" stroke-width="1">
+    <line x1="140" y1="85"  x2="950" y2="85"/>
+    <line x1="140" y1="130" x2="950" y2="130"/>
+    <line x1="140" y1="175" x2="950" y2="175"/>
+    <line x1="140" y1="220" x2="950" y2="220"/>
+    <line x1="140" y1="265" x2="950" y2="265"/>
+    <line x1="140" y1="310" x2="950" y2="310"/>
+    <line x1="140" y1="350" x2="950" y2="350"/>
+  </g>
+
+  <!-- helper: 6 stage rows y0=85 rowH=45 ; 9 col x0=140 colW=90 -->
+  <!-- I1: cols 1-6 (F,D,R,E,M,W) -->
+  <g fill="#1f6feb" opacity="0.85">
+    <rect x="140" y="85"  width="90" height="45"/>
+    <rect x="230" y="130" width="90" height="45"/>
+    <rect x="320" y="175" width="90" height="45"/>
+    <rect x="410" y="220" width="90" height="45"/>
+    <rect x="500" y="265" width="90" height="45"/>
+    <rect x="590" y="310" width="90" height="45"/>
+  </g>
+  <g fill="#e6edf3" font-size="13" text-anchor="middle">
+    <text x="185" y="112">I1</text><text x="275" y="157">I1</text><text x="365" y="202">I1</text>
+    <text x="455" y="247">I1</text><text x="545" y="292">I1</text><text x="635" y="337">I1</text>
+  </g>
+
+  <!-- I2: shifted +1 col -->
+  <g fill="#2ea043" opacity="0.85">
+    <rect x="230" y="85"  width="90" height="45"/>
+    <rect x="320" y="130" width="90" height="45"/>
+    <rect x="410" y="175" width="90" height="45"/>
+    <rect x="500" y="220" width="90" height="45"/>
+    <rect x="590" y="265" width="90" height="45"/>
+    <rect x="680" y="310" width="90" height="45"/>
+  </g>
+  <g fill="#e6edf3" font-size="13" text-anchor="middle">
+    <text x="275" y="112">I2</text><text x="365" y="157">I2</text><text x="455" y="202">I2</text>
+    <text x="545" y="247">I2</text><text x="635" y="292">I2</text><text x="725" y="337">I2</text>
+  </g>
+
+  <!-- I3: shifted +2 col -->
+  <g fill="#8957e5" opacity="0.85">
+    <rect x="320" y="85"  width="90" height="45"/>
+    <rect x="410" y="130" width="90" height="45"/>
+    <rect x="500" y="175" width="90" height="45"/>
+    <rect x="590" y="220" width="90" height="45"/>
+    <rect x="680" y="265" width="90" height="45"/>
+    <rect x="770" y="310" width="90" height="45"/>
+  </g>
+  <g fill="#e6edf3" font-size="13" text-anchor="middle">
+    <text x="365" y="112">I3</text><text x="455" y="157">I3</text><text x="545" y="202">I3</text>
+    <text x="635" y="247">I3</text><text x="725" y="292">I3</text><text x="815" y="337">I3</text>
+  </g>
+
+  <!-- I4: shifted +3 col -->
+  <g fill="#f0883e" opacity="0.85">
+    <rect x="410" y="85"  width="90" height="45"/>
+    <rect x="500" y="130" width="90" height="45"/>
+    <rect x="590" y="175" width="90" height="45"/>
+    <rect x="680" y="220" width="90" height="45"/>
+    <rect x="770" y="265" width="90" height="45"/>
+    <rect x="860" y="310" width="90" height="45"/>
+  </g>
+  <g fill="#0d1117" font-size="13" text-anchor="middle">
+    <text x="455" y="112">I4</text><text x="545" y="157">I4</text><text x="635" y="202">I4</text>
+    <text x="725" y="247">I4</text><text x="815" y="292">I4</text><text x="905" y="337">I4</text>
+  </g>
+
+  <text x="500" y="380" text-anchor="middle" fill="#8b949e" font-size="12">Register Read fetches each operand from the register file before Execute can run — a separate step because the file is</text>
+  <text x="500" y="400" text-anchor="middle" fill="#8b949e" font-size="12">a shared, limited-port resource, just like Memory (LSU) is a separate step because a global-memory load can take hundreds of cycles.</text>
+  <text x="500" y="425" text-anchor="middle" fill="#8b949e" font-size="12">On the GPU, if I1's Memory stage stalls waiting on a slow load, the warp scheduler issues a *different warp's* instruction that cycle</text>
+  <text x="500" y="447" text-anchor="middle" fill="#8b949e" font-size="12">instead of leaving the pipeline empty — this latency-hiding trick is why GPUs run thousands of threads instead of a few fast ones.</text>
+</svg>
