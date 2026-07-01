@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 // TODO 1: image derivative kernel (simple central difference in x and y).
 // dx[y][x] = img[y][x+1] - img[y][x-1]; dy similarly. Handle borders.
@@ -48,22 +49,23 @@ int main(int argc, char **argv)
 
     // First formal use of cudaEvent-based device-side timing.
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
 
-    cudaEventRecord(start);
+    CUDA_CHECK(cudaEventRecord(start));
     image_derivative<<<grid, block>>>(d_img.ptr<unsigned char>(), d_img.step,
                                        d_dx.ptr<float>(), d_dy.ptr<float>(), d_dx.step,
                                        d_img.cols, d_img.rows);
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
 
     float ms = 0.0f;
-    cudaEventElapsedTime(&ms, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
     printf("image_derivative: %.3f ms\n", ms);
 
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
+    CUDA_CHECK(cudaEventDestroy(start));
+    CUDA_CHECK(cudaEventDestroy(stop));
 
     // TODO: dx/dy are raw float gradients -- cv::normalize (or take the
     // absolute value and scale to 0-255) before cv::imshow, or they'll
