@@ -27,12 +27,27 @@ __global__ void tiled_filter_ldg(const unsigned char *__restrict__ in, unsigned 
     // TODO: load into `tile` using __ldg(&in[idx]) instead of in[idx]
 }
 
-// TODO 2 (self-learning #2): apply a swizzled shared-memory access pattern to
-// remove bank conflicts (see the swizzling reference in the README).
+// TODO 2 (self-learning #2): apply col ^ row swizzling instead of padding to
+// remove bank conflicts (see the Visual section / swizzling.svg in the README).
+//
+// The idea: index shared memory as tile[r][c ^ r] everywhere -- both when
+// writing into shared memory and when reading neighbors back out. XOR is
+// its own inverse, so using the same formula both times keeps the logical
+// layout correct; only the physical bank each element lands on changes.
+// No extra padding column needed, unlike tiled_filter_baseline.
+//
+// Caveat to work through: the clean permutation property of col ^ row only
+// holds when the row width is a power of two (so it lines up with the
+// 32-bank layout). TILE_DIM + 2*RADIUS here is 18, not a power of two --
+// decide whether to swizzle only the inner TILE_DIM-wide (power-of-two)
+// region, or round the shared-memory row width up to the next power of two
+// and mask the swizzled index.
 __global__ void tiled_filter_swizzled(const unsigned char *in, unsigned char *out,
                                        int width, int height)
 {
-    // TODO
+    __shared__ unsigned char tile[TILE_DIM + 2 * RADIUS][TILE_DIM + 2 * RADIUS];
+    // TODO: same load/compute as tiled_filter_baseline, but replace every
+    // tile[r][c] access with tile[r][c ^ r].
 }
 
 int main()
@@ -68,6 +83,14 @@ int main()
     float ms_ldg = 0.0f;
     cudaEventElapsedTime(&ms_ldg, start, stop);
     printf("__ldg:    %.3f ms\n", ms_ldg);
+
+    cudaEventRecord(start);
+    tiled_filter_swizzled<<<grid, block>>>(d_in, d_out, width, height);
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    float ms_swizzled = 0.0f;
+    cudaEventElapsedTime(&ms_swizzled, start, stop);
+    printf("swizzled: %.3f ms\n", ms_swizzled);
 
     cudaFree(d_in);
     cudaFree(d_out);
