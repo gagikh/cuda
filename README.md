@@ -8,54 +8,54 @@
 
 ## 📘 Course Outline
 
-### [Day 1: CUDA Basics and Programming Model](day1/README.md)
+### [Day 1: CUDA Basics and Programming Model](day01/README.md)
 - CUDA programming model overview  
 - Host vs Device  
 - GPU architecture fundamentals  
 - Thread hierarchy overview
 
-### [Day 2: Thread Hierarchy & Execution Model](day2/README.md)
+### [Day 2: Thread Hierarchy & Execution Model](day02/README.md)
 - SIMD architecture and instructions pipeline
 - Threads, blocks, grids: structure and enumeration  
 - Launch configuration and kernel invocation  
 - Thread indexing patterns
 
-### [Day 3: Warp-Level Execution and Control Flow](day3/README.md)
+### [Day 3: Warp-Level Execution and Control Flow](day03/README.md)
 - Warp definition and behavior  
 - Control flow: `if`, `else`, `for`, `while`  
 - Loop unrolling  
 - Divergence impact and avoidance
 
-### [Day 4: CUDA Memory Types and Management](day4/README.md)
+### [Day 4: CUDA Memory Types and Management](day04/README.md)
 - Paged, pinned, and mapped memory  
 - Unified memory  
 - Allocation strategies
 
-### [Day 5: Memory Conflicts and Shared Memory](day5/README.md)
+### [Day 5: Memory Conflicts and Shared Memory](day05/README.md)
 - Bank conflicts  
 - Synchronized memory access  
 - Shared, constant, and pitched memory  
 - Memory padding
 
-### [Day 6: Streams and Events](day6/README.md)
+### [Day 6: Streams and Events](day06/README.md)
 - Global memory usage  
 - Streams and concurrent execution  
 - Events and synchronization  
 - Streamed read/write patterns
 
-### [Day 7: Asynchronous Execution Techniques](day7/README.md)
+### [Day 7: Asynchronous Execution Techniques](day07/README.md)
 - `cudaMemcpy`: sync vs async  
 - Async kernel launches  
 - Stream dependencies  
 - Event-based timing
 
-### [Day 8: Warp-Level Intrinsics – Reduction](day8/README.md)
+### [Day 8: Warp-Level Intrinsics – Reduction](day08/README.md)
 - Warp shuffle functions  
 - Intra-warp communication  
 - Parallel reduction  
 - Performance tuning
 
-### [Day 9: Warp-Level Data Exchange](day9/README.md)
+### [Day 9: Warp-Level Data Exchange](day09/README.md)
 - Warp vote functions  
 - Inter-thread data exchange  
 - Cooperative operations
