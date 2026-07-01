@@ -82,10 +82,10 @@ struct filter_texture_t
 ```
 
 ## Hands-On Task
-Zoom image, rotate.
+Zoom a real image (loaded via `cv::imread`, uploaded to `cv::cuda::GpuMat`), rotate.
 
 ## Self-Learning
-1. Fill in `filter_texture_t`'s constructor in [`template.cu`](template.cu) — same wrapper as the Code Walkthrough above, adapted to a raw pitched pointer instead of `cv::cuda::GpuMat` so it has no OpenCV dependency.
+1. Fill in `filter_texture_t`'s constructor in [`template.cu`](template.cu) — same wrapper as the Code Walkthrough above, genericized to a raw pitched pointer so the struct itself has no OpenCV dependency; `main()` feeds it a `GpuMat`'s pointer/step directly.
 2. Implement image zoom (upscale) using `tex2D` bilinear filtering.
 3. Implement image rotation by fetching from inverse-mapped coordinates through the texture.
 4. Compare texture-based zoom against a manual shared-memory bilinear implementation (from Day 5) — which is simpler? Which is faster?

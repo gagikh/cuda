@@ -74,12 +74,12 @@ struct graph_t
 ```
 
 ## Hands-On Task
-Matrix transpose via shared memory, compared with an implementation using texture binding.
+Transpose a real image (loaded via `cv::imread`, uploaded to `cv::cuda::GpuMat`) via shared memory, compared with an implementation using texture binding.
 
 ## Self-Learning
 1. Implement matrix transpose using shared memory (watch for bank conflicts — pad the tile).
 2. Implement matrix transpose using texture binding (reuse Day 11), compare performance.
-3. Fill in `graph_t`'s `start_capture` / `create_graph` / `launch` methods in [`template.cu`](template.cu) — same wrapper as the Code Walkthrough above, adapted to a raw `cudaStream_t` instead of `cv::cuda::Stream` so it has no OpenCV dependency.
+3. Fill in `graph_t`'s `start_capture` / `create_graph` / `launch` methods in [`template.cu`](template.cu) — same wrapper as the Code Walkthrough above, genericized to a raw `cudaStream_t` so the struct itself has no OpenCV dependency.
 4. Launch the captured graph many times in a loop and compare total time against launching the same kernels sequentially without a graph — measure where the launch-overhead savings start to matter.
 
 ## Code Template

@@ -1,15 +1,18 @@
 // Day 11: Textures and Surfaces
-// Goal: bind a texture object and use it to zoom (upscale) an image with bilinear filtering.
+// Goal: bind a texture object and use it to zoom (upscale) a real image with bilinear filtering.
 //
-// Compile:  nvcc -arch=sm_50 day11_template.cu -o day11
-// Run:      ./day11
+// Compile:  nvcc -arch=sm_50 day11_template.cu -o day11 `pkg-config --cflags --libs opencv4`
+// Run:      ./day11 <path-to-image>
 
 #include <cstdio>
 #include <cuda_runtime.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudaarithm.hpp>
 
 // RAII texture wrapper, same shape as the filter_texture_t in the README's
-// Code Walkthrough — genericized to a raw pitched device pointer instead of
-// cv::cuda::GpuMat, so this file has no OpenCV dependency.
+// Code Walkthrough -- genericized to a raw pitched device pointer, so it
+// works directly against a cv::cuda::GpuMat's .ptr()/.step (GpuMat rows are
+// pitched, same idea as cudaMallocPitch from Day 4/5).
 //
 // TODO 1: fill in the constructor body: build a pitched-2D cudaResourceDesc
 // pointing at d_ptr, a cudaTextureDesc with linear filtering + clamp
@@ -58,44 +61,54 @@ struct filter_texture_t
 
 // TODO 2: zoom kernel — for each output pixel, map back to input coordinates
 // (inverse scale) and sample via tex2D bilinear filtering.
-__global__ void zoom_kernel(cudaTextureObject_t tex, unsigned char *out,
+__global__ void zoom_kernel(cudaTextureObject_t tex, unsigned char *out, size_t out_step,
                              int out_width, int out_height, float scale)
 {
     // TODO: int x = ..., y = ...;
     //       float fx = x / scale, fy = y / scale;
     //       float val = tex2D<float>(tex, fx + 0.5f, fy + 0.5f);
-    //       out[y * out_width + x] = (unsigned char)(val * 255.0f);
+    //       out[y * out_step + x] = (unsigned char)(val * 255.0f);
 }
 
 // TODO 3 (self-learning #3): rotate_kernel — same idea, but map (x, y) through
 // an inverse rotation matrix before sampling.
 
-int main()
+int main(int argc, char **argv)
 {
-    const int width = 128, height = 128;
+    if (argc < 2) {
+        printf("usage: %s <path-to-image>\n", argv[0]);
+        return 1;
+    }
+
+    cv::Mat h_img = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
+    if (h_img.empty()) {
+        printf("failed to load image: %s\n", argv[1]);
+        return 1;
+    }
+
     const float scale = 2.0f;
-    const int out_width = (int)(width * scale);
-    const int out_height = (int)(height * scale);
+    const int out_width = (int)(h_img.cols * scale);
+    const int out_height = (int)(h_img.rows * scale);
 
-    unsigned char *d_img;
-    size_t pitch;
-    cudaMallocPitch(&d_img, &pitch, width * sizeof(unsigned char), height);
+    cv::cuda::GpuMat d_img;
+    d_img.upload(h_img);
 
-    // TODO: fill d_img with test data
+    filter_texture_t<unsigned char> tex(d_img.ptr<unsigned char>(), d_img.cols, d_img.rows, d_img.step);
 
-    filter_texture_t<unsigned char> tex(d_img, width, height, pitch);
-
-    unsigned char *d_out;
-    cudaMalloc(&d_out, out_width * out_height);
+    cv::cuda::GpuMat d_out;
+    d_out.create(out_height, out_width, d_img.type());
 
     dim3 block(16, 16);
     dim3 grid((out_width + block.x - 1) / block.x, (out_height + block.y - 1) / block.y);
-    zoom_kernel<<<grid, block>>>(tex, d_out, out_width, out_height, scale);
+    zoom_kernel<<<grid, block>>>(tex, d_out.ptr<unsigned char>(), d_out.step, out_width, out_height, scale);
     cudaDeviceSynchronize();
 
     // tex's destructor calls cudaDestroyTextureObject automatically
-    cudaFree(d_img);
-    cudaFree(d_out);
+    cv::Mat h_out;
+    d_out.download(h_out);
+    cv::imshow("input", h_img);
+    cv::imshow("zoomed 2x", h_out);
+    cv::waitKey(0);
 
     return 0;
 }

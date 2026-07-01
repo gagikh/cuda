@@ -18,14 +18,14 @@ The naive kernel re-reads the same rows/columns of A and B from global memory ov
 https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
 
 ## Hands-On Task
-- Descriptor matching based on Hamming distance
-- Matrix multiplication
+- Descriptor matching based on Hamming distance — on real ORB descriptors extracted from an image via `cv::cuda::ORB` (see Part 2 of [`template.cu`](template.cu))
+- Matrix multiplication (kept as a generic linear-algebra exercise — not every kernel needs to be image-shaped)
 
 ## Self-Learning
 1. Implement naive GPU matrix multiplication (global memory only).
 2. Optimize it using shared-memory tiling (reuse Day 5 tiling patterns) and compare timing against the naive version.
 3. Implement Hamming distance between binary descriptors using `__popc`.
-4. Batch the Hamming distance computation to find the nearest descriptor match for each query descriptor.
+4. Batch the Hamming distance computation to find the nearest descriptor match for each query descriptor. The template extracts real ORB descriptors from a loaded image and self-matches them as a sanity check (distance should be 0, match index should be itself) — try it against two *different* images instead.
 
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

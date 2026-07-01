@@ -1,22 +1,30 @@
 // Day 12: CUDA Graph API
-// Goal: shared-memory matrix transpose, captured into a CUDA graph and launched repeatedly.
+// Goal: shared-memory transpose of a real image, captured into a CUDA graph
+// and launched repeatedly.
 //
-// Compile:  nvcc -arch=sm_50 day12_template.cu -o day12
-// Run:      ./day12
+// Compile:  nvcc -arch=sm_50 day12_template.cu -o day12 `pkg-config --cflags --libs opencv4`
+// Run:      ./day12 <path-to-image>
 
 #include <cstdio>
 #include <cuda_runtime.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudaarithm.hpp>
 
 #define TILE_DIM 32
 
 // TODO 1: shared-memory matrix transpose. Pad the tile ([TILE_DIM][TILE_DIM+1])
-// to avoid bank conflicts on the write-back.
-__global__ void transpose_shared(const float *in, float *out, int n)
+// to avoid bank conflicts on the write-back. `in`/`out` are GpuMat pointers;
+// index rows via `in_step`/`out_step` (bytes), same pitched idea as Day 5+.
+// Note `out` is height x width -> width x height (dimensions swap).
+__global__ void transpose_shared(const unsigned char *in, size_t in_step,
+                                  unsigned char *out, size_t out_step,
+                                  int width, int height)
 {
-    __shared__ float tile[TILE_DIM][TILE_DIM + 1]; // +1 padding avoids bank conflicts
+    __shared__ unsigned char tile[TILE_DIM][TILE_DIM + 1]; // +1 padding avoids bank conflicts
 
-    // TODO: load tile from `in` at (x, y), __syncthreads(),
-    //       write to `out` at the transposed location using the padded tile.
+    // TODO: load tile from `in` at (x, y) via in_step, __syncthreads(),
+    //       write to `out` at the transposed location (x and y swapped)
+    //       via out_step, using the padded tile.
 }
 
 // TODO 2 (self-learning #2): transpose_texture — same operation, but reading
@@ -24,7 +32,7 @@ __global__ void transpose_shared(const float *in, float *out, int n)
 
 // RAII graph wrapper, same shape as the graph_t in the README's Code
 // Walkthrough — genericized to a raw cudaStream_t instead of
-// cv::cuda::Stream, so this file has no OpenCV dependency.
+// cv::cuda::Stream, so it works standalone without an OpenCV Stream.
 enum class graph_status_t { UNINITIALIZED, CAPTURING, GRAPH_CREATED };
 
 struct graph_t
@@ -78,19 +86,25 @@ struct graph_t
     }
 };
 
-int main()
+int main(int argc, char **argv)
 {
-    const int n = 512;
-    size_t bytes = n * n * sizeof(float);
+    if (argc < 2) {
+        printf("usage: %s <path-to-image>\n", argv[0]);
+        return 1;
+    }
 
-    float *d_in, *d_out;
-    cudaMalloc(&d_in, bytes);
-    cudaMalloc(&d_out, bytes);
+    cv::Mat h_img = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
+    if (h_img.empty()) {
+        printf("failed to load image: %s\n", argv[1]);
+        return 1;
+    }
 
-    // TODO: fill d_in with test data
+    cv::cuda::GpuMat d_in, d_out;
+    d_in.upload(h_img);
+    d_out.create(d_in.cols, d_in.rows, d_in.type()); // dimensions swap on transpose
 
     dim3 block(TILE_DIM, TILE_DIM);
-    dim3 grid(n / TILE_DIM, n / TILE_DIM);
+    dim3 grid((d_in.cols + TILE_DIM - 1) / TILE_DIM, (d_in.rows + TILE_DIM - 1) / TILE_DIM);
 
     cudaStream_t stream;
     cudaStreamCreate(&stream);
@@ -98,7 +112,9 @@ int main()
     // --- Capture a graph containing the transpose kernel ---
     graph_t graph;
     graph.start_capture(stream);
-    transpose_shared<<<grid, block, 0, stream>>>(d_in, d_out, n);
+    transpose_shared<<<grid, block, 0, stream>>>(d_in.ptr<unsigned char>(), d_in.step,
+                                                  d_out.ptr<unsigned char>(), d_out.step,
+                                                  d_in.cols, d_in.rows);
     // TODO: add more ops here (e.g. a second kernel) to make graph capture worthwhile
     graph.create_graph(stream);
 
@@ -119,14 +135,19 @@ int main()
     cudaEventElapsedTime(&ms, start, stop);
     printf("graph: %d launches in %.3f ms (%.4f ms/launch)\n", iterations, ms, ms / iterations);
 
+    cudaStreamSynchronize(stream);
+    cv::Mat h_out;
+    d_out.download(h_out);
+    cv::imshow("input", h_img);
+    cv::imshow("transposed", h_out);
+    cv::waitKey(0);
+
     // TODO (self-learning #4): repeat the same `iterations` loop launching
     // transpose_shared directly (no graph) and compare per-launch overhead.
 
     // graph's destructor cleans up m_instance/m_graph automatically — no
     // manual cudaGraphExecDestroy/cudaGraphDestroy needed here.
     cudaStreamDestroy(stream);
-    cudaFree(d_in);
-    cudaFree(d_out);
 
     return 0;
 }

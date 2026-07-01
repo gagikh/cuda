@@ -1,11 +1,15 @@
 // Day 10: Practical Algorithms
-// Goal: naive matrix multiplication, then Hamming distance matching.
+// Goal: naive matrix multiplication, then Hamming distance matching on real
+// ORB descriptors extracted from an image.
 //
-// Compile:  nvcc -arch=sm_50 day10_template.cu -o day10
-// Run:      ./day10
+// Compile:  nvcc -arch=sm_50 day10_template.cu -o day10 `pkg-config --cflags --libs opencv4`
+// Run:      ./day10 <path-to-image>
 
 #include <cstdio>
+#include <vector>
 #include <cuda_runtime.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudafeatures2d.hpp>
 
 #define TILE_DIM 16
 
@@ -36,6 +40,11 @@ __device__ int hamming_distance(unsigned int a, unsigned int b)
 
 // TODO 4 (self-learning #4): for each query descriptor, find the index of the
 // closest descriptor in a reference set (smallest Hamming distance).
+//
+// NOTE: real ORB descriptors are 256 bits (32 bytes) each; this simplified
+// version only compares one 32-bit word per descriptor (see main() below).
+// A real matcher would carry all 8 words per descriptor and sum
+// hamming_distance() across them.
 __global__ void match_descriptors(const unsigned int *queries, int num_queries,
                                    const unsigned int *refs, int num_refs,
                                    int *best_match_idx)
@@ -43,8 +52,9 @@ __global__ void match_descriptors(const unsigned int *queries, int num_queries,
     // TODO
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    // --- Part 1: generic matmul warm-up ---
     const int n = 256;
     size_t bytes = n * n * sizeof(float);
 
@@ -64,6 +74,61 @@ int main()
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
+
+    // --- Part 2: Hamming distance matching on real ORB descriptors ---
+    if (argc < 2) {
+        printf("(skipping Part 2: usage: %s <path-to-image>)\n", argv[0]);
+        return 0;
+    }
+
+    cv::Mat h_img = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
+    if (h_img.empty()) {
+        printf("failed to load image: %s\n", argv[1]);
+        return 1;
+    }
+
+    cv::cuda::GpuMat d_img;
+    d_img.upload(h_img);
+
+    auto orb = cv::cuda::ORB::create();
+    cv::cuda::GpuMat d_descriptors;
+    std::vector<cv::KeyPoint> keypoints;
+    orb->detectAndCompute(d_img, cv::cuda::GpuMat(), keypoints, d_descriptors);
+
+    printf("found %d ORB keypoints, %d bytes/descriptor\n",
+           (int)keypoints.size(), d_descriptors.empty() ? 0 : d_descriptors.cols);
+
+    if (d_descriptors.empty()) {
+        printf("no descriptors found -- try a different image\n");
+        return 0;
+    }
+
+    // Descriptor rows are pitched (GpuMat), so download to host and pull out
+    // one dense, contiguous uint32 per descriptor -- keeps match_descriptors
+    // focused on the Hamming-distance algorithm, not pitch handling.
+    cv::Mat h_descriptors;
+    d_descriptors.download(h_descriptors);
+
+    std::vector<unsigned int> h_words(h_descriptors.rows);
+    for (int i = 0; i < h_descriptors.rows; ++i) {
+        h_words[i] = *reinterpret_cast<const unsigned int*>(h_descriptors.ptr<unsigned char>(i));
+    }
+
+    unsigned int *d_words;
+    cudaMalloc(&d_words, h_words.size() * sizeof(unsigned int));
+    cudaMemcpy(d_words, h_words.data(), h_words.size() * sizeof(unsigned int), cudaMemcpyHostToDevice);
+
+    int *d_best_match;
+    cudaMalloc(&d_best_match, h_words.size() * sizeof(int));
+
+    // Self-match as a sanity check: matching a descriptor set against itself
+    // should give best_match_idx[i] == i with distance 0.
+    const int num_desc = static_cast<int>(h_words.size());
+    match_descriptors<<<(num_desc + 255) / 256, 256>>>(d_words, num_desc, d_words, num_desc, d_best_match);
+    cudaDeviceSynchronize();
+
+    cudaFree(d_words);
+    cudaFree(d_best_match);
 
     return 0;
 }
