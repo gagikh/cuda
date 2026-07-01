@@ -1,0 +1,55 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="380" fill="#0d1117"/>
+  <text x="450" y="36" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Host vs Device</text>
+
+  <!-- Host box -->
+  <rect x="60" y="80" width="330" height="220" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="2"/>
+  <text x="225" y="112" text-anchor="middle" fill="#1f6feb" font-size="16" font-weight="bold">HOST (CPU)</text>
+  <rect x="90" y="135" width="110" height="50" rx="6" fill="#1f6feb" opacity="0.85"/>
+  <text x="145" y="165" text-anchor="middle" fill="#e6edf3" font-size="13">Few fast cores</text>
+  <rect x="90" y="200" width="240" height="60" rx="6" fill="#21262d" stroke="#8b949e"/>
+  <text x="210" y="225" text-anchor="middle" fill="#e6edf3" font-size="13">System RAM</text>
+  <text x="210" y="245" text-anchor="middle" fill="#8b949e" font-size="11">large, higher latency</text>
+  <text x="225" y="285" text-anchor="middle" fill="#8b949e" font-size="12">Runs sequential / lightly-threaded code</text>
+
+  <!-- Device box -->
+  <rect x="510" y="80" width="330" height="220" rx="10" fill="#161b22" stroke="#2ea043" stroke-width="2"/>
+  <text x="675" y="112" text-anchor="middle" fill="#2ea043" font-size="16" font-weight="bold">DEVICE (GPU)</text>
+  <g fill="#2ea043" opacity="0.85">
+    <rect x="540" y="135" width="24" height="24" rx="4"/>
+    <rect x="570" y="135" width="24" height="24" rx="4"/>
+    <rect x="600" y="135" width="24" height="24" rx="4"/>
+    <rect x="630" y="135" width="24" height="24" rx="4"/>
+    <rect x="660" y="135" width="24" height="24" rx="4"/>
+    <rect x="690" y="135" width="24" height="24" rx="4"/>
+    <rect x="720" y="135" width="24" height="24" rx="4"/>
+    <rect x="750" y="135" width="24" height="24" rx="4"/>
+    <rect x="540" y="163" width="24" height="24" rx="4"/>
+    <rect x="570" y="163" width="24" height="24" rx="4"/>
+    <rect x="600" y="163" width="24" height="24" rx="4"/>
+    <rect x="630" y="163" width="24" height="24" rx="4"/>
+    <rect x="660" y="163" width="24" height="24" rx="4"/>
+    <rect x="690" y="163" width="24" height="24" rx="4"/>
+    <rect x="720" y="163" width="24" height="24" rx="4"/>
+    <rect x="750" y="163" width="24" height="24" rx="4"/>
+  </g>
+  <text x="675" y="207" text-anchor="middle" fill="#e6edf3" font-size="12">Thousands of small cores (SMs)</text>
+  <rect x="540" y="218" width="234" height="42" rx="6" fill="#21262d" stroke="#8b949e"/>
+  <text x="657" y="238" text-anchor="middle" fill="#e6edf3" font-size="13">VRAM (device global memory)</text>
+  <text x="657" y="252" text-anchor="middle" fill="#8b949e" font-size="10">fast, close to cores</text>
+  <text x="675" y="285" text-anchor="middle" fill="#8b949e" font-size="12">Runs massively-parallel kernels</text>
+
+  <!-- link -->
+  <path d="M390 190 H510" stroke="#f0883e" stroke-width="3" marker-end="url(#arrow2)" marker-start="url(#arrow2s)"/>
+  <text x="450" y="180" text-anchor="middle" fill="#f0883e" font-size="12">PCIe / NVLink</text>
+  <text x="450" y="330" text-anchor="middle" fill="#8b949e" font-size="12">cudaMemcpy moves data across this link — it's the slowest step in most kernels, which is why Day 4-7 spend so much time on it.</text>
+
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#f0883e"/>
+    </marker>
+    <marker id="arrow2s" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M9,0 L9,6 L0,3 z" fill="#f0883e"/>
+    </marker>
+  </defs>
+</svg>

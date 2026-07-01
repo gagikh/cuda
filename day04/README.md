@@ -18,6 +18,11 @@ Memory management system:
 - mapped memory (zero-copy memory) — `cudaHostAlloc` with `cudaHostAllocMapped` flag set, pros, cons
 - unified memory — `cudaMallocManaged`, pros, cons, `__managed__`
 
+## Visual
+![Four host-to-device transfer paths: pageable (double-copy, slowest), pinned (direct DMA), mapped/zero-copy (GPU reads host memory directly), unified (runtime migrates both ways)](memory_types.svg)
+
+Every memory type is really a different answer to the same question: how does data get from host RAM to device VRAM? Pageable memory needs a hidden staging copy; pinned memory skips it; mapped memory skips the copy entirely by letting the GPU read host RAM directly (at the cost of per-access latency); unified memory lets the runtime decide automatically.
+
 ## Resources
 [https://medium.com/analytics-vidhya/cuda-memory-model-823f02cef0bf](https://developer.codeplay.com/products/computecpp/ce/1.3.0/guides/sycl-for-cuda-developers/memory-model)
 

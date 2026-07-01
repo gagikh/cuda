@@ -10,6 +10,11 @@
 - Launch configuration and kernel invocation
 - Thread indexing patterns
 
+## Visual
+![Grid made up of blocks, each block made up of a 2D array of threads, with the global-index formula shown](thread_hierarchy.svg)
+
+A kernel launch creates a grid of blocks, and each block is itself a 1D/2D/3D array of threads. `blockIdx` tells a thread which block it's in; `threadIdx` tells it which slot within that block. The global-index formula in the diagram is the one pattern you'll reuse in nearly every kernel from here on.
+
 ## Resources
 Threads, blocks, grids
 - How to enumerate

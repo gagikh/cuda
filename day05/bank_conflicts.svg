@@ -1,0 +1,38 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="380" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Shared Memory Banks (32 banks)</text>
+
+  <!-- conflict-free -->
+  <text x="60" y="70" fill="#2ea043" font-size="14" font-weight="bold">Conflict-free: each thread → a different bank</text>
+  <g transform="translate(60,85)">
+    <g id="banksfree"></g>
+    <!-- 16 banks shown for space -->
+    <g fill="#2ea043" opacity="0.85">
+      <rect x="0" y="0" width="46" height="40" rx="4"/><rect x="52" y="0" width="46" height="40" rx="4"/><rect x="104" y="0" width="46" height="40" rx="4"/><rect x="156" y="0" width="46" height="40" rx="4"/>
+      <rect x="208" y="0" width="46" height="40" rx="4"/><rect x="260" y="0" width="46" height="40" rx="4"/><rect x="312" y="0" width="46" height="40" rx="4"/><rect x="364" y="0" width="46" height="40" rx="4"/>
+      <rect x="416" y="0" width="46" height="40" rx="4"/><rect x="468" y="0" width="46" height="40" rx="4"/><rect x="520" y="0" width="46" height="40" rx="4"/><rect x="572" y="0" width="46" height="40" rx="4"/>
+      <rect x="624" y="0" width="46" height="40" rx="4"/><rect x="676" y="0" width="46" height="40" rx="4"/><rect x="728" y="0" width="46" height="40" rx="4"/><rect x="780" y="0" width="46" height="40" rx="4"/>
+    </g>
+    <g fill="#0d1117" font-size="11">
+      <text x="23" y="25" text-anchor="middle">B0</text><text x="75" y="25" text-anchor="middle">B1</text><text x="127" y="25" text-anchor="middle">B2</text><text x="179" y="25" text-anchor="middle">B3</text>
+      <text x="231" y="25" text-anchor="middle">B4</text><text x="283" y="25" text-anchor="middle">B5</text><text x="335" y="25" text-anchor="middle">B6</text><text x="387" y="25" text-anchor="middle">B7</text>
+      <text x="439" y="25" text-anchor="middle">B8</text><text x="491" y="25" text-anchor="middle">B9</text><text x="543" y="25" text-anchor="middle">B10</text><text x="595" y="25" text-anchor="middle">B11</text>
+      <text x="647" y="25" text-anchor="middle">B12</text><text x="699" y="25" text-anchor="middle">B13</text><text x="751" y="25" text-anchor="middle">B14</text><text x="803" y="25" text-anchor="middle">B15</text>
+    </g>
+  </g>
+  <text x="60" y="150" fill="#8b949e" font-size="12">16 threads shown, 16 banks hit → all requests serviced in 1 transaction (stride-1 access)</text>
+
+  <!-- conflicting -->
+  <text x="60" y="200" fill="#f85149" font-size="14" font-weight="bold">Bank conflict: multiple threads → same bank</text>
+  <g transform="translate(60,215)">
+    <g fill="#21262d" opacity="0.9" stroke="#f85149" stroke-width="1.5">
+      <rect x="0" y="0" width="46" height="40" rx="4"/><rect x="52" y="0" width="46" height="40" rx="4"/><rect x="104" y="0" width="46" height="40" rx="4"/><rect x="156" y="0" width="46" height="40" rx="4"/>
+    </g>
+    <g fill="#f85149" font-size="11">
+      <text x="23" y="25" text-anchor="middle">B0</text><text x="75" y="25" text-anchor="middle">B0</text><text x="127" y="25" text-anchor="middle">B0</text><text x="179" y="25" text-anchor="middle">B0</text>
+    </g>
+    <text x="230" y="25" fill="#8b949e" font-size="12">4 threads, stride-32 access → all 4 land on bank 0</text>
+  </g>
+  <text x="60" y="290" fill="#8b949e" font-size="12">Result: the 4 accesses are serialized into 4 separate transactions instead of 1 — a 4-way bank conflict.</text>
+  <text x="60" y="315" fill="#8b949e" font-size="12">Fix: pad the shared-memory array's row stride (e.g. [TILE][TILE+1]) so stride-32 accesses no longer alias the same bank.</text>
+</svg>

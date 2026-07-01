@@ -12,6 +12,11 @@
 - GPU architecture fundamentals
 - Thread hierarchy overview
 
+## Visual
+![Host (CPU, few fast cores, system RAM) connected via PCIe/NVLink to Device (GPU, thousands of small cores, VRAM)](host_device.svg)
+
+The CPU (host) and GPU (device) have separate memory spaces connected by a relatively slow link (PCIe or NVLink). Everything you do in CUDA — allocating device memory, copying data across, launching kernels — is about bridging that gap efficiently. This picture is the mental model for the whole course.
+
 ## Resources
 Lecture:
 https://harmanani.github.io/classes/csc447/Notes/Lecture02.pdf

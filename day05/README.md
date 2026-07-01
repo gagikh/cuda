@@ -14,6 +14,11 @@
 - Constant memory
 - Pitched memory
 
+## Visual
+![Conflict-free shared memory access where each thread hits a different bank, versus a bank conflict where multiple threads hit bank 0 due to stride-32 access](bank_conflicts.svg)
+
+Shared memory is split into 32 banks so that 32 threads can be serviced in one transaction — but only if each thread hits a different bank. Stride-32 access patterns (common when indexing by a tile width that's a multiple of 32) collapse onto the same bank and get serialized. Padding the row stride by one element is the standard fix, and it's exactly what `tiled_filter` in [`template.cu`](template.cu) is set up for.
+
 ## Resources
 http://homepages.math.uic.edu/~jan/mcs572f16/mcs572notes/lec35.html
 

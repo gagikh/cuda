@@ -1,0 +1,48 @@
+<svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="400" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Host-to-Device Memory Paths</text>
+
+  <text x="60" y="70" fill="#1f6feb" font-size="13" font-weight="bold">HOST RAM</text>
+  <text x="760" y="70" fill="#2ea043" font-size="13" font-weight="bold">DEVICE VRAM</text>
+
+  <!-- Pageable -->
+  <rect x="40" y="90" width="150" height="40" rx="6" fill="#21262d" stroke="#8b949e"/>
+  <text x="115" y="115" text-anchor="middle" fill="#e6edf3" font-size="12">Pageable memory</text>
+  <path d="M190 110 h60" stroke="#8b949e" stroke-width="2" marker-end="url(#a3)"/>
+  <rect x="250" y="90" width="150" height="40" rx="6" fill="#21262d" stroke="#8b949e" stroke-dasharray="4,3"/>
+  <text x="325" y="115" text-anchor="middle" fill="#8b949e" font-size="11">staging pinned buf</text>
+  <path d="M400 110 h330" stroke="#8b949e" stroke-width="2" marker-end="url(#a3)"/>
+  <rect x="730" y="90" width="130" height="40" rx="6" fill="#161b22" stroke="#2ea043"/>
+  <text x="795" y="115" text-anchor="middle" fill="#e6edf3" font-size="12">GPU memory</text>
+  <text x="450" y="85" text-anchor="middle" fill="#8b949e" font-size="11">slowest — 2 copies (malloc)</text>
+
+  <!-- Pinned -->
+  <rect x="40" y="150" width="150" height="40" rx="6" fill="#1f6feb" opacity="0.85"/>
+  <text x="115" y="175" text-anchor="middle" fill="#e6edf3" font-size="12">Pinned memory</text>
+  <path d="M190 170 h670" stroke="#1f6feb" stroke-width="2" marker-end="url(#a3)"/>
+  <rect x="730" y="150" width="130" height="40" rx="6" fill="#161b22" stroke="#2ea043"/>
+  <text x="795" y="175" text-anchor="middle" fill="#e6edf3" font-size="12">GPU memory</text>
+  <text x="450" y="145" text-anchor="middle" fill="#8b949e" font-size="11">direct DMA transfer (cudaMallocHost)</text>
+
+  <!-- Mapped / zero-copy -->
+  <rect x="40" y="210" width="150" height="40" rx="6" fill="#8957e5" opacity="0.85"/>
+  <text x="115" y="235" text-anchor="middle" fill="#e6edf3" font-size="12">Mapped (zero-copy)</text>
+  <path d="M190 230 h670" stroke="#8957e5" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#a3)"/>
+  <text x="450" y="255" text-anchor="middle" fill="#8b949e" font-size="11">GPU reads host memory directly over the link, no explicit copy (cudaHostAllocMapped)</text>
+
+  <!-- Unified -->
+  <rect x="40" y="290" width="150" height="40" rx="6" fill="#2ea043" opacity="0.85"/>
+  <text x="115" y="315" text-anchor="middle" fill="#e6edf3" font-size="12">Unified memory</text>
+  <path d="M190 310 h670" stroke="#2ea043" stroke-width="2" marker-end="url(#a4)"/>
+  <path d="M860 310 h-670" stroke="#2ea043" stroke-width="2" marker-end="url(#a4)"/>
+  <rect x="730" y="290" width="130" height="40" rx="6" fill="#161b22" stroke="#2ea043"/>
+  <text x="795" y="315" text-anchor="middle" fill="#e6edf3" font-size="12">GPU memory</text>
+  <text x="450" y="345" text-anchor="middle" fill="#8b949e" font-size="11">runtime migrates pages automatically both ways (cudaMallocManaged)</text>
+
+  <text x="450" y="385" text-anchor="middle" fill="#8b949e" font-size="12">Fastest → slowest for repeated transfer: Pinned ≈ Mapped &lt; Unified &lt; Pageable</text>
+
+  <defs>
+    <marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8b949e"/></marker>
+    <marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2ea043"/></marker>
+  </defs>
+</svg>
