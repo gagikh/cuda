@@ -1,21 +1,31 @@
 # Day 3: Warp-Level Execution and Control Flow
 
 ## Objectives
+- Explain SIMD/SIMT execution and how the GPU instruction pipeline issues one instruction to a whole warp
 - Define what a warp is and how it executes instructions in lockstep
 - Reason about control flow (`if`/`else`, loops, `switch`) and its cost inside a warp
 - Recognize and avoid warp divergence
 - Apply loop unrolling where it helps
 
 ## Key Concepts
+- SIMD architecture and the instruction pipeline (fetch → decode → warp scheduler → lockstep issue)
 - Warp definition and behavior
 - Control flow: `if`, `else`, `for`, `while`
 - Loop unrolling
 - Divergence impact and avoidance
 
+## Visual
+![SIMT instruction pipeline: fetch, decode, warp scheduler, then the same instruction issued in lockstep to all 32 lanes of a warp](pipeline.svg)
+
+One instruction is fetched and decoded once, then the warp scheduler issues it to all 32 threads in a warp simultaneously (SIMT). This is *why* warp divergence is expensive: if threads in a warp disagree on a branch, the hardware masks off lanes and runs each branch path separately instead of truly in parallel.
+
 ## Resources
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
 
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
+
+Instructions pipeline:
+https://lowyx.com/posts/gt-gpu-notes/
 
 Hint: https://people.maths.ox.ac.uk/~gilesm/cuda/
 

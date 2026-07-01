@@ -1,21 +1,16 @@
 # Day 2: Thread Hierarchy & Execution Model
 
 ## Objectives
-- Understand SIMD execution and the GPU instruction pipeline at a high level
 - Enumerate and divide work across threads, blocks, and grids
 - Configure kernel launches correctly for 1D and 2D data
 - Apply thread indexing patterns to real data (vectors, then images)
 
 ## Key Concepts
-- SIMD architecture and instructions pipeline
 - Threads, blocks, grids: structure and enumeration
 - Launch configuration and kernel invocation
 - Thread indexing patterns
 
 ## Resources
-Instructions pipeline
-https://lowyx.com/posts/gt-gpu-notes/
-
 Threads, blocks, grids
 - How to enumerate
 - How to devide

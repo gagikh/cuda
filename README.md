@@ -15,12 +15,12 @@
 - Thread hierarchy overview
 
 ### [Day 2: Thread Hierarchy & Execution Model](day02/README.md)
-- SIMD architecture and instructions pipeline
 - Threads, blocks, grids: structure and enumeration  
 - Launch configuration and kernel invocation  
 - Thread indexing patterns
 
 ### [Day 3: Warp-Level Execution and Control Flow](day03/README.md)
+- SIMD architecture and the instruction pipeline  
 - Warp definition and behavior  
 - Control flow: `if`, `else`, `for`, `while`  
 - Loop unrolling  
