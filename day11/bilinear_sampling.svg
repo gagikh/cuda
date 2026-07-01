@@ -1,0 +1,32 @@
+<svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="360" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Bilinear Texture Sampling</text>
+
+  <!-- 4 texel grid -->
+  <g transform="translate(280,80)">
+    <rect x="0" y="0" width="140" height="140" fill="#161b22" stroke="#8b949e"/>
+    <line x1="70" y1="0" x2="70" y2="140" stroke="#8b949e" stroke-dasharray="4,3"/>
+    <line x1="0" y1="70" x2="140" y2="70" stroke="#8b949e" stroke-dasharray="4,3"/>
+
+    <circle cx="0" cy="0" r="6" fill="#1f6feb"/>
+    <text x="-14" y="-10" fill="#e6edf3" font-size="12">(x0,y0)</text>
+    <circle cx="140" cy="0" r="6" fill="#1f6feb"/>
+    <text x="128" y="-10" fill="#e6edf3" font-size="12">(x1,y0)</text>
+    <circle cx="0" cy="140" r="6" fill="#1f6feb"/>
+    <text x="-14" y="158" fill="#e6edf3" font-size="12">(x0,y1)</text>
+    <circle cx="140" cy="140" r="6" fill="#1f6feb"/>
+    <text x="128" y="158" fill="#e6edf3" font-size="12">(x1,y1)</text>
+
+    <!-- sample point -->
+    <circle cx="95" cy="60" r="7" fill="#f0883e"/>
+    <text x="105" y="55" fill="#f0883e" font-size="12" font-weight="bold">(fx,fy)</text>
+    <path d="M95 60 L0 0" stroke="#f0883e" stroke-width="1" opacity="0.5"/>
+    <path d="M95 60 L140 0" stroke="#f0883e" stroke-width="1" opacity="0.5"/>
+    <path d="M95 60 L0 140" stroke="#f0883e" stroke-width="1" opacity="0.5"/>
+    <path d="M95 60 L140 140" stroke="#f0883e" stroke-width="1" opacity="0.5"/>
+  </g>
+
+  <text x="450" y="270" text-anchor="middle" fill="#8b949e" font-size="12">tex2D(tex, fx, fy) returns a weighted average of the 4 nearest texels —</text>
+  <text x="450" y="292" text-anchor="middle" fill="#8b949e" font-size="12">closer texels get more weight, in both x and y — done for free by the texture unit's hardware filtering.</text>
+  <text x="450" y="320" text-anchor="middle" fill="#8b949e" font-size="12">This is what makes zoom/rotate via textures both simple to write and fast: no manual interpolation code needed.</text>
+</svg>

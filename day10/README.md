@@ -9,6 +9,11 @@
 - Descriptor matching based on Hamming distance
 - Matrix multiplication
 
+## Visual
+![Tiled matrix multiplication: a row tile of A and a column tile of B are loaded into shared memory once and reused by the whole block to compute one output tile of C](tiled_matmul.svg)
+
+The naive kernel re-reads the same rows/columns of A and B from global memory over and over — once per output element. The tiled version loads one tile of each into shared memory per block and lets every thread in the block reuse it, cutting global memory traffic dramatically. This is the same tiling idea from Day 5, applied to matmul instead of a filter.
+
 ## Resources
 https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
 

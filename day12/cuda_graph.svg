@@ -1,0 +1,40 @@
+<svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="360" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Sequential Launches vs. a CUDA Graph</text>
+
+  <text x="40" y="70" fill="#8b949e" font-size="13" font-weight="bold">Without a graph — each iteration re-pays CPU launch overhead</text>
+  <g transform="translate(40,85)" font-size="11" fill="#e6edf3">
+    <rect x="0" y="0" width="60" height="30" rx="4" fill="#1f6feb" opacity="0.85"/><text x="30" y="19" text-anchor="middle">launch</text>
+    <rect x="70" y="0" width="60" height="30" rx="4" fill="#2ea043" opacity="0.85"/><text x="100" y="19" text-anchor="middle">kernel</text>
+    <rect x="150" y="0" width="60" height="30" rx="4" fill="#1f6feb" opacity="0.85"/><text x="180" y="19" text-anchor="middle">launch</text>
+    <rect x="220" y="0" width="60" height="30" rx="4" fill="#2ea043" opacity="0.85"/><text x="250" y="19" text-anchor="middle">kernel</text>
+    <rect x="300" y="0" width="60" height="30" rx="4" fill="#1f6feb" opacity="0.85"/><text x="330" y="19" text-anchor="middle">launch</text>
+    <rect x="370" y="0" width="60" height="30" rx="4" fill="#2ea043" opacity="0.85"/><text x="400" y="19" text-anchor="middle">kernel</text>
+    <text x="470" y="19" fill="#8b949e">... × 1000 iterations</text>
+  </g>
+  <text x="40" y="145" fill="#8b949e" font-size="12">Each "launch" box is real CPU time spent in the driver — for tiny kernels run many times, this can dominate total runtime.</text>
+
+  <text x="40" y="190" fill="#8b949e" font-size="13" font-weight="bold">With a captured graph — launch overhead paid once, at capture time</text>
+  <g transform="translate(40,205)">
+    <rect x="0" y="0" width="80" height="34" rx="6" fill="#8957e5" opacity="0.85"/>
+    <text x="40" y="21" text-anchor="middle" fill="#e6edf3" font-size="10">capture</text>
+    <path d="M85 17 h30" stroke="#8b949e" stroke-width="2" marker-end="url(#a8)"/>
+    <rect x="120" y="0" width="90" height="34" rx="6" fill="#8957e5" opacity="0.85"/>
+    <text x="165" y="21" text-anchor="middle" fill="#e6edf3" font-size="10">instantiate</text>
+    <path d="M215 17 h30" stroke="#8b949e" stroke-width="2" marker-end="url(#a8)"/>
+    <rect x="250" y="0" width="60" height="34" rx="6" fill="#f0883e" opacity="0.9"/>
+    <text x="280" y="21" text-anchor="middle" fill="#0d1117" font-size="10">graph</text>
+  </g>
+  <g transform="translate(40,255)" font-size="11" fill="#e6edf3">
+    <rect x="0"   y="0" width="30" height="26" rx="4" fill="#f0883e" opacity="0.9"/>
+    <rect x="35"  y="0" width="30" height="26" rx="4" fill="#f0883e" opacity="0.9"/>
+    <rect x="70"  y="0" width="30" height="26" rx="4" fill="#f0883e" opacity="0.9"/>
+    <rect x="105" y="0" width="30" height="26" rx="4" fill="#f0883e" opacity="0.9"/>
+    <text x="150" y="18" fill="#8b949e" font-size="12">cudaGraphLaunch() × 1000 — one CPU call replays the whole captured sequence each time</text>
+  </g>
+
+  <text x="450" y="330" text-anchor="middle" fill="#8b949e" font-size="12">Graphs pay off when the same fixed sequence of kernels/copies runs many times — the win is in CPU-side launch overhead, not GPU compute time.</text>
+  <defs>
+    <marker id="a8" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8b949e"/></marker>
+  </defs>
+</svg>

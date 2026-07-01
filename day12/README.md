@@ -11,6 +11,11 @@
 - Kernel + memory op capture
 - Graph launch
 
+## Visual
+![Without a graph, each iteration re-pays CPU launch overhead for launch+kernel; with a captured graph, the sequence is captured and instantiated once, then replayed with a single cudaGraphLaunch call per iteration](cuda_graph.svg)
+
+Graphs don't make the GPU compute faster — they cut the CPU-side overhead of re-issuing the same sequence of launches over and over. The win shows up when you run the same fixed pipeline many times (self-learning task 4 below is designed to make that overhead visible).
+
 ## Resources
 https://www.olcf.ornl.gov/wp-content/uploads/2021/10/013_CUDA_Graphs.pdf
 https://developer.nvidia.com/blog/cuda-graphs/

@@ -11,6 +11,11 @@
 - Filtering & addressing
 - Zoom/image processing
 
+## Visual
+![Bilinear sampling: tex2D(tex, fx, fy) blends the 4 nearest texels, weighted by distance, to produce the sampled value](bilinear_sampling.svg)
+
+The texture unit does this interpolation in hardware — you just pass a fractional coordinate and get back a blended value. That's what makes zoom and rotate so compact via textures: no manual weighted-average code, just an inverse coordinate mapping and a `tex2D` call.
+
 ## Resources
 https://developer.download.nvidia.com/CUDA/training/texture_webinar_aug_2011.pdf
 
