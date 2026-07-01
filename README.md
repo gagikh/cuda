@@ -4,6 +4,8 @@
 **University**: Armenian Slavonic University – Lectures & Labs (15 Days)  
 **Instructor**: Gagik Hakobyan
 
+📖 [Glossary](GLOSSARY.md) — every term this course uses, alphabetical, tagged with the day it's introduced.
+
 ---
 
 ## 📘 Course Outline
