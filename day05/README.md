@@ -32,4 +32,4 @@ Use shared memory for a 2D filter. Final task: 2D Sobel filter implementation on
 4. Extend the Sobel filter to process a video stream frame by frame.
 
 ## Code Template
-See [`template.cu`](template.cu) for a skeleton t
+See [`template.cu`](template.cu) for a skeleton to start from.
