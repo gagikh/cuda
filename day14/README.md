@@ -19,13 +19,14 @@
 Each thread generates its own stream of random points with cuRAND, tests each one against the circle, and contributes its count toward a shared total — the same warp-reduction + atomicAdd pattern from Day 9, just applied to random sampling instead of image data.
 
 ## Hands-On Task
-Estimate π using Monte Carlo sampling with cuRAND.
+Estimate π using Monte Carlo sampling with cuRAND. Monte Carlo estimation is genuinely a pure-math task, not an image one — but [`template.cu`](template.cu) adds a bonus second part: fill a real `cv::cuda::GpuMat` with cuRAND-generated noise and display it, so today still touches `GpuMat` even though the core exercise doesn't need it.
 
 ## Self-Learning
 1. Use cuRAND to generate uniform random points in `[0,1)^2` and estimate π via the classic Monte Carlo circle/square ratio.
 2. Use cuBLAS to perform a matrix-vector multiply and compare against your Day 10 matrix multiplication kernel.
 3. Use cuFFT to compute the FFT of a signal and compare against your Day 8 32-point FFT attempt.
 4. (Stretch) Try a recursive/dynamic-parallelism kernel launch — have a kernel launch a child kernel.
+5. Fill in `fill_noise_image` in [`template.cu`](template.cu) and display the result with `cv::imshow`.
 
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.

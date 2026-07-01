@@ -30,7 +30,7 @@ Shared memory swizzling reference:
 https://leimao.github.io/images/blog/2024-05-14-CUDA-Shared-Memory-Swizzling/swizzling.png
 
 ## Hands-On Task
-Optimize transform (the Day 6 image transform kernel).
+Optimize transform (the Day 6 image transform kernel), on a real image loaded via `cv::imread` / `cv::cuda::GpuMat`.
 
 ## Self-Learning
 1. Add `__ldg()` to a read-heavy kernel from an earlier day (e.g. the Day 5 tiled filter) and measure the effect.

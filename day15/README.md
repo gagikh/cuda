@@ -21,10 +21,10 @@ https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/stream-ord
 https://medium.com/@dmitrijtichonov/cuda-series-memory-and-allocation-fce29c965d37
 
 ## Hands-On Task
-Replace a `cudaMalloc`/`cudaFree` pair with the stream-ordered `cudaMallocAsync`/`cudaFreeAsync` equivalents.
+Replace a `cudaMalloc`/`cudaFree` pair with the stream-ordered `cudaMallocAsync`/`cudaFreeAsync` equivalents — applied to a real image-contrast kernel (loaded via `cv::imread`) instead of a synthetic vector add.
 
 ## Self-Learning
-1. Take a `cudaMalloc`/`cudaFree` pair from an earlier day (e.g. Day 2's vector add) and replace it with `cudaMallocAsync`/`cudaFreeAsync` on a stream.
+1. Fill in `run_with_malloc_async` in [`template.cu`](template.cu): allocate with `cudaMallocAsync`, copy the loaded image in, run `adjust_contrast`, copy the result out, and free with `cudaFreeAsync` — all on the same stream.
 2. Benchmark allocation overhead: `cudaMalloc`/`cudaFree` vs. `cudaMallocAsync`/`cudaFreeAsync` in a loop of many small allocations.
 3. Create an explicit `cudaMemPool_t` and use it across multiple streams; verify correctness with concurrent allocations.
 4. Combine stream-ordered allocation with the Day 12 CUDA graph capture — capture allocation, kernel, and free into one graph.

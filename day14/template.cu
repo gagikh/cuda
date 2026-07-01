@@ -1,12 +1,15 @@
 // Day 14: CUDA Libraries
-// Goal: estimate pi via Monte Carlo sampling using cuRAND.
+// Goal: estimate pi via Monte Carlo sampling using cuRAND, plus a bonus:
+// fill a real cv::cuda::GpuMat with cuRAND-generated noise.
 //
-// Compile:  nvcc -arch=sm_50 day14_template.cu -o day14 -lcurand
+// Compile:  nvcc -arch=sm_50 day14_template.cu -o day14 -lcurand `pkg-config --cflags --libs opencv4`
 // Run:      ./day14
 
 #include <cstdio>
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudaarithm.hpp>
 
 // TODO 1: initialize one curandState per thread, seeded uniquely per thread.
 __global__ void setup_rng(curandState *states, unsigned long long seed, int n)
@@ -35,8 +38,21 @@ __global__ void monte_carlo_pi(curandState *states, unsigned long long *inside_c
     //       atomicAdd(inside_count, (unsigned long long)local_count);
 }
 
+// TODO (bonus): fill a GpuMat with random noise, one pixel per thread.
+// `states` must be sized >= width*height (reuse setup_rng() to init it).
+// `img`/`img_step` are the GpuMat's pointer/pitch, same as Day 5+.
+__global__ void fill_noise_image(curandState *states, unsigned char *img, size_t img_step,
+                                  int width, int height)
+{
+    // TODO: int x = ..., y = ...; if (x >= width || y >= height) return;
+    //       int id = y * width + x; // index into `states`, NOT into `img` (states is flat)
+    //       curandState local = states[id];
+    //       img[y * img_step + x] = curand(&local) % 256;
+}
+
 int main()
 {
+    // --- Part 1: Monte Carlo pi estimation ---
     const int n = 1 << 16;
     const int samples_per_thread = 1000;
 
@@ -65,6 +81,25 @@ int main()
     cudaFree(d_inside_count);
 
     // TODO (self-learning #2/#3): add cuBLAS matrix-vector multiply and cuFFT examples here.
+
+    // --- Part 2 (bonus): random noise image via GpuMat ---
+    const int width = 256, height = 256;
+    curandState *d_img_states;
+    cudaMalloc(&d_img_states, width * height * sizeof(curandState));
+    setup_rng<<<(width * height + 255) / 256, 256>>>(d_img_states, 5678ULL, width * height);
+
+    cv::cuda::GpuMat d_noise(height, width, CV_8UC1);
+    dim3 block(16, 16);
+    dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
+    fill_noise_image<<<grid, block>>>(d_img_states, d_noise.ptr<unsigned char>(), d_noise.step, width, height);
+    cudaDeviceSynchronize();
+
+    cv::Mat h_noise;
+    d_noise.download(h_noise);
+    cv::imshow("cuRAND noise", h_noise);
+    cv::waitKey(0);
+
+    cudaFree(d_img_states);
 
     return 0;
 }
