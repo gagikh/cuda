@@ -1,15 +1,20 @@
 // Day 6: Streams and Events
-// Goal: image derivative kernel, timed precisely with cudaEvents.
+// Goal: image derivative kernel on a real image (via GpuMat), timed precisely with cudaEvents.
 //
-// Compile:  nvcc -arch=sm_50 day6_template.cu -o day6
-// Run:      ./day6
+// Compile:  nvcc -arch=sm_50 day06_template.cu -o day06 `pkg-config --cflags --libs opencv4`
+// Run:      ./day06 <path-to-image>
 
 #include <cstdio>
 #include <cuda_runtime.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudaarithm.hpp>
 
 // TODO 1: image derivative kernel (simple central difference in x and y).
 // dx[y][x] = img[y][x+1] - img[y][x-1]; dy similarly. Handle borders.
-__global__ void image_derivative(const unsigned char *img, float *dx, float *dy,
+// `img`/`dx`/`dy` are raw GpuMat pointers; index rows via their respective
+// `*_step` (bytes) -- same pitched-memory idea as Day 5.
+__global__ void image_derivative(const unsigned char *img, size_t img_step,
+                                  float *dx, float *dy, size_t grad_step,
                                   int width, int height)
 {
     // TODO
@@ -19,22 +24,26 @@ __global__ void image_derivative(const unsigned char *img, float *dx, float *dy,
 
 // TODO 3 (self-learning #3): image transform kernel (rotate or scale).
 
-int main()
+int main(int argc, char **argv)
 {
-    const int width = 256, height = 256;
-    size_t img_bytes = width * height * sizeof(unsigned char);
-    size_t out_bytes = width * height * sizeof(float);
+    if (argc < 2) {
+        printf("usage: %s <path-to-image>\n", argv[0]);
+        return 1;
+    }
 
-    unsigned char *d_img;
-    float *d_dx, *d_dy;
-    cudaMalloc(&d_img, img_bytes);
-    cudaMalloc(&d_dx, out_bytes);
-    cudaMalloc(&d_dy, out_bytes);
+    cv::Mat h_img = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
+    if (h_img.empty()) {
+        printf("failed to load image: %s\n", argv[1]);
+        return 1;
+    }
 
-    // TODO: fill d_img with test data
+    cv::cuda::GpuMat d_img, d_dx, d_dy;
+    d_img.upload(h_img);
+    d_dx.create(d_img.size(), CV_32F);
+    d_dy.create(d_img.size(), CV_32F);
 
     dim3 block(16, 16);
-    dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
+    dim3 grid((d_img.cols + block.x - 1) / block.x, (d_img.rows + block.y - 1) / block.y);
 
     // First formal use of cudaEvent-based device-side timing.
     cudaEvent_t start, stop;
@@ -42,7 +51,9 @@ int main()
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);
-    image_derivative<<<grid, block>>>(d_img, d_dx, d_dy, width, height);
+    image_derivative<<<grid, block>>>(d_img.ptr<unsigned char>(), d_img.step,
+                                       d_dx.ptr<float>(), d_dy.ptr<float>(), d_dx.step,
+                                       d_img.cols, d_img.rows);
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
 
@@ -53,9 +64,14 @@ int main()
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
-    cudaFree(d_img);
-    cudaFree(d_dx);
-    cudaFree(d_dy);
+    // TODO: dx/dy are raw float gradients -- cv::normalize (or take the
+    // absolute value and scale to 0-255) before cv::imshow, or they'll
+    // just look black/blown-out.
+    cv::Mat h_dx;
+    d_dx.download(h_dx);
+    cv::imshow("input", h_img);
+    cv::imshow("dx (raw float -- normalize me)", h_dx);
+    cv::waitKey(0);
 
     // TODO (self-learning #5, stretch): create two cudaStream_t's and launch
     // independent work (e.g. derivative + transform) on each, then check for overlap.

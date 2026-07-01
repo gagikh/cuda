@@ -4,7 +4,7 @@
 - Consolidate the first five days: threads/blocks/grids, memory types, bank conflicts
 - Introduce CUDA streams and events
 - Use `cudaEvent`s for precise device-side timing (first formal use — earlier days used host-side `<chrono>` on purpose)
-- Implement image derivative, shared-memory convolution, and transform kernels
+- Implement image derivative, shared-memory convolution, and transform kernels on a real image loaded via OpenCV
 
 ## Key Concepts
 - SIMD arch
@@ -27,12 +27,12 @@ https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar
 https://on-demand.gputechconf.com/gtc/2014/presentations/S4158-cuda-streams-best-practices-common-pitfalls.pdf
 
 ## Hands-On Task
-- Implement image derivatives
+- Implement image derivatives, on a real image loaded via `cv::imread` and uploaded to `cv::cuda::GpuMat` (see [`template.cu`](template.cu))
 - Implement convolution via shared memory
 - Implement image transform
 
 ## Self-Learning
-1. Implement an image derivative (gradient) kernel — compute dx/dy per pixel.
+1. Implement an image derivative (gradient) kernel — compute dx/dy per pixel. `dx`/`dy` are float `GpuMat`s in the template; `cv::normalize` (or take the absolute value and scale) before `cv::imshow`, or the result will look black.
 2. Implement convolution via shared memory (reuse your Day 5 tiling approach).
 3. Implement a simple image transform (e.g. rotate or scale) kernel.
 4. Time each kernel precisely with `cudaEvent`s (`cudaEventCreate` / `cudaEventRecord` / `cudaEventElapsedTime`) and compare against your earlier `<chrono>` measurements.
