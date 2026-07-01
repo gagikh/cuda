@@ -10,6 +10,7 @@
 #include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 constexpr int NUM_CHUNKS = 4;
 
@@ -41,40 +42,41 @@ int main(int argc, char **argv)
 
     // Pinned host memory is required for true async cudaMemcpyAsync overlap (see Day 4).
     unsigned char *h_in, *h_out;
-    cudaMallocHost(&h_in, total);
-    cudaMallocHost(&h_out, total);
+    CUDA_CHECK(cudaMallocHost(&h_in, total));
+    CUDA_CHECK(cudaMallocHost(&h_out, total));
     memcpy(h_in, h_img.data, total);
 
     unsigned char *d_in, *d_out;
-    cudaMalloc(&d_in, total);
-    cudaMalloc(&d_out, total);
+    CUDA_CHECK(cudaMalloc(&d_in, total));
+    CUDA_CHECK(cudaMalloc(&d_out, total));
 
     cudaStream_t streams[NUM_CHUNKS];
     for (int i = 0; i < NUM_CHUNKS; ++i) {
-        cudaStreamCreate(&streams[i]);
+        CUDA_CHECK(cudaStreamCreate(&streams[i]));
     }
 
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
+    CUDA_CHECK(cudaEventRecord(start));
 
     // TODO: for each chunk i (bounds-check the last chunk against `total`,
     // since rows_per_chunk * NUM_CHUNKS may overshoot h_img.rows):
-    //   1. cudaMemcpyAsync(d_in + offset, h_in + offset, chunk_bytes, H2D, streams[i])
-    //   2. process_chunk<<<grid, block, 0, streams[i]>>>(d_in + offset, d_out + offset, chunk_elems)
-    //   3. cudaMemcpyAsync(h_out + offset, d_out + offset, chunk_bytes, D2H, streams[i])
+    //   1. CUDA_CHECK(cudaMemcpyAsync(d_in + offset, h_in + offset, chunk_bytes, H2D, streams[i]))
+    //   2. process_chunk<<<grid, block, 0, streams[i]>>>(d_in + offset, d_out + offset, chunk_elems);
+    //      CUDA_CHECK_LAST_ERROR();
+    //   3. CUDA_CHECK(cudaMemcpyAsync(h_out + offset, d_out + offset, chunk_bytes, D2H, streams[i]))
     // Because each step is issued on its own stream, chunk i+1's copy can overlap
     // with chunk i's kernel -- that's the overlap you're checking for.
 
     for (int i = 0; i < NUM_CHUNKS; ++i) {
-        cudaStreamSynchronize(streams[i]);
+        CUDA_CHECK(cudaStreamSynchronize(streams[i]));
     }
 
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
     float ms = 0.0f;
-    cudaEventElapsedTime(&ms, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
     printf("chunked async pipeline: %.3f ms\n", ms);
 
     // Wrap the pinned output buffer as a cv::Mat header (no copy) to display it.
@@ -84,12 +86,12 @@ int main(int argc, char **argv)
     cv::waitKey(0);
 
     for (int i = 0; i < NUM_CHUNKS; ++i) {
-        cudaStreamDestroy(streams[i]);
+        CUDA_CHECK(cudaStreamDestroy(streams[i]));
     }
-    cudaFree(d_in);
-    cudaFree(d_out);
-    cudaFreeHost(h_in);
-    cudaFreeHost(h_out);
+    CUDA_CHECK(cudaFree(d_in));
+    CUDA_CHECK(cudaFree(d_out));
+    CUDA_CHECK(cudaFreeHost(h_in));
+    CUDA_CHECK(cudaFreeHost(h_out));
 
     return 0;
 }

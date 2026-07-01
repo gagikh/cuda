@@ -10,6 +10,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 // TODO 1: compute image mean.
 // Each thread reads one pixel (indexing rows via `img_step`, the GpuMat
@@ -68,20 +69,21 @@ int main(int argc, char **argv)
     d_img.upload(h_img);
 
     unsigned long long *d_total;
-    cudaMalloc(&d_total, sizeof(unsigned long long));
-    cudaMemset(d_total, 0, sizeof(unsigned long long));
+    CUDA_CHECK(cudaMalloc(&d_total, sizeof(unsigned long long)));
+    CUDA_CHECK(cudaMemset(d_total, 0, sizeof(unsigned long long)));
 
     dim3 block(32, 8); // multiple of warp size on x, matches warp-reduction assumptions
     dim3 grid(cv::cudev::divUp(d_img.cols, block.x), cv::cudev::divUp(d_img.rows, block.y));
     image_sum_kernel<<<grid, block>>>(d_img.ptr<unsigned char>(), d_img.step,
                                        d_img.cols, d_img.rows, d_total);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     unsigned long long h_total = 0;
-    cudaMemcpy(&h_total, d_total, sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(&h_total, d_total, sizeof(unsigned long long), cudaMemcpyDeviceToHost));
     printf("mean = %f\n", static_cast<double>(h_total) / (d_img.cols * d_img.rows));
 
-    cudaFree(d_total);
+    CUDA_CHECK(cudaFree(d_total));
 
     // TODO (self-learning #3/#4): allocate a half-size GpuMat, run pyr_down_kernel,
     // cv::imshow the result next to the original.

@@ -10,6 +10,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 // TODO 1: warp-level sum reduction.
 // Each of the 32 lanes contributes `val`; after this function every lane
@@ -58,21 +59,22 @@ int main(int argc, char **argv)
     // --- Part 1: generic warm-up, sum of 1s should equal n ---
     const int n = 1024;
     int *d_in, *d_out;
-    cudaMalloc(&d_in, n * sizeof(int));
-    cudaMalloc(&d_out, sizeof(int));
-    cudaMemset(d_out, 0, sizeof(int));
+    CUDA_CHECK(cudaMalloc(&d_in, n * sizeof(int)));
+    CUDA_CHECK(cudaMalloc(&d_out, sizeof(int)));
+    CUDA_CHECK(cudaMemset(d_out, 0, sizeof(int)));
 
     // TODO: fill d_in with test data (e.g. all 1s to verify the sum == n)
 
-    reduce_kernel<<<(n + 255) / 256, 256>>>(d_in, d_out, n);
-    cudaDeviceSynchronize();
+    reduce_kernel<<<cv::cudev::divUp(n, 256), 256>>>(d_in, d_out, n);
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     int h_out = 0;
-    cudaMemcpy(&h_out, d_out, sizeof(int), cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(&h_out, d_out, sizeof(int), cudaMemcpyDeviceToHost));
     printf("sum = %d\n", h_out);
 
-    cudaFree(d_in);
-    cudaFree(d_out);
+    CUDA_CHECK(cudaFree(d_in));
+    CUDA_CHECK(cudaFree(d_out));
 
     // --- Part 2: threshold + compact indices on a real image ---
     if (argc < 2) {
@@ -91,23 +93,24 @@ int main(int argc, char **argv)
 
     const int max_indices = h_img.rows * h_img.cols;
     int *d_indices, *d_count;
-    cudaMalloc(&d_indices, max_indices * sizeof(int));
-    cudaMalloc(&d_count, sizeof(int));
-    cudaMemset(d_count, 0, sizeof(int));
+    CUDA_CHECK(cudaMalloc(&d_indices, max_indices * sizeof(int)));
+    CUDA_CHECK(cudaMalloc(&d_count, sizeof(int)));
+    CUDA_CHECK(cudaMemset(d_count, 0, sizeof(int)));
 
     dim3 block(32, 8); // multiple of warp size on x for clean warp_scan_inclusive use
     dim3 grid(cv::cudev::divUp(d_img.cols, block.x), cv::cudev::divUp(d_img.rows, block.y));
     extract_indices_above_threshold<<<grid, block>>>(
         d_img.ptr<unsigned char>(), d_img.step, d_img.cols, d_img.rows,
         128, d_indices, d_count);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     int h_count = 0;
-    cudaMemcpy(&h_count, d_count, sizeof(int), cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(&h_count, d_count, sizeof(int), cudaMemcpyDeviceToHost));
     printf("pixels above threshold: %d / %d\n", h_count, max_indices);
 
-    cudaFree(d_indices);
-    cudaFree(d_count);
+    CUDA_CHECK(cudaFree(d_indices));
+    CUDA_CHECK(cudaFree(d_count));
 
     return 0;
 }
