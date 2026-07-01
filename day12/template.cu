@@ -22,6 +22,62 @@ __global__ void transpose_shared(const float *in, float *out, int n)
 // TODO 2 (self-learning #2): transpose_texture — same operation, but reading
 // through a texture object bound to `in` (reuse Day 11's texture setup).
 
+// RAII graph wrapper, same shape as the graph_t in the README's Code
+// Walkthrough — genericized to a raw cudaStream_t instead of
+// cv::cuda::Stream, so this file has no OpenCV dependency.
+enum class graph_status_t { UNINITIALIZED, CAPTURING, GRAPH_CREATED };
+
+struct graph_t
+{
+    graph_status_t m_status = graph_status_t::UNINITIALIZED;
+    cudaGraph_t m_graph = nullptr;
+    cudaGraphExec_t m_instance = nullptr;
+
+    graph_t() = default;
+
+    ~graph_t()
+    {
+        if (m_instance) {
+            cudaGraphExecDestroy(m_instance);
+            m_instance = nullptr;
+        }
+        if (m_graph) {
+            cudaGraphDestroy(m_graph);
+            m_graph = nullptr;
+        }
+    }
+
+    // non-copyable (owns GPU resources), movable if you need it later
+    graph_t(const graph_t&) = delete;
+    graph_t& operator=(const graph_t&) = delete;
+
+    bool is_created() const { return graph_status_t::GRAPH_CREATED == m_status; }
+
+    // TODO A: begin stream capture on `stream` (cudaStreamCaptureModeGlobal)
+    // and set m_status to CAPTURING. Every op launched on `stream` after this
+    // call is recorded into the graph instead of actually executing.
+    void start_capture(cudaStream_t stream)
+    {
+        // TODO: cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
+        // TODO: m_status = graph_status_t::CAPTURING;
+    }
+
+    // TODO B: end capture into m_graph, then instantiate m_instance from it.
+    // Set m_status to GRAPH_CREATED when done.
+    void create_graph(cudaStream_t stream)
+    {
+        // TODO: cudaStreamEndCapture(stream, &m_graph);
+        // TODO: cudaGraphInstantiate(&m_instance, m_graph, nullptr, nullptr, 0);
+        // TODO: m_status = graph_status_t::GRAPH_CREATED;
+    }
+
+    // TODO C: replay the captured graph on `stream`.
+    void launch(cudaStream_t stream)
+    {
+        // TODO: cudaGraphLaunch(m_instance, stream);
+    }
+};
+
 int main()
 {
     const int n = 512;
@@ -40,14 +96,11 @@ int main()
     cudaStreamCreate(&stream);
 
     // --- Capture a graph containing the transpose kernel ---
-    cudaGraph_t graph = nullptr;
-    cudaGraphExec_t instance = nullptr;
-
-    cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
+    graph_t graph;
+    graph.start_capture(stream);
     transpose_shared<<<grid, block, 0, stream>>>(d_in, d_out, n);
     // TODO: add more ops here (e.g. a second kernel) to make graph capture worthwhile
-    cudaStreamEndCapture(stream, &graph);
-    cudaGraphInstantiate(&instance, graph, nullptr, nullptr, 0);
+    graph.create_graph(stream);
 
     // --- Launch the captured graph many times and time it ---
     cudaEvent_t start, stop;
@@ -57,7 +110,7 @@ int main()
     const int iterations = 1000;
     cudaEventRecord(start, stream);
     for (int i = 0; i < iterations; ++i) {
-        cudaGraphLaunch(instance, stream);
+        graph.launch(stream);
     }
     cudaEventRecord(stop, stream);
     cudaEventSynchronize(stop);
@@ -69,8 +122,8 @@ int main()
     // TODO (self-learning #4): repeat the same `iterations` loop launching
     // transpose_shared directly (no graph) and compare per-launch overhead.
 
-    cudaGraphExecDestroy(instance);
-    cudaGraphDestroy(graph);
+    // graph's destructor cleans up m_instance/m_graph automatically — no
+    // manual cudaGraphExecDestroy/cudaGraphDestroy needed here.
     cudaStreamDestroy(stream);
     cudaFree(d_in);
     cudaFree(d_out);
