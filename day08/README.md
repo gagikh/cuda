@@ -24,12 +24,12 @@ https://tschmidt23.github.io/cse599i/CSE%20599%20I%20Accelerated%20Computing%20-
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 
 ## Hands-On Task
-32-order FFT; extract indices of an image above a threshold (use scan).
+32-order FFT; extract indices of a real image (loaded via `cv::imread` into a `cv::cuda::GpuMat`) above a threshold, using warp scan.
 
 ## Self-Learning
 1. Implement warp-level sum reduction using `__shfl_down_sync`.
 2. Implement a simple parallel prefix sum (scan) within a single warp.
-3. Use the scan result to extract (compact) the indices of pixels above a threshold.
+3. Use the scan result to extract (compact) the indices of pixels above a threshold, from a real `GpuMat`-backed image (see Part 2 of [`template.cu`](template.cu)).
 4. (Stretch) Implement a 32-point FFT butterfly using warp shuffles.
 
 ## Code Template

@@ -1,16 +1,21 @@
 // Day 9: Warp-Level Data Exchange
-// Goal: image mean via warp reduction + atomicAdd, and __ballot_sync bit packing.
+// Goal: image mean via warp reduction + atomicAdd, and __ballot_sync bit packing,
+// on a real image loaded via OpenCV.
 //
-// Compile:  nvcc -arch=sm_50 day9_template.cu -o day9
-// Run:      ./day9
+// Compile:  nvcc -arch=sm_50 day09_template.cu -o day09 `pkg-config --cflags --libs opencv4`
+// Run:      ./day09 <path-to-image>
 
 #include <cstdio>
 #include <cuda_runtime.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/cudaarithm.hpp>
 
 // TODO 1: compute image mean.
-// Each thread reads one pixel, warp-reduces the sum (as in Day 8), then lane 0
-// of each warp does atomicAdd into a single global accumulator.
-__global__ void image_sum_kernel(const unsigned char *img, unsigned long long *total, int n)
+// Each thread reads one pixel (indexing rows via `img_step`, the GpuMat
+// pitch -- same idea as Day 5-8), warp-reduces the sum (as in Day 8), then
+// lane 0 of each warp does atomicAdd into a single global accumulator.
+__global__ void image_sum_kernel(const unsigned char *img, size_t img_step,
+                                  int width, int height, unsigned long long *total)
 {
     // TODO
 }
@@ -29,41 +34,56 @@ __global__ void unzip_binary_kernel(const unsigned int *packed, unsigned char *b
     // TODO
 }
 
-// TODO (self-learning #3/#4): pyrDown / pyrUp kernels.
-__global__ void pyr_down_kernel(const unsigned char *in, unsigned char *out,
+// TODO (self-learning #3/#4): pyrDown / pyrUp kernels, operating on GpuMat
+// data/step like image_sum_kernel above.
+__global__ void pyr_down_kernel(const unsigned char *in, size_t in_step,
+                                 unsigned char *out, size_t out_step,
                                  int width, int height)
 {
     // TODO: 5x5 Gaussian blur + sample every other pixel
 }
 
-__global__ void pyr_up_kernel(const unsigned char *in, unsigned char *out,
+__global__ void pyr_up_kernel(const unsigned char *in, size_t in_step,
+                               unsigned char *out, size_t out_step,
                                int width, int height)
 {
     // TODO: insert zeros + 5x5 Gaussian blur (scaled by 4)
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    const int width = 256, height = 256;
-    const int n = width * height;
+    if (argc < 2) {
+        printf("usage: %s <path-to-image>\n", argv[0]);
+        return 1;
+    }
 
-    unsigned char *d_img;
+    cv::Mat h_img = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
+    if (h_img.empty()) {
+        printf("failed to load image: %s\n", argv[1]);
+        return 1;
+    }
+
+    cv::cuda::GpuMat d_img;
+    d_img.upload(h_img);
+
     unsigned long long *d_total;
-    cudaMalloc(&d_img, n);
     cudaMalloc(&d_total, sizeof(unsigned long long));
     cudaMemset(d_total, 0, sizeof(unsigned long long));
 
-    // TODO: fill d_img with test data
-
-    image_sum_kernel<<<(n + 255) / 256, 256>>>(d_img, d_total, n);
+    dim3 block(32, 8); // multiple of warp size on x, matches warp-reduction assumptions
+    dim3 grid((d_img.cols + block.x - 1) / block.x, (d_img.rows + block.y - 1) / block.y);
+    image_sum_kernel<<<grid, block>>>(d_img.ptr<unsigned char>(), d_img.step,
+                                       d_img.cols, d_img.rows, d_total);
     cudaDeviceSynchronize();
 
     unsigned long long h_total = 0;
     cudaMemcpy(&h_total, d_total, sizeof(unsigned long long), cudaMemcpyDeviceToHost);
-    printf("mean = %f\n", static_cast<double>(h_total) / n);
+    printf("mean = %f\n", static_cast<double>(h_total) / (d_img.cols * d_img.rows));
 
-    cudaFree(d_img);
     cudaFree(d_total);
+
+    // TODO (self-learning #3/#4): allocate a half-size GpuMat, run pyr_down_kernel,
+    // cv::imshow the result next to the original.
 
     return 0;
 }
