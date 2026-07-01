@@ -12,6 +12,11 @@
 - Stream dependencies
 - Event-based timing
 
+## Visual
+![Four streams pipelined: each chunk's H2D copy, kernel, and D2H copy staggered so a later chunk's copy overlaps an earlier chunk's compute](async_pipeline.svg)
+
+This is the "double buffering" pattern that `day07/template.cu` is built around: split your data into chunks, put each chunk's copy-in/compute/copy-out on its own stream, and issue them so consecutive chunks overlap. It only works if the host buffers are pinned (Day 4) — otherwise `cudaMemcpyAsync` silently falls back to synchronous behavior.
+
 ## Hands-On Task
 Image transform (continued from Day 6, now with async memory transfers).
 

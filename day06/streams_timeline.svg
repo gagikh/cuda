@@ -1,0 +1,31 @@
+<svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="340" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Default Stream vs. Two Streams</text>
+
+  <text x="40" y="70" fill="#8b949e" font-size="13" font-weight="bold">Single (default) stream — everything serialized</text>
+  <g transform="translate(40,85)">
+    <rect x="0"   y="0" width="120" height="36" rx="4" fill="#1f6feb" opacity="0.85"/>
+    <text x="60" y="23" text-anchor="middle" fill="#e6edf3" font-size="11">H2D copy</text>
+    <rect x="130" y="0" width="240" height="36" rx="4" fill="#2ea043" opacity="0.85"/>
+    <text x="250" y="23" text-anchor="middle" fill="#e6edf3" font-size="11">Kernel</text>
+    <rect x="380" y="0" width="120" height="36" rx="4" fill="#f0883e" opacity="0.85"/>
+    <text x="440" y="23" text-anchor="middle" fill="#e6edf3" font-size="11">D2H copy</text>
+  </g>
+  <text x="40" y="150" fill="#8b949e" font-size="12">Total time = copy + kernel + copy, back to back. Simple, but the GPU sits idle during both copies.</text>
+
+  <text x="40" y="195" fill="#8b949e" font-size="13" font-weight="bold">Two streams — copy of chunk 2 overlaps kernel of chunk 1</text>
+  <g transform="translate(40,210)">
+    <!-- stream 0 -->
+    <text x="-30" y="20" fill="#8b949e" font-size="10">S0</text>
+    <rect x="0"   y="0" width="90" height="30" rx="4" fill="#1f6feb" opacity="0.85"/>
+    <rect x="95"  y="0" width="180" height="30" rx="4" fill="#2ea043" opacity="0.85"/>
+    <rect x="280" y="0" width="90" height="30" rx="4" fill="#f0883e" opacity="0.85"/>
+    <!-- stream 1, shifted to start during S0's kernel -->
+    <text x="-30" y="60" fill="#8b949e" font-size="10">S1</text>
+    <rect x="95"  y="40" width="90" height="30" rx="4" fill="#1f6feb" opacity="0.85"/>
+    <rect x="190" y="40" width="180" height="30" rx="4" fill="#2ea043" opacity="0.85"/>
+    <rect x="375" y="40" width="90" height="30" rx="4" fill="#f0883e" opacity="0.85"/>
+  </g>
+  <text x="40" y="300" fill="#8b949e" font-size="12">S1's H2D copy runs while S0's kernel is still executing — the GPU's copy engine and compute engine work concurrently, shortening total time.</text>
+  <text x="40" y="320" fill="#8b949e" font-size="12">Bracket start/stop with cudaEvents to measure exactly how much overlap you got.</text>
+</svg>

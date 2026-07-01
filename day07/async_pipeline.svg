@@ -1,0 +1,36 @@
+<svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="340" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Chunked Async Pipeline (4 streams)</text>
+  <text x="450" y="56" text-anchor="middle" fill="#8b949e" font-size="12">Each chunk's H2D copy, kernel, and D2H copy run on its own stream, staggered so they overlap</text>
+
+  <g transform="translate(80,80)">
+    <text x="-40" y="20" fill="#8b949e" font-size="11">S0</text>
+    <rect x="0"   y="0" width="70" height="28" rx="4" fill="#1f6feb" opacity="0.9"/>
+    <rect x="75"  y="0" width="70" height="28" rx="4" fill="#2ea043" opacity="0.9"/>
+    <rect x="150" y="0" width="70" height="28" rx="4" fill="#f0883e" opacity="0.9"/>
+
+    <text x="-40" y="60" fill="#8b949e" font-size="11">S1</text>
+    <rect x="75"  y="40" width="70" height="28" rx="4" fill="#1f6feb" opacity="0.9"/>
+    <rect x="150" y="40" width="70" height="28" rx="4" fill="#2ea043" opacity="0.9"/>
+    <rect x="225" y="40" width="70" height="28" rx="4" fill="#f0883e" opacity="0.9"/>
+
+    <text x="-40" y="100" fill="#8b949e" font-size="11">S2</text>
+    <rect x="150" y="80" width="70" height="28" rx="4" fill="#1f6feb" opacity="0.9"/>
+    <rect x="225" y="80" width="70" height="28" rx="4" fill="#2ea043" opacity="0.9"/>
+    <rect x="300" y="80" width="70" height="28" rx="4" fill="#f0883e" opacity="0.9"/>
+
+    <text x="-40" y="140" fill="#8b949e" font-size="11">S3</text>
+    <rect x="225" y="120" width="70" height="28" rx="4" fill="#1f6feb" opacity="0.9"/>
+    <rect x="300" y="120" width="70" height="28" rx="4" fill="#2ea043" opacity="0.9"/>
+    <rect x="375" y="120" width="70" height="28" rx="4" fill="#f0883e" opacity="0.9"/>
+  </g>
+
+  <g transform="translate(560,80)" font-size="12" fill="#e6edf3">
+    <rect x="0" y="0" width="18" height="18" fill="#1f6feb" opacity="0.9"/><text x="26" y="14">H2D copy (async)</text>
+    <rect x="0" y="28" width="18" height="18" fill="#2ea043" opacity="0.9"/><text x="26" y="42">kernel</text>
+    <rect x="0" y="56" width="18" height="18" fill="#f0883e" opacity="0.9"/><text x="26" y="70">D2H copy (async)</text>
+  </g>
+
+  <text x="450" y="270" text-anchor="middle" fill="#8b949e" font-size="12">This staircase pattern is the "double buffering" idea behind day07/template.cu — while stream N computes, stream N+1 is already copying its input in.</text>
+  <text x="450" y="295" text-anchor="middle" fill="#8b949e" font-size="12">Requires pinned host memory (Day 4) for the async copies to actually be non-blocking.</text>
+</svg>

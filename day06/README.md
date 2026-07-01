@@ -16,6 +16,11 @@
 - Bank conflicts in shared memory
 - Streams/events
 
+## Visual
+![Single default stream running H2D copy, kernel, D2H copy back to back, versus two streams where one stream's copy overlaps another stream's kernel](streams_timeline.svg)
+
+The default stream runs everything strictly in order — the GPU sits idle during both copies. Once you use two (or more) streams, the copy engine and the compute engine can work at the same time, so one stream's transfer overlaps another stream's kernel. `cudaEvent`s are how you measure exactly how much time that overlap actually saves.
+
 ## Resources
 https://www.cse.iitd.ac.in/~rijurekha/col730_2022/cudastreams_aug25_aug29.pdf
 https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf

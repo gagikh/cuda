@@ -1,0 +1,58 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="380" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Warp Shuffle Reduction (__shfl_down_sync)</text>
+  <text x="450" y="56" text-anchor="middle" fill="#8b949e" font-size="12">8 of the warp's 32 lanes shown; log2(32) = 5 steps total to sum the whole warp</text>
+
+  <!-- initial values -->
+  <g transform="translate(120,80)" font-size="13">
+    <text x="-60" y="20" fill="#8b949e" font-size="11">offset 4</text>
+    <g fill="#1f6feb" opacity="0.85">
+      <rect x="0" y="0" width="60" height="36" rx="4"/><rect x="80" y="0" width="60" height="36" rx="4"/><rect x="160" y="0" width="60" height="36" rx="4"/><rect x="240" y="0" width="60" height="36" rx="4"/>
+      <rect x="320" y="0" width="60" height="36" rx="4"/><rect x="400" y="0" width="60" height="36" rx="4"/><rect x="480" y="0" width="60" height="36" rx="4"/><rect x="560" y="0" width="60" height="36" rx="4"/>
+    </g>
+    <g fill="#e6edf3" text-anchor="middle">
+      <text x="30" y="23">1</text><text x="110" y="23">1</text><text x="190" y="23">1</text><text x="270" y="23">1</text>
+      <text x="350" y="23">1</text><text x="430" y="23">1</text><text x="510" y="23">1</text><text x="590" y="23">1</text>
+    </g>
+    <!-- arrows offset 4 -->
+    <path d="M30 40 C30 55, 350 55, 350 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+    <path d="M110 40 C110 55, 430 55, 430 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+    <path d="M190 40 C190 55, 510 55, 510 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+    <path d="M270 40 C270 55, 590 55, 590 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+  </g>
+
+  <g transform="translate(120,150)" font-size="13">
+    <text x="-60" y="20" fill="#8b949e" font-size="11">offset 2</text>
+    <g fill="#8957e5" opacity="0.85">
+      <rect x="0" y="0" width="60" height="36" rx="4"/><rect x="80" y="0" width="60" height="36" rx="4"/><rect x="160" y="0" width="60" height="36" rx="4"/><rect x="240" y="0" width="60" height="36" rx="4"/>
+    </g>
+    <g fill="#e6edf3" text-anchor="middle">
+      <text x="30" y="23">2</text><text x="110" y="23">2</text><text x="190" y="23">2</text><text x="270" y="23">2</text>
+    </g>
+    <path d="M30 40 C30 55, 190 55, 190 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+    <path d="M110 40 C110 55, 270 55, 270 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+  </g>
+
+  <g transform="translate(120,220)" font-size="13">
+    <text x="-60" y="20" fill="#8b949e" font-size="11">offset 1</text>
+    <g fill="#2ea043" opacity="0.85">
+      <rect x="0" y="0" width="60" height="36" rx="4"/><rect x="80" y="0" width="60" height="36" rx="4"/>
+    </g>
+    <g fill="#e6edf3" text-anchor="middle">
+      <text x="30" y="23">4</text><text x="110" y="23">4</text>
+    </g>
+    <path d="M30 40 C30 55, 110 55, 110 40" stroke="#f0883e" stroke-width="1.5" fill="none" marker-end="url(#a5)"/>
+  </g>
+
+  <g transform="translate(120,290)" font-size="13">
+    <rect x="0" y="0" width="60" height="36" rx="4" fill="#f0883e"/>
+    <text x="30" y="23" text-anchor="middle" fill="#0d1117" font-weight="bold">8</text>
+    <text x="80" y="23" fill="#e6edf3" font-size="12">← lane 0 now holds the sum of all 8 values shown</text>
+  </g>
+
+  <text x="450" y="355" text-anchor="middle" fill="#8b949e" font-size="12">Each step: val += __shfl_down_sync(mask, val, offset), with offset halving 16 → 8 → 4 → 2 → 1 for a full 32-lane warp.</text>
+
+  <defs>
+    <marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#f0883e"/></marker>
+  </defs>
+</svg>

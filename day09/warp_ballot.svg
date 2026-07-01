@@ -1,0 +1,38 @@
+<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="320" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">__ballot_sync — Packing 32 Lanes into 1 Word</text>
+
+  <text x="40" y="70" fill="#8b949e" font-size="12">32 lanes, each with a boolean predicate (16 shown for space):</text>
+  <g transform="translate(40,85)">
+    <g id="row">
+      <rect x="0"   y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="20" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="46"  y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="66" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="92"  y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="112" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="138" y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="158" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="184" y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="204" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="230" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="250" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="276" y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="296" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="322" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="342" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="368" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="388" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="414" y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="434" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="460" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="480" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="506" y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="526" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="552" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="572" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="598" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="618" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+      <rect x="644" y="0" width="40" height="34" rx="4" fill="#2ea043"/><text x="664" y="22" text-anchor="middle" fill="#0d1117" font-size="12">1</text>
+      <rect x="690" y="0" width="40" height="34" rx="4" fill="#21262d" stroke="#8b949e"/><text x="710" y="22" text-anchor="middle" fill="#8b949e" font-size="12">0</text>
+    </g>
+  </g>
+  <text x="40" y="160" fill="#8b949e" font-size="11">lane:  0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15</text>
+
+  <path d="M400 190 v30" stroke="#f0883e" stroke-width="2" marker-end="url(#a6)"/>
+  <text x="450" y="215" fill="#f0883e" font-size="12">__ballot_sync(mask, predicate)</text>
+
+  <rect x="150" y="240" width="600" height="40" rx="6" fill="#8957e5" opacity="0.9"/>
+  <text x="450" y="266" text-anchor="middle" fill="#e6edf3" font-size="14" font-family="monospace">0b0010 0100 1010 1001 0110 0100 1001 0110</text>
+  <text x="450" y="300" text-anchor="middle" fill="#8b949e" font-size="12">Every lane gets the same 32-bit mask back — bit N set iff lane N's predicate was true. Great for zip/unzip and thread compaction.</text>
+
+  <defs>
+    <marker id="a6" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#f0883e"/></marker>
+  </defs>
+</svg>

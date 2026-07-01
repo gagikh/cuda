@@ -8,6 +8,11 @@
 ## Key Concepts
 Warp level programming and `__syncwarp`, `__activemask`, `__ballot_sync`.
 
+## Visual
+![__ballot_sync collecting each of the warp's 32 boolean predicates into a single 32-bit mask, one bit per lane](warp_ballot.svg)
+
+`__ballot_sync` turns "which lanes satisfy this condition?" into a single 32-bit integer that every lane in the warp receives — bit N set iff lane N's predicate was true. That mask is exactly what you need for this day's zip/unzip task, and it's the building block `__activemask`/`__syncwarp` use internally to know which lanes are still participating.
+
 ## Resources
 https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 
