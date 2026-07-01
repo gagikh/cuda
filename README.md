@@ -143,4 +143,10 @@ The final exam covers both theory and practical knowledge. Key areas include:
 - **Paged vs Pinned Memory** — allocation, performance  
 - **Atomic Ops & Global Memory** — preventing race conditions  
 - **Mapped Memory** — zero-copy, host/device mapping  
-- **Memory Transfers & Async Execution** — `cudaMemcp
+- **Memory Transfers & Async Execution** — `cudaMemcpy`, stream overlap  
+- **Streams & Events** — concurrency, timing, dependencies  
+- **CUDA Graphs** — record, launch, optimize workflows  
+- **Texture Memory** — filtering, binding, addressing  
+- **Bank Conflicts & Cache** — tuning L1/L2, avoiding conflicts
+
+🧠 Tip: Practice writing and debugging CUDA kernels. Focus on memory strategies and performance tuning.
