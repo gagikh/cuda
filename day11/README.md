@@ -58,32 +58,4 @@ struct filter_texture_t
 
 		const auto err = cudaCreateTextureObject(&texture_, &tex_resource, &tex_descr, 0);
 		if (cudaSuccess != err) {
-			cv::error(err, "Texture creation error", __FUNCTION__, __FILE__, __LINE__);
-		}
-	}
-	~filter_texture_t()
-	{
-		if (texture_ != 0)
-		{
-			const auto err = cudaDestroyTextureObject(texture_);
-			if (cudaSuccess != err) {
-				cv::error(err, "Texture destroy error", __FUNCTION__, __FILE__, __LINE__);
-			}
-			texture_ = 0;
-		}
-	}
-// From the kernel
-  tex2D<float4>(texture_, fx, fy);
-```
-
-## Hands-On Task
-Zoom image, rotate.
-
-## Self-Learning
-1. Create a CUDA texture object bound to an image buffer (start from the wrapper above, or a plain array-based texture if you're not using OpenCV).
-2. Implement image zoom (upscale) using `tex2D` bilinear filtering.
-3. Implement image rotation by fetching from inverse-mapped coordinates through the texture.
-4. Compare texture-based zoom against a manual shared-memory bilinear implementation (from Day 5) — which is simpler? Which is faster?
-
-## Code Template
-See [`template.cu`](template.cu) for a skeleton to start from.
+			cv::error(err, "Texture cre

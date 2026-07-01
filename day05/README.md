@@ -20,7 +20,7 @@ http://homepages.math.uic.edu/~jan/mcs572f16/mcs572notes/lec35.html
 Task reference: https://developer.download.nvidia.com/compute/DevZone/C/html_x64/3_Imaging/convolutionSeparable/doc/convolutionSeparable.pdf
 
 ## Reference Implementation
-[`matrix_add/add.cu`](../matrix_add/add.cu) at the repo root uses `cudaMallocPitch` / `cudaMemcpy2D` — a working example of pitched memory referenced in this day's material.
+[`examples/add.cu`](../examples/add.cu) at the repo root uses `cudaMallocPitch` / `cudaMemcpy2D` — a working example of pitched memory referenced in this day's material.
 
 ## Hands-On Task
 Use shared memory for a 2D filter. Final task: 2D Sobel filter implementation on a video stream.
