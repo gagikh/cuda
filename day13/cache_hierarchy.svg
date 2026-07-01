@@ -1,0 +1,30 @@
+<svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="340" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Memory Hierarchy: Size vs. Latency</text>
+
+  <!-- pyramid layers, widest = slowest/biggest -->
+  <g font-size="13" fill="#0d1117" text-anchor="middle" font-weight="bold">
+    <polygon points="400,60 500,60 540,110 360,110" fill="#f0883e"/>
+    <text x="450" y="90">Registers</text>
+
+    <polygon points="360,110 540,110 580,160 320,160" fill="#2ea043"/>
+    <text x="450" y="140">Shared memory / L1 cache</text>
+
+    <polygon points="320,160 580,160 630,210 270,210" fill="#8957e5"/>
+    <text x="450" y="190">L2 cache</text>
+
+    <polygon points="270,210 630,210 690,260 210,260" fill="#1f6feb"/>
+    <text x="450" y="240" fill="#e6edf3">Global memory (VRAM)</text>
+  </g>
+
+  <text x="700" y="90" fill="#8b949e" font-size="12">fastest</text>
+  <text x="700" y="245" fill="#8b949e" font-size="12">slowest, largest</text>
+  <path d="M700 100 v130" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <text x="450" y="295" text-anchor="middle" fill="#8b949e" font-size="12">`__ldg()` routes a global-memory read through the read-only data cache path — a hint that the location won't change during the kernel.</text>
+  <text x="450" y="317" text-anchor="middle" fill="#8b949e" font-size="12">Swizzling shared memory and picking L2 persistence hints are both about keeping hot data as high in this pyramid as possible.</text>
+
+  <defs>
+    <marker id="a9" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8b949e"/></marker>
+  </defs>
+</svg>

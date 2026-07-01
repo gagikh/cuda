@@ -1,0 +1,30 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="380" fill="#0d1117"/>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="bold">Monte Carlo π Estimation</text>
+
+  <!-- unit square with quarter circle -->
+  <g transform="translate(300,60)">
+    <rect x="0" y="0" width="220" height="220" fill="#161b22" stroke="#8b949e" stroke-width="2"/>
+    <path d="M0,220 A220,220 0 0 0 220,0 L0,0 Z" fill="#1f6feb" opacity="0.25" stroke="#1f6feb" stroke-width="2"/>
+
+    <!-- scattered random points, some inside circle some outside -->
+    <g fill="#2ea043">
+      <circle cx="40" cy="180" r="3"/><circle cx="60" cy="150" r="3"/><circle cx="90" cy="190" r="3"/><circle cx="120" cy="140" r="3"/>
+      <circle cx="150" cy="170" r="3"/><circle cx="30" cy="90" r="3"/><circle cx="80" cy="60" r="3"/><circle cx="140" cy="90" r="3"/>
+      <circle cx="170" cy="130" r="3"/><circle cx="60" cy="40" r="3"/><circle cx="110" cy="30" r="3"/><circle cx="160" cy="60" r="3"/>
+    </g>
+    <g fill="#f85149">
+      <circle cx="200" cy="200" r="3"/><circle cx="180" cy="20" r="3"/><circle cx="20" cy="15" r="3"/><circle cx="205" cy="150" r="3"/>
+      <circle cx="195" cy="40" r="3"/><circle cx="15" cy="205" r="3"/>
+    </g>
+    <text x="110" y="-15" text-anchor="middle" fill="#e6edf3" font-size="12">unit square, quarter circle radius 1</text>
+  </g>
+
+  <g font-size="13" fill="#e6edf3">
+    <circle cx="640" cy="130" r="5" fill="#2ea043"/><text x="655" y="135">x² + y² ≤ 1 → inside circle</text>
+    <circle cx="640" cy="155" r="5" fill="#f85149"/><text x="655" y="160">x² + y² &gt; 1 → outside circle</text>
+  </g>
+
+  <text x="450" y="320" text-anchor="middle" fill="#8b949e" font-size="13" font-family="monospace">π ≈ 4 × (points inside circle) / (total points)</text>
+  <text x="450" y="350" text-anchor="middle" fill="#8b949e" font-size="12">Each thread draws its own random (x,y) pairs with cuRAND, counts hits, and atomicAdds into a shared counter — same reduction pattern as Day 9.</text>
+</svg>

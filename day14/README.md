@@ -13,6 +13,11 @@
 - Monte Carlo π estimation
 - CUDA recursive kernel launch (dynamic parallelism)
 
+## Visual
+![Monte Carlo pi estimation: random points scattered in a unit square, colored by whether they land inside or outside the inscribed quarter circle, with the pi ≈ 4 × inside/total formula](monte_carlo_pi.svg)
+
+Each thread generates its own stream of random points with cuRAND, tests each one against the circle, and contributes its count toward a shared total — the same warp-reduction + atomicAdd pattern from Day 9, just applied to random sampling instead of image data.
+
 ## Hands-On Task
 Estimate π using Monte Carlo sampling with cuRAND.
 

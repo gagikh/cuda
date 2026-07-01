@@ -12,6 +12,11 @@
 - Persistent cache for compiled programs and configuration
 - `__ldg` forces the compiler to consider memory read-only
 
+## Visual
+![Memory hierarchy pyramid: registers (fastest, smallest) at top, then shared memory / L1, then L2, then global memory / VRAM (slowest, largest) at bottom](cache_hierarchy.svg)
+
+Every optimization this day is about the same idea: keep frequently-read data as high in this pyramid as possible, for as long as possible. `__ldg()`, shared-memory swizzling, and L2 persistence hints are three different tools for the same goal.
+
 ## Resources
 https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/
 

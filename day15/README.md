@@ -10,6 +10,11 @@
 - Stream-ordered allocation semantics
 - Memory pools
 
+## Visual
+![Classic cudaMalloc/cudaFree act as implicit device-wide sync points breaking stream concurrency, while cudaMallocAsync/cudaFreeAsync are ordered within a stream and reuse memory from a pool without a device-wide sync](stream_ordered_alloc.svg)
+
+`cudaMalloc`/`cudaFree` are safe but blunt — they force the whole device to sync, which quietly kills the overlap you worked to set up in Day 6/7. The async versions are ordered within a single stream instead, so allocation composes with everything else: overlapping streams, and even capture into a CUDA graph (Day 12).
+
 ## Resources
 https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/stream-ordered-memory-allocation.html
 
