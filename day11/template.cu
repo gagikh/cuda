@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 // RAII texture wrapper, same shape as the filter_texture_t in the README's
 // Code Walkthrough -- genericized to a raw pitched device pointer, so it
@@ -39,14 +40,20 @@ struct filter_texture_t
         //       texDesc.readMode = cudaReadModeNormalizedFloat;
         //       texDesc.normalizedCoords = 0;
 
-        // TODO: const auto err = cudaCreateTextureObject(&texture_, &resDesc, &texDesc, nullptr);
-        //       if (cudaSuccess != err) { /* handle error */ }
+        // TODO: CUDA_CHECK(cudaCreateTextureObject(&texture_, &resDesc, &texDesc, nullptr));
     }
 
     ~filter_texture_t()
     {
         if (texture_ != 0) {
-            cudaDestroyTextureObject(texture_);
+            // Not CUDA_CHECK'd -- destructors shouldn't call exit() on failure
+            // (CUDA_CHECK does). Just report it: throwing from a destructor,
+            // or during stack unwinding from another exception, is its own
+            // hazard, and this is cleanup code, not a place to introduce one.
+            cudaError_t err = cudaDestroyTextureObject(texture_);
+            if (err != cudaSuccess) {
+                fprintf(stderr, "cudaDestroyTextureObject failed: %s\n", cudaGetErrorString(err));
+            }
             texture_ = 0;
         }
     }
@@ -102,7 +109,8 @@ int main(int argc, char **argv)
     dim3 block(16, 16);
     dim3 grid(cv::cudev::divUp(out_width, block.x), cv::cudev::divUp(out_height, block.y));
     zoom_kernel<<<grid, block>>>(tex, d_out.ptr<unsigned char>(), d_out.step, out_width, out_height, scale);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     // tex's destructor calls cudaDestroyTextureObject automatically
     cv::Mat h_out;

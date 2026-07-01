@@ -11,6 +11,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudafeatures2d.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 #define TILE_DIM 16
 
@@ -60,9 +61,9 @@ int main(int argc, char **argv)
     size_t bytes = n * n * sizeof(float);
 
     float *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, bytes);
-    cudaMalloc(&d_B, bytes);
-    cudaMalloc(&d_C, bytes);
+    CUDA_CHECK(cudaMalloc(&d_A, bytes));
+    CUDA_CHECK(cudaMalloc(&d_B, bytes));
+    CUDA_CHECK(cudaMalloc(&d_C, bytes));
 
     // TODO: fill d_A, d_B with test data
 
@@ -70,11 +71,12 @@ int main(int argc, char **argv)
     dim3 grid(cv::cudev::divUp(n, TILE_DIM), cv::cudev::divUp(n, TILE_DIM));
 
     matmul_naive<<<grid, block>>>(d_A, d_B, d_C, n);
-    cudaDeviceSynchronize();
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
+    CUDA_CHECK(cudaFree(d_A));
+    CUDA_CHECK(cudaFree(d_B));
+    CUDA_CHECK(cudaFree(d_C));
 
     // --- Part 2: Hamming distance matching on real ORB descriptors ---
     if (argc < 2) {
@@ -116,20 +118,21 @@ int main(int argc, char **argv)
     }
 
     unsigned int *d_words;
-    cudaMalloc(&d_words, h_words.size() * sizeof(unsigned int));
-    cudaMemcpy(d_words, h_words.data(), h_words.size() * sizeof(unsigned int), cudaMemcpyHostToDevice);
+    CUDA_CHECK(cudaMalloc(&d_words, h_words.size() * sizeof(unsigned int)));
+    CUDA_CHECK(cudaMemcpy(d_words, h_words.data(), h_words.size() * sizeof(unsigned int), cudaMemcpyHostToDevice));
 
     int *d_best_match;
-    cudaMalloc(&d_best_match, h_words.size() * sizeof(int));
+    CUDA_CHECK(cudaMalloc(&d_best_match, h_words.size() * sizeof(int)));
 
     // Self-match as a sanity check: matching a descriptor set against itself
     // should give best_match_idx[i] == i with distance 0.
     const int num_desc = static_cast<int>(h_words.size());
-    match_descriptors<<<(num_desc + 255) / 256, 256>>>(d_words, num_desc, d_words, num_desc, d_best_match);
-    cudaDeviceSynchronize();
+    match_descriptors<<<cv::cudev::divUp(num_desc, 256), 256>>>(d_words, num_desc, d_words, num_desc, d_best_match);
+    CUDA_CHECK_LAST_ERROR();
+    CUDA_CHECK(cudaDeviceSynchronize());
 
-    cudaFree(d_words);
-    cudaFree(d_best_match);
+    CUDA_CHECK(cudaFree(d_words));
+    CUDA_CHECK(cudaFree(d_best_match));
 
     return 0;
 }

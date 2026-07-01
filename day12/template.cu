@@ -10,6 +10,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudev.hpp>
+#include "../common/cuda_check.h"
 
 #define TILE_DIM 32
 
@@ -46,12 +47,17 @@ struct graph_t
 
     ~graph_t()
     {
+        // Not CUDA_CHECK'd -- CUDA_CHECK calls exit() on failure, which is
+        // not something a destructor should ever do (especially not during
+        // stack unwinding from another exception). Report and move on.
         if (m_instance) {
-            cudaGraphExecDestroy(m_instance);
+            cudaError_t err = cudaGraphExecDestroy(m_instance);
+            if (err != cudaSuccess) fprintf(stderr, "cudaGraphExecDestroy failed: %s\n", cudaGetErrorString(err));
             m_instance = nullptr;
         }
         if (m_graph) {
-            cudaGraphDestroy(m_graph);
+            cudaError_t err = cudaGraphDestroy(m_graph);
+            if (err != cudaSuccess) fprintf(stderr, "cudaGraphDestroy failed: %s\n", cudaGetErrorString(err));
             m_graph = nullptr;
         }
     }
@@ -67,7 +73,7 @@ struct graph_t
     // call is recorded into the graph instead of actually executing.
     void start_capture(cudaStream_t stream)
     {
-        // TODO: cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
+        // TODO: CUDA_CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
         // TODO: m_status = graph_status_t::CAPTURING;
     }
 
@@ -75,15 +81,15 @@ struct graph_t
     // Set m_status to GRAPH_CREATED when done.
     void create_graph(cudaStream_t stream)
     {
-        // TODO: cudaStreamEndCapture(stream, &m_graph);
-        // TODO: cudaGraphInstantiate(&m_instance, m_graph, nullptr, nullptr, 0);
+        // TODO: CUDA_CHECK(cudaStreamEndCapture(stream, &m_graph));
+        // TODO: CUDA_CHECK(cudaGraphInstantiate(&m_instance, m_graph, nullptr, nullptr, 0));
         // TODO: m_status = graph_status_t::GRAPH_CREATED;
     }
 
     // TODO C: replay the captured graph on `stream`.
     void launch(cudaStream_t stream)
     {
-        // TODO: cudaGraphLaunch(m_instance, stream);
+        // TODO: CUDA_CHECK(cudaGraphLaunch(m_instance, stream));
     }
 };
 
@@ -108,7 +114,7 @@ int main(int argc, char **argv)
     dim3 grid(cv::cudev::divUp(d_in.cols, TILE_DIM), cv::cudev::divUp(d_in.rows, TILE_DIM));
 
     cudaStream_t stream;
-    cudaStreamCreate(&stream);
+    CUDA_CHECK(cudaStreamCreate(&stream));
 
     // --- Capture a graph containing the transpose kernel ---
     graph_t graph;
@@ -116,27 +122,28 @@ int main(int argc, char **argv)
     transpose_shared<<<grid, block, 0, stream>>>(d_in.ptr<unsigned char>(), d_in.step,
                                                   d_out.ptr<unsigned char>(), d_out.step,
                                                   d_in.cols, d_in.rows);
+    CUDA_CHECK_LAST_ERROR();
     // TODO: add more ops here (e.g. a second kernel) to make graph capture worthwhile
     graph.create_graph(stream);
 
     // --- Launch the captured graph many times and time it ---
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
 
     const int iterations = 1000;
-    cudaEventRecord(start, stream);
+    CUDA_CHECK(cudaEventRecord(start, stream));
     for (int i = 0; i < iterations; ++i) {
         graph.launch(stream);
     }
-    cudaEventRecord(stop, stream);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK(cudaEventRecord(stop, stream));
+    CUDA_CHECK(cudaEventSynchronize(stop));
 
     float ms = 0.0f;
-    cudaEventElapsedTime(&ms, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
     printf("graph: %d launches in %.3f ms (%.4f ms/launch)\n", iterations, ms, ms / iterations);
 
-    cudaStreamSynchronize(stream);
+    CUDA_CHECK(cudaStreamSynchronize(stream));
     cv::Mat h_out;
     d_out.download(h_out);
     cv::imshow("input", h_img);
@@ -148,7 +155,7 @@ int main(int argc, char **argv)
 
     // graph's destructor cleans up m_instance/m_graph automatically — no
     // manual cudaGraphExecDestroy/cudaGraphDestroy needed here.
-    cudaStreamDestroy(stream);
+    CUDA_CHECK(cudaStreamDestroy(stream));
 
     return 0;
 }
