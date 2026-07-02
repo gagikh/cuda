@@ -4,7 +4,8 @@
 **University**: Armenian Slavonic University – Lectures & Labs (15 Days)  
 **Instructor**: Gagik Hakobyan
 
-📖 [Glossary](GLOSSARY.md) — every term this course uses, alphabetical, tagged with the day it's introduced.
+📖 [Glossary](GLOSSARY.md) — every term this course uses, alphabetical, tagged with the day it's introduced.  
+📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.
 
 ---
 
