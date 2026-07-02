@@ -84,17 +84,17 @@ You can influence this beyond hoping the LRU approximation guesses right, at two
 
 **Instruction-level: load/store cache operators.** Every individual global load or store can carry its own cache hint, exposed as intrinsics — finer-grained than a whole-buffer policy window, down to a single access:
 
-| Intrinsic | PTX | Meaning |
-|---|---|---|
-| `__ldca(ptr)` | `ld.global.ca` | Cache at all levels — the default; expect to reuse this. |
-| `__ldcg(ptr)` | `ld.global.cg` | Cache at L2 only, bypass L1 — data you're streaming through once yourself, but another warp/block might still touch. |
-| `__ldcs(ptr)` | `ld.global.cs` | Cache streaming — likely touched once; hints the replacement policy to evict this line *first*, ahead of LRU-preferred lines. |
-| `__ldlu(ptr)` | `ld.global.lu` | Last use — you are the last reader of this address; the line can be invalidated right after, freeing space immediately instead of waiting for LRU to get around to it. |
-| `__ldcv(ptr)` | `ld.global.cv` | Don't trust the cache — re-fetch from memory every time (for values another agent, e.g. the host, may have changed). |
-| `__stwb(ptr, val)` | `st.global.wb` | Write-back — the default; write to cache, flush to memory later. |
-| `__stcg(ptr, val)` | `st.global.cg` | Cache at L2 only, bypass L1 on the write. |
-| `__stcs(ptr, val)` | `st.global.cs` | Streaming write — evict-first hint, for output you're writing once and won't re-read. |
-| `__stwt(ptr, val)` | `st.global.wt` | Write-through — send straight to memory (through L2) rather than lingering in cache. |
+| Intrinsic | PTX | What actually happens | When to reach for it |
+|---|---|---|---|
+| `__ldca(ptr)` | `ld.global.ca` | Cached in **both L1 and L2**, subject to the normal approximate-LRU policy — treated exactly like an ordinary dereference. | This is the compiler's default for a plain `*ptr`. Use it explicitly only to make intent obvious in code that's otherwise full of the other hints below. |
+| `__ldcg(ptr)` | `ld.global.cg` | Cached **in L2 only — bypasses L1 entirely** on the way in. | You personally won't reuse this value again (so it's not worth L1 space, which is small and per-SM), but a *different* block or SM might read the same address soon — L2 is shared chip-wide, so it still pays off there. |
+| `__ldcs(ptr)` | `ld.global.cs` | Cached normally (L1 and L2), but the line is tagged **evict-first** — the replacement policy discards it ahead of ordinary LRU-tracked lines the moment space is needed, even though it was just loaded. | You'll touch this address exactly once, ever, in this kernel. Keeps one-shot data from shouldering out lines that genuinely get reused — e.g. reading a large input array you only sweep through once. |
+| `__ldlu(ptr)` | `ld.global.lu` | If the line happens to be in cache, it's **invalidated immediately after this read** — its slot is freed right away rather than aging out under LRU. | You know with certainty this is the *last* read of this address for the rest of the kernel (e.g. the final pass of a multi-stage reduction). Frees cache capacity sooner than `__ldcs` would. |
+| `__ldcv(ptr)` | `ld.global.cv` | Treated as **volatile** — bypasses/invalidates any cached copy and re-reads from memory every single time, never trusting what's in L1/L2. | Correctness, not performance: another agent (the host, another stream, another GPU) may have written this address since you last read it — e.g. polling a flag the CPU sets while your kernel is running. |
+| `__stwb(ptr, val)` | `st.global.wb` | **Write-back** (default): the value lands in cache, and only gets flushed out to global memory later, when the line is evicted. Repeated writes to the same address before eviction can be absorbed without each one hitting memory. | Ordinary output you might read back later in the same kernel, or that benefits from write-coalescing. |
+| `__stcg(ptr, val)` | `st.global.cg` | Write **bypasses L1, lands in L2 only** — mirrors `__ldcg` for stores. | Writing intermediate results you won't re-read yourself, but that another block might soon — avoid burning your own SM's L1 space on it. |
+| `__stcs(ptr, val)` | `st.global.cs` | Cached but flagged **evict-first**, same idea as `__ldcs` applied to a store. | Final output written once, never read back inside the kernel — the Day 13 `tiled_filter` output pixel is the textbook example. |
+| `__stwt(ptr, val)` | `st.global.wt` | **Write-through**: sent straight to memory (via L2) immediately, instead of sitting dirty in a write-back cache line. | You need the write visible to other kernels/streams/the host as soon as possible, or want to avoid holding a dirty line at all — trades away write-coalescing for earlier visibility. |
 
 This is a *different* mechanism from `__ldg()`: `__ldg` changes **which cache** a read goes through (the read-only/texture cache instead of the normal L1/L2 path — see Day 11 and the Texture cache entry below). The operators above stay on the normal L1/L2 path and instead change **how long the replacement policy tries to keep the line around**. They're complementary, not alternatives — you could `__ldg()` a read-only buffer *and* mark it streaming if you know each element is touched exactly once.
 
@@ -124,20 +124,4 @@ A practical pattern from this week's material: in a kernel like Day 13's `tiled_
 |---|---|
 | `regsPerMultiprocessor` / `regsPerBlock` | Register file size — the budget behind register spilling and occupancy |
 | `sharedMemPerBlock` / max shared mem per SM | Shared memory / L1 budget (Day 5, Day 13) |
-| `totalConstMem` | Constant memory size (and indirectly, headroom for kernel parameters) |
-| `l2CacheSize` / `persistingL2CacheMaxSize` | L2 cache size and how much of it you can pin (Day 13) |
-| `warpSize` | Threads per warp — almost always 32, never hardcode it anyway |
-| `maxThreadsPerMultiProcessor` | Ceiling on resident warps per SM — the other half of the occupancy equation |
-| `singleToDoublePrecisionPerfRatio` | How many FP32 units exist per FP64 unit |
-| tensor cores per SM | Whether/how much cuBLAS-style matrix hardware you have (Day 14) |
-| `memoryClockRate` / `memoryBusWidth` | Theoretical global-memory bandwidth — the ceiling nothing beats |
-
-Texture cache size specifically isn't exposed through `cudaDeviceProp` the way the others are — NVIDIA doesn't publish it as a queryable attribute, so there's no row for it here.
-
-## Where This Connects in the Course
-- **Day 1** — `report_device_capabilities()` surfaces the raw numbers this document explains; `--keep` and `-Xptxas -v` are how you inspect the PTX/SASS discussed above.
-- **Day 3** — warp scheduling and the instruction pipeline (fetch from I-cache, dispatch to a partition) are the *behavior*; this document is the *hardware* behind it.
-- **Day 4** — pinned/unified memory is about the host↔device link; this document is what's on the far side of that link, inside the device.
-- **Day 5, Day 13** — shared memory, bank conflicts, `__ldg`, LRU/cache-operator hints, and L2 persistence hints are all techniques for working *with* the memory organization described here, not around it.
-- **Day 8, Day 9, Day 10** — `__shfl_*`, `__ballot_sync`, `__popc`, and `atomicAdd` are all single instructions once you get past the intrinsic wrapper — the instruction table above shows what they actually compile to.
-- **Day 11** — texture sampling and bilinear filtering are backed by the texture cache and texture unit described above, not by L1.
+| `totalConstMem` | Constant memory size (and indirectly, 
