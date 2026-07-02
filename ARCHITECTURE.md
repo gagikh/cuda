@@ -23,6 +23,57 @@ Exact unit counts differ by architecture — this describes the general layout e
 
 **Load/Store (LD/ST) units.** Handle address calculation and issue for memory instructions — every `cudaMalloc`'d pointer dereference in your kernel goes through these on its way to shared memory, L1, L2, or global memory.
 
+## From C/C++ to SASS: Instruction Reference
+
+Day 1 explained that nvcc compiles your device code to PTX (virtual assembly), then `ptxas` assembles that into SASS (real machine code) for one specific architecture. This section makes that concrete: what common C/C++ operations actually turn into, and how to see it yourself.
+
+**How to inspect real output for your own kernel** (Day 1's `--keep` flag, taken further):
+```bash
+nvcc --keep -arch=sm_75 day01_template.cu -o day01   # .ptx lands next to your output
+cuobjdump --dump-ptx  day01                           # PTX pulled back out of the binary
+cuobjdump --dump-sass day01                           # SASS pulled back out of the binary
+nvdisasm day01.cubin                                  # alternative SASS disassembler, if you kept the .cubin
+```
+
+**Common operations, roughly Ampere-generation SASS mnemonics (exact names shift slightly by architecture):**
+
+| C/C++ | PTX | SASS (typical) | Notes |
+|---|---|---|---|
+| `c = a * b + d;` | `fma.rn.f32` | `FFMA` | The compiler *fuses* multiply+add into one instruction automatically — you don't need to ask. Disable with `-fmad=false` if you need strict IEEE separate rounding. |
+| `a + b` | `add.f32` | `FADD` | |
+| `a * b` | `mul.f32` | `FMUL` | |
+| `a / b` | `div.rn.f32` | short instruction sequence, not one opcode | Division isn't a single hardware instruction — it's a reciprocal approximation (via the SFU) refined by a couple of Newton-Raphson steps. This is *why* division is much slower than multiply/add. |
+| `sqrtf(a)` | `sqrt.rn.f32` | `MUFU.RSQ` + refinement | Same story as division: approximate via SFU, then refined. `rsqrtf()` skips the refinement for a cheaper, less precise result. |
+| `fmodf(a, b)` | no single opcode | `FMUL`/`FFMA`/`FADD` sequence | There's no hardware "modulo" instruction; the compiler expands it into a short sequence (roughly: `a - trunc(a/b) * b`). Worth knowing before you assume it's as cheap as `+`. |
+| `__ldg(&x)` (Day 13) | `ld.global.nc.f32` | `LDG.E.CONSTANT` | The `.nc`/`CONSTANT` qualifier routes the read through the read-only data cache path instead of the normal L1/L2 path. |
+| shared-memory read/write (Day 5) | `ld.shared` / `st.shared` | `LDS` / `STS` | Distinct opcodes from global loads/stores (`LDG`/`STG`) — the hardware genuinely treats shared memory as a separate address space. |
+| `__syncthreads()` | `bar.sync 0` | `BAR.SYNC` | A block-wide barrier instruction — every thread in the block must reach it before any can proceed past it. |
+| `__shfl_down_sync(...)` (Day 8) | `shfl.sync.down.b32` | `SHFL.DOWN` | Register-to-register exchange within a warp, no memory traffic at all. |
+| `atomicAdd(...)` (Day 9) | `atom.global.add.u32` | `ATOM(G).ADD` / `RED.ADD` | Resolved at L2, not the issuing SM — see the L2 section below. |
+| `tex2D(...)` (Day 11) | `tex.2d.v4.f32.f32` | `TEX` | Dedicated texture-unit instruction, separate from `LDG`. |
+| `__popc(x)` (Day 10) | `popc.b32` | `POPC` | Population count (number of set bits) in one instruction — what makes Hamming distance cheap. |
+
+**How to actually reach for a specific instruction from C/C++:**
+
+1. **Just write normal arithmetic, most of the time.** `a * b + c` becomes a single `FFMA` automatically. Fighting the compiler to "force" an instruction it would already generate is wasted effort — check the SASS first (via `cuobjdump`) before assuming you need to intervene.
+
+2. **Device math intrinsics, when you need explicit control over rounding or approximation.** CUDA's math API has explicit-rounding-mode versions of the basic ops — `__fadd_rn`, `__fmul_rn`, `__fmaf_rn`, `__dadd_rn`, ... — where `_rn`/`_rz`/`_ru`/`_rd` mean round-to-nearest / toward-zero / up / down. There are also fast, approximate SFU-routed versions — `__expf`, `__logf`, `__sinf`, `__fdividef` — which is what `--use_fast_math` swaps your plain calls for globally, if you'd rather opt individual call sites in instead:
+   ```c++
+   float precise = __fmaf_rn(a, b, c);      // explicit FMA, round-to-nearest
+   float fast    = __fdividef(a, b);        // fast approximate division, via SFU
+   ```
+
+3. **Inline PTX assembly, for the rare case with no intrinsic at all.** An escape hatch, not a first resort:
+   ```c++
+   __device__ int add_via_ptx(int a, int b)
+   {
+       int result;
+       asm("add.s32 %0, %1, %2;" : "=r"(result) : "r"(a), "r"(b));
+       return result;
+   }
+   ```
+   `%0`/`%1`/`%2` are placeholders bound to the output/input operands listed after the colons; `"r"` means a 32-bit register. You'll see this pattern in some CUDA library source but rarely need it yourself — nearly everything has an intrinsic already.
+
 ## Memory Organization
 
 **Shared memory / L1 data cache.** On modern architectures these are the *same* physical on-chip SRAM, split by a configurable ratio (some GPUs let you bias this via `cudaFuncAttributePreferredSharedMemoryCarveout`). Shared memory (Day 5) is what you explicitly manage with `__shared__` arrays; L1 is what automatically caches your kernel's global-memory reads/writes without you asking. Both live per-SM — not shared across SMs — and both disappear when the block that owns them finishes. Size available via `sharedMemPerBlock` (per-block limit) and the `cudaDevAttrMaxSharedMemoryPerMultiprocessor` attribute (the whole SM's budget, shared across all resident blocks) in `report_device_capabilities()`.
@@ -54,8 +105,8 @@ Exact unit counts differ by architecture — this describes the general layout e
 | `memoryClockRate` / `memoryBusWidth` | Theoretical global-memory bandwidth — the ceiling nothing beats |
 
 ## Where This Connects in the Course
-- **Day 1** — `report_device_capabilities()` surfaces the raw numbers this document explains.
+- **Day 1** — `report_device_capabilities()` surfaces the raw numbers this document explains; `--keep` and `-Xptxas -v` are how you inspect the PTX/SASS discussed above.
 - **Day 3** — warp scheduling and the instruction pipeline (fetch from I-cache, dispatch to a partition) are the *behavior*; this document is the *hardware* behind it.
 - **Day 4** — pinned/unified memory is about the host↔device link; this document is what's on the far side of that link, inside the device.
 - **Day 5, Day 13** — shared memory, bank conflicts, `__ldg`, and L2 persistence hints are all techniques for working *with* the memory organization described here, not around it.
-- **Day 9** — `atomicAdd` contention costs make a lot more sense once you know atomics resolve at L2, not at the SM.
+- **Day 8, Day 9, Day 10** — `__shfl_*`, `__ballot_sync`, `__popc`, and `atomicAdd` are all single instructions once you get past the intrinsic wrapper — the instruction table above shows what they actually compile to.
