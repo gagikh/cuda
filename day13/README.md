@@ -44,4 +44,8 @@ Optimize transform (the Day 6 image transform kernel), on a real image loaded vi
 No answers given — these are for you to reason through, or discuss with a classmate/instructor.
 
 1. Why does `__ldg` only help for data the kernel treats as read-only?
-2. Why does `col ^ row` swizzling need the row width to be a power of two to cle
+2. Why does `col ^ row` swizzling need the row width to be a power of two to cleanly avoid bank conflicts?
+3. What's the tradeoff L2 persistence hints (`cudaAccessPolicyWindow`) are making — and when could they make performance *worse* instead of better?
+
+## Code Template
+See [`template.cu`](template.cu) for a skeleton to start from.
