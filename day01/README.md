@@ -33,6 +33,8 @@ A few fields worth paying attention to now, and which day they matter for:
 - **Tensor cores per SM** — relevant when you reach cuBLAS/cuFFT on Day 14; 0 on anything older than Volta (compute capability < 7.0).
 - **Theoretical memory bandwidth** — the ceiling nothing you write can beat; a useful number to compare your actual measured throughput against once you start timing kernels (Day 6 onward).
 
+For what's actually *inside* an SM behind these numbers — registers, ALUs, FPUs, tensor cores, warp schedulers, and how shared/constant/L2/global memory fit together — see [ARCHITECTURE.md](../ARCHITECTURE.md).
+
 ## Error Checking & Debugging
 CUDA fails quietly by default, which is the single biggest source of "my kernel ran but nothing happened" confusion for beginners. Fixing that starts today.
 
@@ -127,8 +129,4 @@ No answers given — these are for you to reason through, or discuss with a clas
 
 1. What happens if you launch a kernel with more than 1024 threads per block and never call `CUDA_CHECK_LAST_ERROR()`? Why doesn't the program crash outright?
 2. Why does nvcc compile device code to PTX first instead of straight to machine code?
-3. If your program is compiled with `-arch=sm_75` but run on a GPU with an older compute capability, what happens, and why is that different from a normal C++ program targeting the wrong CPU?
-4. Why can't a kernel launch (`<<<...>>>`) return a `cudaError_t` the way `cudaMalloc` does?
-
-## Code Template
-See [`template.cu`](template.cu) for a skeleton to start from.
+3. If your program is compiled with `-arch=sm_75` but run on a GPU with an older compute capability, what happens, and why is that different from a no

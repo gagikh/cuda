@@ -5,7 +5,8 @@
 **Instructor**: Gagik Hakobyan
 
 📖 [Glossary](GLOSSARY.md) — every term this course uses, alphabetical, tagged with the day it's introduced.  
-📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.
+📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.  
+🖥️ [Architecture Deep Dive](ARCHITECTURE.md) — what's actually inside an SM: registers, ALUs, FPUs, tensor cores, and how shared/constant/L2/global memory are organized.
 
 ---
 

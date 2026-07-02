@@ -21,6 +21,8 @@ Every optimization this day is about the same idea: keep frequently-read data as
 
 Padding (Day 5) fixes bank conflicts by wasting a column so the row stride is no longer a multiple of the bank count. Swizzling fixes the same problem without wasting any memory: index shared memory as `tile[row][col ^ row]` instead of `tile[row][col]`. Because XOR is its own inverse, writing and reading with the same swizzle formula is still correct — you just physically scatter each logical column across every bank instead of pinning it to one.
 
+For the hardware behind this pyramid — why shared memory and L1 are the same physical SRAM, why L2 is shared across every SM instead of being per-SM like L1, and where atomic operations actually get resolved — see [ARCHITECTURE.md](../ARCHITECTURE.md).
+
 ## Resources
 https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/
 
@@ -42,8 +44,4 @@ Optimize transform (the Day 6 image transform kernel), on a real image loaded vi
 No answers given — these are for you to reason through, or discuss with a classmate/instructor.
 
 1. Why does `__ldg` only help for data the kernel treats as read-only?
-2. Why does `col ^ row` swizzling need the row width to be a power of two to cleanly avoid bank conflicts?
-3. What's the tradeoff L2 persistence hints (`cudaAccessPolicyWindow`) are making — and when could they make performance *worse* instead of better?
-
-## Code Template
-See [`template.cu`](template.cu) for a skeleton to start from.
+2. Why does `col ^ row` swizzling need the row width to be a power of two to cle
