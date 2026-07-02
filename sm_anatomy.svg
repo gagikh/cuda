@@ -129,4 +129,10 @@
 
   <path d="M500 630 v25" stroke="#8b949e" stroke-width="2" marker-end="url(#a10)"/>
 
-  <rect x="250" y="660" width="500" height="45" rx="8" fill="#161b22" stroke="#8b949e" st
+  <rect x="250" y="660" width="500" height="45" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="2"/>
+  <text x="500" y="688" text-anchor="middle" fill="#e6edf3" font-size="13">Global Memory (VRAM / DRAM) — off-chip, largest, slowest, visible to every SM</text>
+
+  <defs>
+    <marker id="a10" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8b949e"/></marker>
+  </defs>
+</svg>
