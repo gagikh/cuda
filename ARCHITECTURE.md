@@ -124,4 +124,20 @@ A practical pattern from this week's material: in a kernel like Day 13's `tiled_
 |---|---|
 | `regsPerMultiprocessor` / `regsPerBlock` | Register file size — the budget behind register spilling and occupancy |
 | `sharedMemPerBlock` / max shared mem per SM | Shared memory / L1 budget (Day 5, Day 13) |
-| `totalConstMem` | Constant memory size (and indirectly, 
+| `totalConstMem` | Constant memory size (and indirectly, headroom for kernel parameters) |
+| `l2CacheSize` / `persistingL2CacheMaxSize` | L2 cache size and how much of it you can pin (Day 13) |
+| `warpSize` | Threads per warp — almost always 32, never hardcode it anyway |
+| `maxThreadsPerMultiProcessor` | Ceiling on resident warps per SM — the other half of the occupancy equation |
+| `singleToDoublePrecisionPerfRatio` | How many FP32 units exist per FP64 unit |
+| tensor cores per SM | Whether/how much cuBLAS-style matrix hardware you have (Day 14) |
+| `memoryClockRate` / `memoryBusWidth` | Theoretical global-memory bandwidth — the ceiling nothing beats |
+
+Texture cache size specifically isn't exposed through `cudaDeviceProp` the way the others are — NVIDIA doesn't publish it as a queryable attribute, so there's no row for it here.
+
+## Where This Connects in the Course
+- **Day 1** — `report_device_capabilities()` surfaces the raw numbers this document explains; `--keep` and `-Xptxas -v` are how you inspect the PTX/SASS discussed above.
+- **Day 3** — warp scheduling and the instruction pipeline (fetch from I-cache, dispatch to a partition) are the *behavior*; this document is the *hardware* behind it.
+- **Day 4** — pinned/unified memory is about the host↔device link; this document is what's on the far side of that link, inside the device.
+- **Day 5, Day 13** — shared memory, bank conflicts, `__ldg`, LRU/cache-operator hints, and L2 persistence hints are all techniques for working *with* the memory organization described here, not around it.
+- **Day 8, Day 9, Day 10** — `__shfl_*`, `__ballot_sync`, `__popc`, and `atomicAdd` are all single instructions once you get past the intrinsic wrapper — the instruction table above shows what they actually compile to.
+- **Day 11** — texture sampling and bilinear filtering are backed by the texture cache and texture unit described above, not by L1.
