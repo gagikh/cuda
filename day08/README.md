@@ -16,6 +16,11 @@
 
 `__shfl_down_sync` lets a lane read a value directly from another lane's register — no shared memory, no `__syncthreads()`. Halving the offset each step (16 → 8 → 4 → 2 → 1 for a full warp) sums all 32 values in just 5 steps, with lane 0 ending up holding the result.
 
+## Animated
+![8 lanes cycling through three shuffle intrinsics: __shfl_down_sync where lane i reads from lane i+1, __shfl_up_sync where lane i reads from lane i-1, and __shfl_xor_sync where lanes swap in pairs](warp_shuffle_intrinsics.svg)
+
+Same 8-lane fragment, three different intrinsics: `__shfl_down_sync` and `__shfl_up_sync` shift values one direction or the other by a fixed offset; `__shfl_xor_sync` exchanges values between paired lanes (`i` and `i^mask`), which is what makes it useful for butterfly-style reductions and the FFT stretch task below — every lane both sends and receives in one instruction, instead of the one-directional shift of up/down.
+
 ## Resources
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec4.pdf
 

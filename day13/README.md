@@ -25,10 +25,14 @@ Padding (Day 5) fixes bank conflicts by wasting a column so the row stride is no
 
 For the hardware behind this pyramid — why shared memory and L1 are the same physical SRAM, why L2 is shared across every SM instead of being per-SM like L1, and where atomic operations actually get resolved — see [ARCHITECTURE.md](../ARCHITECTURE.md).
 
-## Interactive
-[`memory_animations.html`](memory_animations.html) — open in a browser. Two animated, playable views: requests
-firing down the memory pyramid and landing at L1/L2/global with realistic odds and relative latency, and a
-side-by-side coalesced-vs-strided access pattern showing 1 transaction vs. 32 for the same 128 bytes of data.
+## Animated
+![Three requests traveling from the SM down to L1, L2, and global memory at different speeds, glowing whichever level they land in](memory_traffic.svg)
+
+Most traffic resolves fast, close to the SM (green, ~1s round trip); some reaches L2 (blue, ~3s); a rare few pay the full global-memory round trip (red, ~6s). Same pyramid as `cache_hierarchy.svg`, now showing where requests actually land.
+
+![Side-by-side comparison: coalesced access completing in one transaction versus strided access needing 32 sequential transactions for the same 128 bytes](coalescing_strided.svg)
+
+For a fully interactive, playable version (fire requests on demand, step through) see [`memory_animations.html`](memory_animations.html) — open it locally in a browser, since GitHub's file viewer only shows HTML as source rather than running it.
 
 ## LRU and Per-Instruction Cache Hints
 L1 and L2 are both finite, so when full, something gets evicted to make room for a new line. The hardware's replacement policy is an approximation of **LRU (Least Recently Used)**: evict whichever line hasn't been touched in the longest time. `cudaAccessPolicyWindow` (below) biases that policy for a whole buffer at once; there's also a finer-grained tool — per-instruction cache operators — that biases it one load or store at a time:

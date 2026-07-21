@@ -1,0 +1,43 @@
+<svg viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="700" height="420" fill="#0d1117"/>
+  <text x="350" y="26" text-anchor="middle" fill="#e6edf3" font-size="16" font-weight="bold">Memory Hierarchy Traffic</text>
+  <text x="350" y="44" text-anchor="middle" fill="#8b949e" font-size="11">loops continuously — three requests in flight at different speeds</text>
+
+  <!-- SM source -->
+  <rect x="270" y="55" width="160" height="34" rx="6" fill="#8957e5" opacity="0.7"/>
+  <text x="350" y="77" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">SM issues a load</text>
+
+  <!-- L1 -->
+  <rect x="150" y="140" width="400" height="50" rx="6" fill="#21262d" stroke="#2ea043" stroke-width="2">
+    <animate attributeName="stroke-width" values="2;2;6;2;2" keyTimes="0;0.45;0.5;0.55;1" dur="1.0s" repeatCount="indefinite"/>
+  </rect>
+  <text x="170" y="160" fill="#e6edf3" font-size="12" font-weight="bold">Shared Memory / L1</text>
+  <text x="170" y="177" fill="#8b949e" font-size="10">~20-30 cycles &#183; on-chip, per-SM &#183; most requests land here</text>
+
+  <!-- L2 -->
+  <rect x="150" y="230" width="400" height="50" rx="6" fill="#21262d" stroke="#1f6feb" stroke-width="2">
+    <animate attributeName="stroke-width" values="2;2;6;2;2" keyTimes="0;0.45;0.5;0.55;1" dur="3.0s" begin="0.3s" repeatCount="indefinite"/>
+  </rect>
+  <text x="170" y="250" fill="#e6edf3" font-size="12" font-weight="bold">L2 Cache</text>
+  <text x="170" y="267" fill="#8b949e" font-size="10">~200 cycles &#183; shared by every SM on the chip &#183; some requests</text>
+
+  <!-- Global -->
+  <rect x="150" y="320" width="400" height="50" rx="6" fill="#21262d" stroke="#f85149" stroke-width="2">
+    <animate attributeName="stroke-width" values="2;2;6;2;2" keyTimes="0;0.45;0.5;0.55;1" dur="6.0s" begin="0.6s" repeatCount="indefinite"/>
+  </rect>
+  <text x="170" y="340" fill="#e6edf3" font-size="12" font-weight="bold">Global Memory (VRAM)</text>
+  <text x="170" y="357" fill="#8b949e" font-size="10">~400-600 cycles &#183; off-chip, slowest &#183; rare, expensive requests</text>
+
+  <!-- traveling dots -->
+  <circle r="6" fill="#2ea043">
+    <animateMotion path="M350,89 L350,165 L350,89" dur="1.0s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="6" fill="#1f6feb">
+    <animateMotion path="M350,89 L350,255 L350,89" dur="3.0s" begin="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="6" fill="#f85149">
+    <animateMotion path="M350,89 L350,345 L350,89" dur="6.0s" begin="0.6s" repeatCount="indefinite"/>
+  </circle>
+
+  <text x="350" y="405" text-anchor="middle" fill="#8b949e" font-size="10">While one warp waits ~500 cycles on a global-memory miss, the scheduler fills that gap with other warps instead of stalling.</text>
+</svg>

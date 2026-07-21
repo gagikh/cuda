@@ -23,10 +23,16 @@ One instruction is fetched and decoded once, then the warp scheduler issues it t
 
 The picture above shows one instruction moving through the pipeline; this one shows *time* — at t1 only I1 is being fetched, at t2 I1 moves to Decode while I2 is fetched, and so on until the pipeline is full and a new instruction retires every cycle. Register Read and Memory are their own stages because the register file and global memory are both shared, limited resources with real access latency. When one warp stalls in Memory waiting on a slow load, the scheduler fills that cycle with a different warp's instruction instead of leaving the pipeline empty — that's the latency-hiding this whole course keeps coming back to.
 
-## Interactive
-[`warp_animations.html`](warp_animations.html) — open in a browser. Two animated, playable views: a warp
-scheduler cycling through 6 resident warps (watch the idle counter stay near zero — that's latency hiding
-happening live), and a divergent `if/else` splitting and reconverging a 32-thread warp cycle by cycle.
+## Animated
+![Warp scheduler cycling through 6 resident warps: each warp pulses in the queue, a token travels to the scheduler then to the execution units, and a new warp is issued as soon as one goes idle](warp_scheduling.svg)
+
+Watch how the scheduler is never left with nothing to do — as soon as one warp goes "not ready" (standing in for a memory or execution latency), another resident warp is ready to take its place. This is latency hiding, playing out continuously.
+
+![32-thread warp splitting on a branch: threads 0-15 execute path A while 16-31 are masked off, then the reverse, then all 32 reconverge](warp_divergence.svg)
+
+The two branch paths run one after another, not simultaneously — divergence serializes a warp instead of adding real parallelism.
+
+For a fully interactive, playable version (step-by-step, pause anytime) see [`warp_animations.html`](warp_animations.html) — open it locally in a browser, since GitHub's file viewer only shows HTML as source rather than running it.
 
 ## Resources
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
