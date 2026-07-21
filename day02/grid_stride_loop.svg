@@ -1,0 +1,76 @@
+<svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="260" fill="#0d1117"/>
+  <text x="450" y="24" text-anchor="middle" fill="#e6edf3" font-size="16" font-weight="bold">Grid-Stride Loop — 4 fixed threads, 16-element array</text>
+  <text x="450" y="42" text-anchor="middle" fill="#8b949e" font-size="11">for (i = idx; i &lt; n; i += stride)  &#183;  idx = 0..3, stride = 4  &#183;  loops continuously</text>
+
+  <!-- legend -->
+  <g font-size="11" fill="#e6edf3">
+    <rect x="60" y="60" width="16" height="16" rx="3" fill="#f0883e"/><text x="82" y="73">T0</text>
+    <rect x="130" y="60" width="16" height="16" rx="3" fill="#1f6feb"/><text x="152" y="73">T1</text>
+    <rect x="200" y="60" width="16" height="16" rx="3" fill="#8957e5"/><text x="222" y="73">T2</text>
+    <rect x="270" y="60" width="16" height="16" rx="3" fill="#2ea043"/><text x="292" y="73">T3</text>
+  </g>
+
+  <!-- 16 array cells, colored by owning thread (i % 4), highlighted during their iteration -->
+  <g font-size="10" text-anchor="middle" fill="#0d1117" font-weight="bold">
+    <!-- iteration 0: cells 0-3 -->
+    <rect x="100" y="110" width="40" height="40" rx="4" fill="#f0883e" opacity="0.35"><animate attributeName="opacity" values="1;1;0.35;0.35" keyTimes="0;0.25;0.251;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="120" y="134">a[0]</text>
+    <rect x="144" y="110" width="40" height="40" rx="4" fill="#1f6feb" opacity="0.35"><animate attributeName="opacity" values="1;1;0.35;0.35" keyTimes="0;0.25;0.251;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="164" y="134">a[1]</text>
+    <rect x="188" y="110" width="40" height="40" rx="4" fill="#8957e5" opacity="0.35"><animate attributeName="opacity" values="1;1;0.35;0.35" keyTimes="0;0.25;0.251;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="208" y="134">a[2]</text>
+    <rect x="232" y="110" width="40" height="40" rx="4" fill="#2ea043" opacity="0.35"><animate attributeName="opacity" values="1;1;0.35;0.35" keyTimes="0;0.25;0.251;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="252" y="134">a[3]</text>
+
+    <!-- iteration 1: cells 4-7 -->
+    <rect x="276" y="110" width="40" height="40" rx="4" fill="#f0883e" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.25;0.251;0.5;0.501;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="296" y="134">a[4]</text>
+    <rect x="320" y="110" width="40" height="40" rx="4" fill="#1f6feb" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.25;0.251;0.5;0.501;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="340" y="134">a[5]</text>
+    <rect x="364" y="110" width="40" height="40" rx="4" fill="#8957e5" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.25;0.251;0.5;0.501;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="384" y="134">a[6]</text>
+    <rect x="408" y="110" width="40" height="40" rx="4" fill="#2ea043" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.25;0.251;0.5;0.501;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="428" y="134">a[7]</text>
+
+    <!-- iteration 2: cells 8-11 -->
+    <rect x="452" y="110" width="40" height="40" rx="4" fill="#f0883e" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.5;0.501;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="472" y="134">a[8]</text>
+    <rect x="496" y="110" width="40" height="40" rx="4" fill="#1f6feb" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.5;0.501;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="516" y="134">a[9]</text>
+    <rect x="540" y="110" width="40" height="40" rx="4" fill="#8957e5" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.5;0.501;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="560" y="134">a[10]</text>
+    <rect x="584" y="110" width="40" height="40" rx="4" fill="#2ea043" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1;0.35;0.35" keyTimes="0;0.5;0.501;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="604" y="134">a[11]</text>
+
+    <!-- iteration 3: cells 12-15 -->
+    <rect x="628" y="110" width="40" height="40" rx="4" fill="#f0883e" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1" keyTimes="0;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="648" y="134">a[12]</text>
+    <rect x="672" y="110" width="40" height="40" rx="4" fill="#1f6feb" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1" keyTimes="0;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="692" y="134">a[13]</text>
+    <rect x="716" y="110" width="40" height="40" rx="4" fill="#8957e5" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1" keyTimes="0;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="736" y="134">a[14]</text>
+    <rect x="760" y="110" width="40" height="40" rx="4" fill="#2ea043" opacity="0.35"><animate attributeName="opacity" values="0.35;0.35;1;1" keyTimes="0;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/></rect>
+    <text x="780" y="134">a[15]</text>
+  </g>
+
+  <!-- iteration banner, 4 phases -->
+  <text x="450" y="185" text-anchor="middle" fill="#c9a6ff" font-size="13" font-weight="bold">
+    Iteration 1: i = idx (0,1,2,3) &#8212; each thread processes its own element
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.25;0.251;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="185" text-anchor="middle" fill="#c9a6ff" font-size="13" font-weight="bold" opacity="0">
+    Iteration 2: i += stride &#8594; (4,5,6,7) &#8212; same 4 threads, next elements
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.25;0.251;0.5;0.501;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="185" text-anchor="middle" fill="#c9a6ff" font-size="13" font-weight="bold" opacity="0">
+    Iteration 3: i += stride &#8594; (8,9,10,11)
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.5;0.501;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="185" text-anchor="middle" fill="#c9a6ff" font-size="13" font-weight="bold" opacity="0">
+    Iteration 4: i += stride &#8594; (12,13,14,15) &#8212; loop ends when i &#8805; n
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.75;0.751;1" calcMode="discrete" dur="6s" repeatCount="indefinite"/>
+  </text>
+
+  <text x="450" y="215" text-anchor="middle" fill="#8b949e" font-size="11">A fixed launch (here 4 threads) covers any array size — double n and it just runs 2&#215; as many iterations, same code.</text>
+</svg>

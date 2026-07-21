@@ -21,6 +21,15 @@
 
 The CPU (host) and GPU (device) have separate memory spaces connected by a relatively slow link (PCIe or NVLink). Everything you do in CUDA — allocating device memory, copying data across, launching kernels — is about bridging that gap efficiently. This picture is the mental model for the whole course.
 
+## Animated
+![A packet traveling host RAM to device VRAM across the PCIe/NVLink link, then a near-instant async kernel launch, then a packet traveling back](host_device_transfer.svg)
+
+The full cycle of a typical CUDA program: `cudaMemcpy` there, launch, `cudaMemcpy` back. Watch how much longer the two memcpy legs take relative to the launch itself — that asymmetry is why so much of this course (Day 4-7 especially) is about the transfer, not the kernel.
+
+![A .cu file splitting into a device path (nvcc frontend, then PTX, then ptxas, then SASS/cubin) and a host path (gcc/clang/MSVC), the two converging at the linker into one fat binary](nvcc_toolchain.svg)
+
+Companion to the "Toolchain: nvcc" section below — the device token (green) takes four hops before it's real machine code; the host token (blue) takes two and then waits at the linker, since the fat binary can't be assembled until both halves exist.
+
 ## Know Your GPU
 Every "max threads per block", "shared memory per SM", "warp size" number this course refers to abstractly is a *concrete* number for the GPU you're actually running on — and they differ across generations. [`common/device_info.h`](../common/device_info.h) defines `report_device_capabilities()`, which queries `cudaGetDeviceProperties` and related attribute calls and prints a full report. `template.cu` calls it first thing, before anything else.
 

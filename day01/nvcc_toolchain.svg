@@ -1,0 +1,102 @@
+<svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="520" fill="#0d1117"/>
+  <text x="450" y="24" text-anchor="middle" fill="#e6edf3" font-size="16" font-weight="bold">How nvcc Builds a .cu File</text>
+  <text x="450" y="42" text-anchor="middle" fill="#8b949e" font-size="11">loops continuously — device code takes a longer path than host code, then both merge at the linker</text>
+
+  <!-- source -->
+  <rect x="370" y="55" width="160" height="40" rx="6" fill="#8957e5" opacity="0.85"/>
+  <text x="450" y="80" text-anchor="middle" fill="#0d1117" font-size="13" font-weight="bold">kernel.cu</text>
+
+  <!-- static connecting lines -->
+  <g stroke="#30363d" stroke-width="2" fill="none">
+    <path d="M400,95 L250,110"/>
+    <path d="M500,95 L650,110"/>
+    <path d="M250,150 L250,180"/>
+    <path d="M250,220 L250,250"/>
+    <path d="M250,290 L250,320"/>
+    <path d="M650,150 L650,180"/>
+    <path d="M250,360 L420,390"/>
+    <path d="M650,220 L480,390"/>
+    <path d="M450,430 L450,445"/>
+  </g>
+
+  <!-- device path (left column) -->
+  <text x="250" y="105" text-anchor="middle" fill="#2ea043" font-size="11" font-weight="bold">DEVICE CODE PATH</text>
+  <rect x="150" y="110" width="200" height="40" rx="6" fill="#21262d" stroke="#2ea043" stroke-width="2" id="nvccFE">
+    <animate attributeName="stroke-width" values="2;2;5;2;2" keyTimes="0;0.11;0.125;0.15;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="250" y="134" text-anchor="middle" fill="#e6edf3" font-size="11">nvcc device frontend</text>
+
+  <rect x="150" y="180" width="200" height="40" rx="6" fill="#21262d" stroke="#2ea043" stroke-width="2" id="ptxBox">
+    <animate attributeName="stroke-width" values="2;2;5;2;2" keyTimes="0;0.235;0.25;0.275;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="250" y="204" text-anchor="middle" fill="#e6edf3" font-size="11">PTX (virtual ISA)</text>
+
+  <rect x="150" y="250" width="200" height="40" rx="6" fill="#21262d" stroke="#2ea043" stroke-width="2" id="ptxasBox">
+    <animate attributeName="stroke-width" values="2;2;5;2;2" keyTimes="0;0.36;0.375;0.4;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="250" y="274" text-anchor="middle" fill="#e6edf3" font-size="11">ptxas</text>
+
+  <rect x="150" y="320" width="200" height="40" rx="6" fill="#21262d" stroke="#2ea043" stroke-width="2" id="sassBox">
+    <animate attributeName="stroke-width" values="2;2;5;2;2" keyTimes="0;0.485;0.5;0.525;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="250" y="344" text-anchor="middle" fill="#e6edf3" font-size="11">SASS (cubin, real arch)</text>
+
+  <!-- host path (right column) -->
+  <text x="650" y="105" text-anchor="middle" fill="#1f6feb" font-size="11" font-weight="bold">HOST CODE PATH</text>
+  <rect x="550" y="110" width="200" height="40" rx="6" fill="#21262d" stroke="#1f6feb" stroke-width="2" id="hostCC">
+    <animate attributeName="stroke-width" values="2;2;5;2;2" keyTimes="0;0.11;0.125;0.15;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="650" y="134" text-anchor="middle" fill="#e6edf3" font-size="11">host compiler (gcc/clang/MSVC)</text>
+
+  <rect x="550" y="180" width="200" height="40" rx="6" fill="#21262d" stroke="#1f6feb" stroke-width="2" id="hostObj">
+    <animate attributeName="stroke-width" values="2;2;5;2;2" keyTimes="0;0.235;0.25;0.275;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="650" y="204" text-anchor="middle" fill="#e6edf3" font-size="11">host object code (.o)</text>
+
+  <!-- linker -->
+  <rect x="370" y="390" width="160" height="40" rx="6" fill="#21262d" stroke="#f0883e" stroke-width="2" id="linkerBox">
+    <animate attributeName="stroke-width" values="2;2;2;6;2;2" keyTimes="0;0.7;0.75;0.76;0.85;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="450" y="414" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">Linker</text>
+
+  <!-- app -->
+  <rect x="370" y="445" width="160" height="40" rx="6" fill="#8957e5" opacity="0.5" id="appBox">
+    <animate attributeName="opacity" values="0.5;0.5;0.5;1;0.5;0.5" keyTimes="0;0.85;0.875;0.89;0.95;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+  <text x="450" y="469" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">app (fat binary)</text>
+
+  <!-- device token -->
+  <circle r="7" fill="#2ea043" opacity="0">
+    <animateMotion dur="8s" repeatCount="indefinite"
+      keyTimes="0;0.125;0.25;0.375;0.5;0.75;0.875;1"
+      keyPoints="0;0.1667;0.3333;0.5;0.6667;0.8333;1;1"
+      calcMode="linear"
+      path="M450,75 L250,130 L250,200 L250,270 L250,340 L450,410 L450,462"/>
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.876;0.877;1" dur="8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- host token -->
+  <circle r="7" fill="#1f6feb" opacity="0">
+    <animateMotion dur="8s" repeatCount="indefinite"
+      keyTimes="0;0.125;0.25;0.3125;0.75;0.875;1"
+      keyPoints="0;0.25;0.5;0.75;0.75;1;1"
+      calcMode="linear"
+      path="M450,75 L650,130 L650,200 L450,410 L450,410 L450,462"/>
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.876;0.877;1" dur="8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- rotating captions -->
+  <text x="450" y="495" text-anchor="middle" fill="#8b949e" font-size="10">
+    A .cu file splits: device code (green) goes nvcc frontend &#8594; PTX &#8594; ptxas &#8594; SASS; host code (blue) goes straight to gcc/clang/MSVC.
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.4;0.41;1" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="495" text-anchor="middle" fill="#8b949e" font-size="10" opacity="0">
+    The host path finishes first and waits — the linker can't merge until both the SASS cubin and the host object exist.
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.4;0.41;0.75;0.76;1" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="495" text-anchor="middle" fill="#8b949e" font-size="10" opacity="0">
+    The linker bundles both into one fat binary — real SASS for the architectures you targeted, plus PTX for the driver to JIT on anything newer.
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.76;0.77;1" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+  </text>
+</svg>

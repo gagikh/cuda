@@ -17,6 +17,11 @@
 
 A kernel launch creates a grid of blocks, and each block is itself a 1D/2D/3D array of threads. `blockIdx` tells a thread which block it's in; `threadIdx` tells it which slot within that block. The global-index formula in the diagram is the one pattern you'll reuse in nearly every kernel from here on.
 
+## Animated
+![The global-index formula evaluating for four different threads across three blocks, each cycling through blockIdx.x, blockDim.x, and threadIdx.x to a concrete number](thread_indexing.svg)
+
+Same formula, four concrete threads: it's always `blockIdx.x * blockDim.x + threadIdx.x`, only the block and thread values change.
+
 ## Grid-Stride Loops
 Every kernel so far launches exactly enough threads to cover the data, one thread per element. That's fine for a toy example with a known, fixed `n` — but it breaks down fast:
 
@@ -35,6 +40,10 @@ for (int i = idx; i < n; i += stride) {
 ```
 
 This is the pattern real (non-toy) CUDA code uses. `vector_add_grid_stride` in [`template.cu`](template.cu) is launched with a fixed `<<<256, 256>>>` regardless of `n` — try changing `n` to something much larger and confirm the same launch configuration still produces correct output.
+
+![4 fixed threads sweeping across a 16-element array in stride-4 iterations, each thread processing a different element every iteration](grid_stride_loop.svg)
+
+The same 4 threads process all 16 elements in 4 iterations — double the array to 32 elements and it just takes 8 iterations with the exact same launch configuration.
 
 ## Resources
 Threads, blocks, grids

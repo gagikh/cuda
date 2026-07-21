@@ -1,0 +1,61 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="hdt-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#f0883e"/></marker>
+  </defs>
+  <rect width="900" height="380" fill="#0d1117"/>
+  <text x="450" y="26" text-anchor="middle" fill="#e6edf3" font-size="16" font-weight="bold">A Typical CUDA Program's Data Flow</text>
+  <text x="450" y="44" text-anchor="middle" fill="#8b949e" font-size="11">loops continuously — watch how much longer the memcpy legs take than the launch itself</text>
+
+  <!-- Host box -->
+  <rect x="60" y="80" width="330" height="220" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="2"/>
+  <text x="225" y="105" text-anchor="middle" fill="#1f6feb" font-size="14" font-weight="bold">HOST (CPU)</text>
+  <rect x="90" y="120" width="110" height="40" rx="6" fill="#1f6feb" opacity="0.85"/>
+  <text x="145" y="145" text-anchor="middle" fill="#0d1117" font-size="11">Few fast cores</text>
+  <rect x="90" y="180" width="240" height="60" rx="6" fill="#21262d" stroke="#8b949e" id="ramBox"/>
+  <text x="210" y="205" text-anchor="middle" fill="#e6edf3" font-size="12">System RAM</text>
+  <text x="210" y="222" text-anchor="middle" fill="#8b949e" font-size="10">h_data / h_result</text>
+
+  <!-- Device box -->
+  <rect x="510" y="80" width="330" height="220" rx="10" fill="#161b22" stroke="#2ea043" stroke-width="2"/>
+  <text x="675" y="105" text-anchor="middle" fill="#2ea043" font-size="14" font-weight="bold">DEVICE (GPU)</text>
+  <g fill="#2ea043" id="cores">
+    <animate attributeName="opacity" values="0.5;0.5;1;0.5;0.5" keyTimes="0;0.333;0.5;0.667;1" dur="8s" repeatCount="indefinite"/>
+    <rect x="540" y="120" width="20" height="20" rx="4"/><rect x="566" y="120" width="20" height="20" rx="4"/><rect x="592" y="120" width="20" height="20" rx="4"/><rect x="618" y="120" width="20" height="20" rx="4"/><rect x="644" y="120" width="20" height="20" rx="4"/><rect x="670" y="120" width="20" height="20" rx="4"/><rect x="696" y="120" width="20" height="20" rx="4"/><rect x="722" y="120" width="20" height="20" rx="4"/>
+    <rect x="540" y="146" width="20" height="20" rx="4"/><rect x="566" y="146" width="20" height="20" rx="4"/><rect x="592" y="146" width="20" height="20" rx="4"/><rect x="618" y="146" width="20" height="20" rx="4"/><rect x="644" y="146" width="20" height="20" rx="4"/><rect x="670" y="146" width="20" height="20" rx="4"/><rect x="696" y="146" width="20" height="20" rx="4"/><rect x="722" y="146" width="20" height="20" rx="4"/>
+  </g>
+  <text x="675" y="188" text-anchor="middle" fill="#8b949e" font-size="10">thousands of small cores</text>
+  <rect x="540" y="198" width="234" height="42" rx="6" fill="#21262d" stroke="#8b949e" id="vramBox"/>
+  <text x="657" y="220" text-anchor="middle" fill="#e6edf3" font-size="12">VRAM</text>
+  <text x="657" y="234" text-anchor="middle" fill="#8b949e" font-size="10">d_data / d_result</text>
+
+  <!-- link -->
+  <path d="M390 190 H510" stroke="#8b949e" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="450" y="180" text-anchor="middle" fill="#8b949e" font-size="11">PCIe / NVLink</text>
+
+  <!-- phase status text (3 phases) -->
+  <text x="450" y="330" text-anchor="middle" fill="#f0883e" font-size="13" font-weight="bold">
+    1. cudaMemcpy(d_data, h_data, ..., HostToDevice)
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.333;0.334;1" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="330" text-anchor="middle" fill="#2ea043" font-size="13" font-weight="bold" opacity="0">
+    2. kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(...) — launch returns immediately (async)
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.333;0.334;0.667;0.668;1" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="330" text-anchor="middle" fill="#f0883e" font-size="13" font-weight="bold" opacity="0">
+    3. cudaMemcpy(h_result, d_result, ..., DeviceToHost)
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.667;0.668;1" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+  </text>
+  <text x="450" y="352" text-anchor="middle" fill="#8b949e" font-size="10">The two memcpy legs (steps 1 and 3) are the slow part — that's why Day 4-7 spend so much effort on transfer strategy.</text>
+
+  <!-- H2D packet -->
+  <circle r="8" fill="#f0883e" opacity="0">
+    <animateMotion dur="8s" repeatCount="indefinite" keyTimes="0;0.333;1" keyPoints="0;1;1" calcMode="linear" path="M210,210 L390,190 L510,190 L657,219"/>
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.333;0.334;1" dur="8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- D2H packet -->
+  <circle r="8" fill="#f0883e" opacity="0">
+    <animateMotion dur="8s" repeatCount="indefinite" keyTimes="0;0.667;1" keyPoints="0;0;1" calcMode="linear" path="M657,219 L510,190 L390,190 L210,210"/>
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.667;0.668;1" dur="8s" repeatCount="indefinite"/>
+  </circle>
+</svg>
