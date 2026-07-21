@@ -23,6 +23,11 @@ One instruction is fetched and decoded once, then the warp scheduler issues it t
 
 The picture above shows one instruction moving through the pipeline; this one shows *time* — at t1 only I1 is being fetched, at t2 I1 moves to Decode while I2 is fetched, and so on until the pipeline is full and a new instruction retires every cycle. Register Read and Memory are their own stages because the register file and global memory are both shared, limited resources with real access latency. When one warp stalls in Memory waiting on a slow load, the scheduler fills that cycle with a different warp's instruction instead of leaving the pipeline empty — that's the latency-hiding this whole course keeps coming back to.
 
+## Interactive
+[`warp_animations.html`](warp_animations.html) — open in a browser. Two animated, playable views: a warp
+scheduler cycling through 6 resident warps (watch the idle counter stay near zero — that's latency hiding
+happening live), and a divergent `if/else` splitting and reconverging a 32-thread warp cycle by cycle.
+
 ## Resources
 https://people.maths.ox.ac.uk/~gilesm/cuda/lecs/lec3.pdf
 

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 3: Warp Execution Animations</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --box:#21262d; --border:#8b949e;
+    --purple:#8957e5; --blue:#1f6feb; --green:#2ea043; --orange:#f0883e;
+    --red:#f85149; --text:#e6edf3; --dim:#30363d;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--text); font-family:Helvetica,Arial,sans-serif; margin:0; padding:20px;}
+  h1{font-size:20px; text-align:center; margin:0 0 4px;}
+  .sub{text-align:center; color:var(--border); font-size:12px; margin-bottom:18px;}
+  .tabs{display:flex; justify-content:center; gap:6px; margin-bottom:16px; flex-wrap:wrap;}
+  .tab{background:var(--box); border:1px solid var(--border); color:var(--text); padding:8px 16px;
+       border-radius:6px; cursor:pointer; font-size:13px;}
+  .tab.active{border-color:var(--purple); background:#241a35; color:#c9a6ff;}
+  .panel{display:none; max-width:980px; margin:0 auto; background:var(--panel); border:1px solid #30363d;
+         border-radius:10px; padding:22px;}
+  .panel.active{display:block;}
+  .controls{display:flex; gap:8px; margin:14px 0;}
+  button.ctl{background:var(--box); border:1px solid var(--border); color:var(--text); padding:6px 14px;
+             border-radius:6px; cursor:pointer; font-size:12px;}
+  button.ctl:hover{border-color:var(--purple);}
+  button.ctl:disabled{opacity:.4; cursor:default;}
+  .stats{font-size:12px; color:var(--border); margin:10px 0;}
+  .caption{font-size:12px; color:var(--border); margin-top:14px; line-height:1.5;}
+  .status{font-size:12px; color:#c9a6ff; min-height:18px; margin:10px 0;}
+  .backlink{text-align:center; font-size:12px; margin-bottom:14px;}
+  .backlink a{color:#c9a6ff;}
+
+  /* Warp scheduling */
+  .p1-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .queue{display:flex; gap:6px; flex-wrap:wrap;}
+  .warp-chip{position:relative; width:44px; height:34px; border-radius:5px; background:var(--blue);
+             opacity:.5; font-size:11px; display:flex; align-items:center; justify-content:center;
+             transition:opacity .3s, transform .2s; color:#0d1117; font-weight:bold;}
+  .warp-chip.waiting{opacity:.3;}
+  .warp-chip.issuing{transform:scale(1.15); box-shadow:0 0 10px var(--green);}
+  .warp-chip .badge{position:absolute; top:-8px; right:-8px; background:var(--red); color:#fff;
+             border-radius:50%; width:16px; height:16px; font-size:9px; display:flex; align-items:center;
+             justify-content:center;}
+  .arrow{font-size:20px; color:var(--border);}
+  .sched-box{background:var(--green); opacity:.6; color:#0d1117; font-weight:bold; padding:10px 16px;
+             border-radius:6px; font-size:12px; transition:opacity .2s, box-shadow .2s;}
+  .sched-box.active{opacity:1; box-shadow:0 0 12px var(--green);}
+  .sched-box.stall{background:var(--red); opacity:1; box-shadow:0 0 12px var(--red);}
+  .units{display:flex; flex-direction:column; gap:5px;}
+  .unit{background:var(--dim); border:1px solid var(--border); color:var(--text); font-size:10px;
+        padding:6px 10px; border-radius:4px; opacity:.5; transition:opacity .2s, box-shadow .2s;}
+  .unit.active{opacity:1; box-shadow:0 0 10px var(--orange); border-color:var(--orange);}
+
+  /* Divergence */
+  .thread-row{display:flex; gap:3px; flex-wrap:wrap; justify-content:center; margin:16px 0;}
+  .thread{width:20px; height:20px; border-radius:3px; background:var(--dim); border:1px solid var(--border);
+          transition:background .3s, opacity .3s;}
+  .thread.active{background:var(--green); border-color:var(--green);}
+  .thread.idle{background:var(--dim); opacity:.35;}
+</style>
+</head>
+<body>
+
+<h1>Day 3: Warp Execution Animations</h1>
+<div class="sub">Companion to pipeline.svg / pipeline_timeline.svg — interactive views of scheduling and divergence</div>
+<div class="backlink"><a href="README.md">&larr; back to Day 3</a></div>
+
+<div class="tabs">
+  <div class="tab active" data-panel="p1">Warp Scheduling</div>
+  <div class="tab" data-panel="p3">Warp Divergence</div>
+</div>
+
+<!-- WARP SCHEDULING -->
+<div class="panel active" id="p1">
+  <div class="p1-row">
+    <div class="queue" id="p1queue"></div>
+    <div class="arrow">&#8594;</div>
+    <div class="sched-box" id="p1sched">Warp Scheduler</div>
+    <div class="arrow">&#8594;</div>
+    <div class="units" id="p1units">
+      <div class="unit" data-type="alu">INT32 / FP32 ALUs</div>
+      <div class="unit" data-type="fp64">FP64 units / SFU</div>
+      <div class="unit" data-type="tensor">Tensor Core</div>
+      <div class="unit" data-type="ldst">LD/ST units</div>
+    </div>
+  </div>
+  <div class="stats">Cycle: <span id="p1cycle">0</span> &nbsp;|&nbsp; Scheduler idle cycles: <span id="p1idle">0</span></div>
+  <div class="controls">
+    <button class="ctl" id="p1play">Play</button>
+    <button class="ctl" id="p1step">Step</button>
+    <button class="ctl" id="p1reset">Reset</button>
+  </div>
+  <div class="caption">6 warps resident on one partition. After a warp issues, it goes "not ready" for a
+  few cycles (standing in for a memory or execution latency) before it can issue again. Because several
+  warps are resident at once, the scheduler almost always has <i>someone</i> ready — that's latency hiding,
+  the reason GPUs lean on massive multithreading instead of branch prediction and deep caches. Watch the
+  idle counter: it should barely move. This is the same fetch &rarr; decode &rarr; scheduler &rarr; lockstep
+  issue pipeline from <code>pipeline.svg</code>, run forward across many cycles.</div>
+</div>
+
+<!-- WARP DIVERGENCE -->
+<div class="panel" id="p3">
+  <p style="font-size:13px; text-align:center; margin-bottom:4px;"><code>if (tid &lt; 16) A(); else B();</code></p>
+  <div class="thread-row" id="p3warp"></div>
+  <div class="status" id="p3status" style="text-align:center;"></div>
+  <div class="controls" style="justify-content:center;">
+    <button class="ctl" id="p3run">Run divergent branch</button>
+    <button class="ctl" id="p3reset">Reset</button>
+  </div>
+  <div class="caption">A warp issues one instruction to all 32 lanes at once. When threads disagree on a
+  branch, the warp can't split — it runs path A with the other lanes masked off, then runs path B with the
+  first set masked off. Cost: this divergent warp takes ~5 cycles instead of the ~3 it'd take if every
+  thread agreed on the branch. Divergence doesn't add parallelism, it removes it, one path at a time.</div>
+</div>
+
+<script>
+// ---------- tab switching ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  };
+});
+
+// ---------- Warp Scheduling ----------
+const p1 = {cycle:0, idle:0, lastIssued:-1, playing:false, timer:null, warps:[]};
+function p1Init(){
+  p1.cycle=0; p1.idle=0; p1.lastIssued=-1;
+  p1.warps = Array.from({length:6},(_,i)=>({id:i, readyAt:0}));
+  const q = document.getElementById('p1queue');
+  q.innerHTML='';
+  p1.warps.forEach(w=>{
+    const chip=document.createElement('div');
+    chip.className='warp-chip'; chip.id='p1warp'+w.id;
+    chip.innerHTML='W'+w.id+'<span class="badge"></span>';
+    q.appendChild(chip);
+  });
+  p1Render();
+}
+function p1Render(){
+  document.getElementById('p1cycle').textContent=p1.cycle;
+  document.getElementById('p1idle').textContent=p1.idle;
+  p1.warps.forEach(w=>{
+    const el=document.getElementById('p1warp'+w.id);
+    const remaining=Math.max(0, w.readyAt-p1.cycle);
+    el.classList.toggle('waiting', remaining>0);
+    el.querySelector('.badge').textContent = remaining>0 ? remaining : '';
+  });
+}
+function p1Tick(){
+  p1.cycle++;
+  const readyIdx=[];
+  p1.warps.forEach((w,i)=>{ if(w.readyAt<=p1.cycle) readyIdx.push(i); });
+  let chosen=-1;
+  for(let k=1;k<=6;k++){
+    const idx=(p1.lastIssued+k)%6;
+    if(readyIdx.includes(idx)){ chosen=idx; break; }
+  }
+  if(chosen===-1){
+    p1.idle++;
+    const s=document.getElementById('p1sched');
+    s.classList.add('stall'); s.textContent='STALL';
+    setTimeout(()=>{ s.classList.remove('stall'); s.textContent='Warp Scheduler'; },450);
+  } else {
+    p1.lastIssued=chosen;
+    const lat=2+Math.floor(Math.random()*5);
+    p1.warps[chosen].readyAt=p1.cycle+lat;
+    const chip=document.getElementById('p1warp'+chosen);
+    chip.classList.add('issuing');
+    setTimeout(()=>chip.classList.remove('issuing'),450);
+    const units=['alu','alu','alu','fp64','tensor','ldst'];
+    const unit=units[Math.floor(Math.random()*units.length)];
+    const ue=document.querySelector('#p1units [data-type="'+unit+'"]');
+    ue.classList.add('active');
+    setTimeout(()=>ue.classList.remove('active'),450);
+    const s=document.getElementById('p1sched');
+    s.classList.add('active');
+    setTimeout(()=>s.classList.remove('active'),450);
+  }
+  p1Render();
+}
+document.getElementById('p1play').onclick=(e)=>{
+  p1.playing=!p1.playing;
+  e.target.textContent=p1.playing?'Pause':'Play';
+  if(p1.playing){ p1.timer=setInterval(p1Tick,750); } else { clearInterval(p1.timer); }
+};
+document.getElementById('p1step').onclick=()=>p1Tick();
+document.getElementById('p1reset').onclick=()=>{
+  p1.playing=false; clearInterval(p1.timer);
+  document.getElementById('p1play').textContent='Play';
+  p1Init();
+};
+p1Init();
+
+// ---------- Warp Divergence ----------
+(function p3Init(){
+  const row=document.getElementById('p3warp');
+  for(let i=0;i<32;i++){
+    const t=document.createElement('div');
+    t.className='thread'; t.id='p3t'+i;
+    row.appendChild(t);
+  }
+})();
+let p3timers=[];
+function p3Reset(){
+  p3timers.forEach(t=>clearTimeout(t)); p3timers=[];
+  document.getElementById('p3status').textContent='';
+  document.getElementById('p3run').disabled=false;
+  for(let i=0;i<32;i++) document.getElementById('p3t'+i).className='thread';
+}
+document.getElementById('p3run').onclick=()=>{
+  const btn=document.getElementById('p3run');
+  btn.disabled=true;
+  const threads=[...Array(32).keys()].map(i=>document.getElementById('p3t'+i));
+  document.getElementById('p3status').textContent='Cycle 1-2: threads 0-15 active (path A), 16-31 masked off';
+  threads.forEach((t,i)=>t.className='thread '+(i<16?'active':'idle'));
+  p3timers.push(setTimeout(()=>{
+    document.getElementById('p3status').textContent='Cycle 3-4: threads 16-31 active (path B), 0-15 masked off';
+    threads.forEach((t,i)=>t.className='thread '+(i>=16?'active':'idle'));
+  },1500));
+  p3timers.push(setTimeout(()=>{
+    document.getElementById('p3status').textContent='Cycle 5: reconverged — all 32 threads active again';
+    threads.forEach(t=>t.className='thread active');
+  },3000));
+  p3timers.push(setTimeout(()=>{
+    document.getElementById('p3status').textContent='Total: 5 cycles for this divergent warp vs 3 if all 32 threads had agreed on the branch.';
+    btn.disabled=false;
+  },4200));
+};
+document.getElementById('p3reset').onclick=p3Reset;
+</script>
+</body>
+</html>

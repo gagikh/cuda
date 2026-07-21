@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 13: Memory & Cache Animations</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --box:#21262d; --border:#8b949e;
+    --purple:#8957e5; --blue:#1f6feb; --green:#2ea043; --orange:#f0883e;
+    --red:#f85149; --text:#e6edf3; --dim:#30363d;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--text); font-family:Helvetica,Arial,sans-serif; margin:0; padding:20px;}
+  h1{font-size:20px; text-align:center; margin:0 0 4px;}
+  .sub{text-align:center; color:var(--border); font-size:12px; margin-bottom:18px;}
+  .tabs{display:flex; justify-content:center; gap:6px; margin-bottom:16px; flex-wrap:wrap;}
+  .tab{background:var(--box); border:1px solid var(--border); color:var(--text); padding:8px 16px;
+       border-radius:6px; cursor:pointer; font-size:13px;}
+  .tab.active{border-color:var(--purple); background:#241a35; color:#c9a6ff;}
+  .panel{display:none; max-width:980px; margin:0 auto; background:var(--panel); border:1px solid #30363d;
+         border-radius:10px; padding:22px;}
+  .panel.active{display:block;}
+  .controls{display:flex; gap:8px; margin:14px 0;}
+  button.ctl{background:var(--box); border:1px solid var(--border); color:var(--text); padding:6px 14px;
+             border-radius:6px; cursor:pointer; font-size:12px;}
+  button.ctl:hover{border-color:var(--purple);}
+  button.ctl:disabled{opacity:.4; cursor:default;}
+  .stats{font-size:12px; color:var(--border); margin:10px 0;}
+  .caption{font-size:12px; color:var(--border); margin-top:14px; line-height:1.5;}
+  .backlink{text-align:center; font-size:12px; margin-bottom:14px;}
+  .backlink a{color:#c9a6ff;}
+
+  /* Memory hierarchy traffic */
+  .mem-col{position:relative; max-width:420px; margin:0 auto;}
+  .mem-level{background:var(--dim); border:2px solid var(--border); border-radius:6px; padding:10px 14px;
+             margin-bottom:34px; font-size:12px; transition:box-shadow .2s, border-color .2s;}
+  .mem-level.hit{border-color:var(--green); box-shadow:0 0 14px var(--green);}
+  .mem-level b{display:block; font-size:13px; margin-bottom:2px;}
+  #p2pulse{position:absolute; left:calc(50% - 6px); top:-20px; width:12px; height:12px; border-radius:50%;
+           background:var(--orange); box-shadow:0 0 8px var(--orange);}
+  #p2log{font-size:11px; color:var(--border); margin-top:10px; line-height:1.6;}
+
+  /* Coalescing vs strided */
+  .thread-row{display:flex; gap:3px; flex-wrap:wrap; justify-content:center; margin:16px 0;}
+  .thread{width:20px; height:20px; border-radius:3px; background:var(--dim); border:1px solid var(--border);
+          transition:background .3s, opacity .3s;}
+  .thread.active{background:var(--green); border-color:var(--green);}
+  .p4-cols{display:flex; gap:24px; justify-content:center;}
+  .p4-col{flex:1; max-width:420px; text-align:center;}
+  .p4-col h3{font-size:13px; margin-bottom:4px;}
+  .p4-col .desc{font-size:11px; color:var(--border); margin-bottom:10px;}
+  .txn-box{background:var(--dim); border:2px solid var(--border); border-radius:6px; padding:16px;
+           margin-top:10px; transition:box-shadow .15s, border-color .15s;}
+  .txn-box.hit{border-color:var(--green); box-shadow:0 0 12px var(--green);}
+  .tick-row{display:flex; gap:2px; flex-wrap:wrap; justify-content:center; margin-top:8px;}
+  .tick{width:8px; height:8px; border-radius:2px; background:var(--dim); border:1px solid var(--border);}
+  .tick.hit{background:var(--red); border-color:var(--red);}
+  .counter{font-size:20px; font-weight:bold; margin-top:8px;}
+</style>
+</head>
+<body>
+
+<h1>Day 13: Memory &amp; Cache Animations</h1>
+<div class="sub">Companion to cache_hierarchy.svg — where requests actually land, and why access pattern changes transaction count</div>
+<div class="backlink"><a href="README.md">&larr; back to Day 13</a></div>
+
+<div class="tabs">
+  <div class="tab active" data-panel="p2">Memory Hierarchy Traffic</div>
+  <div class="tab" data-panel="p4">Coalescing vs Strided</div>
+</div>
+
+<!-- MEMORY HIERARCHY TRAFFIC -->
+<div class="panel active" id="p2">
+  <div class="mem-col">
+    <div id="p2pulse"></div>
+    <div class="mem-level" id="l1"><b>Shared Memory / L1</b>~20&ndash;30 cycles &middot; on-chip, per-SM &middot; ~70% of requests hit here</div>
+    <div class="mem-level" id="l2"><b>L2 Cache</b>~200 cycles &middot; shared by every SM on the chip &middot; ~20% of requests</div>
+    <div class="mem-level" id="gmem" style="margin-bottom:0;"><b>Global Memory (VRAM)</b>~400&ndash;600 cycles &middot; off-chip, slowest, visible to all SMs &middot; ~10% of requests</div>
+  </div>
+  <div class="stats" style="text-align:center;">Requests fired: <span id="p2count">0</span></div>
+  <div class="controls" style="justify-content:center;">
+    <button class="ctl" id="p2play">Play</button>
+    <button class="ctl" id="p2step">Fire request</button>
+    <button class="ctl" id="p2reset">Reset</button>
+  </div>
+  <div id="p2log"></div>
+  <div class="caption">Each "request" is a load issued by a warp. Most resolve close to the SM (fast); a
+  minority miss all the way to global memory, which is ~15&times; slower than L1 — this is the same
+  pyramid as <code>cache_hierarchy.svg</code>, but now you can see <i>where</i> traffic actually lands.
+  `__ldg()`, L2 persistence hints, and shared-memory swizzling (this day) are all about biasing more
+  requests toward the top of this pyramid.</div>
+</div>
+
+<!-- COALESCING VS STRIDED -->
+<div class="panel" id="p4">
+  <div class="p4-cols">
+    <div class="p4-col">
+      <h3 style="color:var(--green);">Coalesced</h3>
+      <div class="desc">thread i reads addr = base + i &middot; all 32 requests land in one 128B line</div>
+      <div class="thread-row" id="p4a-threads"></div>
+      <div class="txn-box" id="p4a-box">1 memory transaction</div>
+      <div class="counter" id="p4a-count">0</div>
+    </div>
+    <div class="p4-col">
+      <h3 style="color:var(--red);">Strided</h3>
+      <div class="desc">thread i reads addr = base + i&times;32 &middot; each request lands in its own line</div>
+      <div class="thread-row" id="p4b-threads"></div>
+      <div class="tick-row" id="p4b-ticks"></div>
+      <div class="counter" id="p4b-count">0</div>
+    </div>
+  </div>
+  <div class="controls" style="justify-content:center;">
+    <button class="ctl" id="p4run">Run both</button>
+    <button class="ctl" id="p4reset">Reset</button>
+  </div>
+  <div class="caption">Same 32 threads, same 128 bytes of useful data, two access patterns. Coalesced access
+  packs all 32 requests into one transaction because they're contiguous. Strided access scatters them across
+  32 separate cache lines, so the memory controller has to issue 32 transactions to fetch the same 128 bytes
+  of <i>useful</i> data — the rest of each fetched line is wasted bandwidth. `__ldg()` and read-only caching
+  help regardless of pattern, but they don't fix a bad access pattern; only the pattern itself does.</div>
+</div>
+
+<script>
+// ---------- tab switching ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  };
+});
+
+// ---------- Memory Hierarchy Traffic ----------
+const p2 = {playing:false, timer:null, count:0, log:[]};
+function p2Fire(){
+  p2.count++;
+  const r=Math.random();
+  let target, meta;
+  if(r<0.7){ target='l1'; meta={label:'Shared/L1', lat:28, top:90}; }
+  else if(r<0.9){ target='l2'; meta={label:'L2 Cache', lat:200, top:170}; }
+  else { target='gmem'; meta={label:'Global Memory', lat:480, top:250}; }
+  const pulse=document.getElementById('p2pulse');
+  pulse.style.transition='top .5s linear';
+  pulse.style.top=meta.top+'px';
+  const lvl=document.getElementById(target);
+  setTimeout(()=>lvl.classList.add('hit'), 480);
+  setTimeout(()=>{
+    lvl.classList.remove('hit');
+    pulse.style.transition='top .35s linear';
+    pulse.style.top='-20px';
+  }, 900);
+  document.getElementById('p2count').textContent=p2.count;
+  p2.log.unshift('#'+p2.count+' &rarr; '+meta.label+' (&asymp;'+meta.lat+' cycles)');
+  p2.log=p2.log.slice(0,5);
+  document.getElementById('p2log').innerHTML=p2.log.map(l=>'<div>'+l+'</div>').join('');
+}
+document.getElementById('p2play').onclick=(e)=>{
+  p2.playing=!p2.playing;
+  e.target.textContent=p2.playing?'Pause':'Play';
+  if(p2.playing){ p2.timer=setInterval(p2Fire,1100); } else { clearInterval(p2.timer); }
+};
+document.getElementById('p2step').onclick=()=>p2Fire();
+document.getElementById('p2reset').onclick=()=>{
+  p2.playing=false; clearInterval(p2.timer);
+  document.getElementById('p2play').textContent='Play';
+  p2.count=0; p2.log=[];
+  document.getElementById('p2count').textContent='0';
+  document.getElementById('p2log').innerHTML='';
+};
+
+// ---------- Coalescing vs Strided ----------
+(function p4Init(){
+  const a=document.getElementById('p4a-threads'), b=document.getElementById('p4b-threads');
+  for(let i=0;i<32;i++){
+    const ta=document.createElement('div'); ta.className='thread active'; a.appendChild(ta);
+    const tb=document.createElement('div'); tb.className='thread active'; b.appendChild(tb);
+  }
+  const ticks=document.getElementById('p4b-ticks');
+  for(let i=0;i<32;i++){
+    const tk=document.createElement('div'); tk.className='tick'; tk.id='p4tick'+i;
+    ticks.appendChild(tk);
+  }
+})();
+let p4timers=[];
+function p4Reset(){
+  p4timers.forEach(t=>clearTimeout(t)); p4timers=[];
+  document.getElementById('p4a-box').classList.remove('hit');
+  document.getElementById('p4a-count').textContent='0';
+  document.getElementById('p4b-count').textContent='0';
+  for(let i=0;i<32;i++) document.getElementById('p4tick'+i).classList.remove('hit');
+  document.getElementById('p4run').disabled=false;
+}
+document.getElementById('p4run').onclick=()=>{
+  const btn=document.getElementById('p4run');
+  btn.disabled=true;
+  p4Reset();
+  p4timers.push(setTimeout(()=>{
+    document.getElementById('p4a-box').classList.add('hit');
+    document.getElementById('p4a-count').textContent='1';
+  },100));
+  for(let i=0;i<32;i++){
+    p4timers.push(setTimeout(()=>{
+      document.getElementById('p4tick'+i).classList.add('hit');
+      document.getElementById('p4b-count').textContent=String(i+1);
+    }, 100+i*90));
+  }
+  p4timers.push(setTimeout(()=>{ btn.disabled=false; }, 100+32*90+200));
+};
+document.getElementById('p4reset').onclick=p4Reset;
+</script>
+</body>
+</html>
