@@ -8,6 +8,7 @@
 ⚡ [Intrinsics Cheat Sheet](INTRINSICS.md) — warp shuffle/vote, bit ops, math, cache hints, atomics and barriers in one table, tagged by day.  
 📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.  
 🖥️ [Architecture Deep Dive](ARCHITECTURE.md) — what's actually inside an SM: registers, ALUs, FPUs, tensor cores, and how shared/constant/L2/global memory are organized.  
+🚀 [Performance Checklist](PERFORMANCE.md) — coalescing, occupancy, roofline, privatization, coarsening: which optimization to try, in what order, and how to know when to stop.  
 🎬 [SM Animations](sm_animations.html) — interactive companion to the architecture doc (open locally; GitHub shows HTML as source).
 
 ---
@@ -23,7 +24,10 @@
 ### [Day 2: Thread Hierarchy & Execution Model](day02/README.md)
 - Threads, blocks, grids: structure and enumeration  
 - Launch configuration and kernel invocation  
-- Thread indexing patterns
+- Thread indexing patterns  
+- Memory coalescing  
+- Occupancy and block-size choice  
+- Grid-stride loops
 
 ### [Day 3: Warp-Level Execution and Control Flow](day03/README.md)
 - SIMD architecture and the instruction pipeline  
@@ -64,7 +68,8 @@
 ### [Day 9: Warp-Level Data Exchange](day09/README.md)
 - Warp vote functions  
 - Inter-thread data exchange  
-- Cooperative operations
+- Cooperative operations  
+- Atomic contention and privatization
 
 ### [Day 10: Practical Algorithms](day10/README.md)
 - Hamming distance matching  
@@ -85,7 +90,9 @@
 ### [Day 13: Cache Behavior and Optimization](day13/README.md)
 - L1/L2 cache  
 - Persistent cache  
-- Memory throughput
+- Memory throughput  
+- Thread coarsening  
+- Memory-bound vs. compute-bound; % of peak bandwidth
 
 ### [Day 14: CUDA Libraries](day14/README.md)
 - cuRAND (random generation)  
@@ -144,6 +151,8 @@ cuda device sm warp lane block thread
 The final exam covers both theory and practical knowledge. Key areas include:
 
 - **Kernels & Launch** — syntax, launch parameters, thread indexing  
+- **Coalescing & Occupancy** — warp-level access patterns, block-size choice, latency hiding  
+- **Performance Method** — memory-bound vs compute-bound, achieved vs. theoretical bandwidth  
 - **Warp & Operations** — warp execution, divergence, shuffle/vote intrinsics  
 - **Shared Memory** — access, `__syncthreads()`, optimization  
 - **Paged vs Pinned Memory** — allocation, performance  

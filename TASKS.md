@@ -1,8 +1,8 @@
 # 100 CUDA Practice Tasks
 
-A consolidated problem bank: 5 tasks per day (75 total, drawn from each day's Self-Learning section) plus 25 bonus tasks that go beyond the 15-day structure. Use this as a single place to pick a task to practice, independent of which day you're currently on — each task is tagged with the day whose material it depends on, or `(Bonus)` if it isn't covered by any specific day.
+A consolidated problem bank: roughly 5 tasks per day, drawn from each day's Self-Learning section, plus 25 bonus tasks (76–100) that go beyond the 15-day structure. Lettered entries (`10a`, `45b`, ...) are later additions kept in place so the original numbering doesn't shift. Each task is tagged with the day whose material it depends on, or `(Bonus)` if no specific day covers it.
 
-Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfamiliar, and the relevant `dayNN/README.md` for background before attempting that day's tasks.
+Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfamiliar, [PERFORMANCE.md](PERFORMANCE.md) for the optimization tasks, [INTRINSICS.md](INTRINSICS.md) for the device functions, and the relevant `dayNN/README.md` for background before attempting that day's tasks.
 
 ## Day 1 — CUDA Basics and Programming Model
 1. Print block/thread identity from the device using `printf`, across several different launch configurations. *(Day 1)*
@@ -17,6 +17,9 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 8. Compare timing across block sizes 32, 64, 128, and 256. *(Day 2)*
 9. Make a kernel correct for array sizes that aren't an exact multiple of the block size. *(Day 2)*
 10. Implement a grid-stride loop and verify it's still correct at 10x the original `n`, with the same launch configuration. *(Day 2)*
+10a. Write a copy kernel two ways — indexed `blockIdx.x * blockDim.x + threadIdx.x` vs. `threadIdx.x * gridDim.x + blockIdx.x` — and measure the ratio. Both are correct; predict the gap before running. *(Day 2)*
+10b. Swap the row/column roles of `threadIdx.x` and `threadIdx.y` in a 2D image kernel and measure the slowdown. *(Day 2)*
+10c. Call `cudaOccupancyMaxActiveBlocksPerMultiprocessor` for block sizes 32/64/128/256 and check where measured timing stops tracking occupancy. *(Day 2)*
 
 ## Day 3 — Warp-Level Execution and Control Flow
 11. Implement large vector addition and time it against an equivalent CPU loop. *(Day 3)*
@@ -66,6 +69,8 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 43. Write the inverse "unzip" operation. *(Day 9)*
 44. Implement `pyrDown` (blur + downsample by 2). *(Day 9)*
 45. Implement `pyrUp` (upsample by 2 + blur). *(Day 9)*
+45a. Build a 256-bin histogram twice — naive global `atomicAdd` per pixel vs. privatized into shared memory — and measure the ratio on a normal image and on a near-uniform one. *(Day 9)*
+45b. Replace the shared-memory `atomicAdd` in the privatized histogram with `atomicAdd_block` and measure the difference. *(Day 9)*
 
 ## Day 10 — Practical Algorithms
 46. Implement naive GPU matrix multiplication. *(Day 10)*
@@ -94,6 +99,9 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 63. Experiment with L2 persistence hints (`cudaAccessPolicyWindow`) on a repeatedly-read buffer. *(Day 13)*
 64. Optimize the Day 6 image transform kernel using every technique from the week so far. *(Day 13)*
 65. Benchmark `__ldg`, swizzling, and padding on the same kernel and rank them for your GPU. *(Bonus)*
+65a. Add achieved-bandwidth and %-of-peak output to all three timings in `day13/template.cu`, and decide from the numbers whether the day's optimizations ever had room to help. *(Day 13)*
+65b. Coarsen `tiled_filter_baseline` to 2, 4 and 8 outputs per thread; plot time against elements-per-thread and correlate the drop-off with register spilling from `-Xptxas -v`. *(Day 13)*
+65c. Sweep the grid size of the Day 2 grid-stride vector add (64 → 4096 blocks) at fixed `n` and explain the curve as coarsening at one end, occupancy at the other. *(Day 13)*
 
 ## Day 14 — CUDA Libraries
 66. Estimate π via Monte Carlo sampling with cuRAND. *(Day 14)*
