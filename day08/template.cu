@@ -12,12 +12,16 @@
 #include <opencv2/cudev.hpp>
 #include "../common/cuda_check.h"
 
-// TODO 1: warp-level sum reduction.
-// Each of the 32 lanes contributes `val`; after this function every lane
-// (or at least lane 0) holds the warp's total sum.
+// TODO 1: warp-level sum reduction. 5 steps, halving the offset each time,
+// after which LANE 0 holds the warp's total. (Lane 16 holds a 16-element
+// partial, not the total -- shfl_down always moves data toward lower lanes.)
+//
+// No bounds check is needed on the source lane: when lane 20 asks for lane 36,
+// the intrinsic returns lane 20's own value. Those lanes are past the useful
+// half of the reduction and their results are discarded, so it never matters.
 __device__ int warp_reduce_sum(int val)
 {
-    // TODO: for (int offset = 16; offset > 0; offset /= 2)
+    // TODO: for (int offset = 16; offset > 0; offset >>= 1)
     //           val += __shfl_down_sync(0xFFFFFFFF, val, offset);
     return val;
 }
@@ -25,6 +29,12 @@ __device__ int warp_reduce_sum(int val)
 __global__ void reduce_kernel(const int *in, int *out, int n)
 {
     int id = blockDim.x * blockIdx.x + threadIdx.x;
+
+    // Note the shape of this line -- it is NOT `if (id < n) { ... }`.
+    // Every lane must reach warp_reduce_sum, because the 0xFFFFFFFF mask
+    // inside it promises all 32 will. Out-of-range lanes contribute the
+    // identity for the operation instead (0 for sum). Wrapping the reduction
+    // in a bounds check is undefined behaviour, not just a wrong total.
     int val = (id < n) ? in[id] : 0;
 
     val = warp_reduce_sum(val);
@@ -33,12 +43,60 @@ __global__ void reduce_kernel(const int *in, int *out, int n)
     // atomicAdd to a global accumulator).
 }
 
+// TODO 4 (self-learning #4): reduce a whole BLOCK, not just a warp.
+// A 256-thread block is 8 warps; warp_reduce_sum leaves you 8 partials that
+// still need combining. The idiomatic pattern is hierarchical -- reduce inside
+// each warp, park one value per warp in shared memory, then let the first warp
+// reduce those. Two levels covers the 1024-thread maximum exactly, because
+// 32 lanes collapse to 1 and at most 32 warps collapse to 1.
+//
+// Costs ONE __syncthreads() and 128 bytes of shared memory. The classic
+// shared-memory tree reduction costs 8 barriers and 8 rounds of shared traffic
+// for the same 256 threads -- time both (self-learning #4) and see.
+__device__ int block_reduce_sum(int val)
+{
+    __shared__ int warp_sums[32];        // 32 warps max per block
+
+    // Valid only because blockDim.x is a multiple of 32 here. For a block like
+    // dim3(16,16) you must flatten the thread index first -- see INTRINSICS.md.
+    const int lane = threadIdx.x & 31;
+    const int wid  = threadIdx.x >> 5;
+
+    // TODO: val = warp_reduce_sum(val);
+    // TODO: if (lane == 0) warp_sums[wid] = val;
+    // TODO: __syncthreads();
+    // TODO: const int nwarps = blockDim.x >> 5;
+    //       val = (threadIdx.x < nwarps) ? warp_sums[lane] : 0;
+    //       if (wid == 0) val = warp_reduce_sum(val);
+    // returns the block total in thread 0
+    (void)lane; (void)wid;
+    return val;
+}
+
+// TODO 5 (self-learning #5): the butterfly variant. Identical cost, but every
+// lane ends up holding the total instead of just lane 0 -- no broadcast needed
+// afterwards. Useful when all 32 lanes need the result to continue.
+//   for (int offset = 16; offset > 0; offset >>= 1)
+//       val += __shfl_xor_sync(0xFFFFFFFF, val, offset);
+__device__ int warp_reduce_sum_all(int val)
+{
+    // TODO
+    return val;
+}
+
 // TODO 2 (self-learning #2): warp-level inclusive prefix sum (scan).
+// Kogge-Stone, 5 steps like the reduction. [1,1,1,...] -> [1,2,3,...].
+//
+// The `lane >= offset` guard is load-bearing here, unlike in the reduction.
+// A lane asking for a source below 0 gets its OWN value back, and adding that
+// would silently double its contribution. In warp_reduce_sum those lanes'
+// results get discarded so the garbage never escapes; here they don't.
 __device__ int warp_scan_inclusive(int val)
 {
-    // TODO: for (int offset = 1; offset < 32; offset *= 2) {
-    //           int n = __shfl_up_sync(0xFFFFFFFF, val, offset);
-    //           if ((threadIdx.x & 31) >= offset) val += n;
+    // TODO: const int lane = threadIdx.x & 31;    // only valid if blockDim.x % 32 == 0
+    //       for (int offset = 1; offset < 32; offset <<= 1) {
+    //           const int n = __shfl_up_sync(0xFFFFFFFF, val, offset);
+    //           if (lane >= offset) val += n;
     //       }
     return val;
 }
@@ -50,6 +108,36 @@ __device__ int warp_scan_inclusive(int val)
 __global__ void extract_indices_above_threshold(const unsigned char *img, size_t img_step,
                                                   int width, int height, unsigned char threshold,
                                                   int *out_indices, int *out_count)
+{
+    // TODO
+}
+
+// TODO 6 (self-learning #6): the same compaction, but for a BINARY predicate
+// there's a two-instruction shortcut that beats the 5-step scan entirely.
+// This is what production code does.
+//
+//   const int  lane = threadIdx.x & 31;
+//   const bool keep = (pixel > threshold);
+//
+//   const unsigned ballot = __ballot_sync(0xFFFFFFFF, keep);  // 1 bit per lane
+//   const int prefix = __popc(ballot & ((1u << lane) - 1));   // lanes before me
+//   const int total  = __popc(ballot);                        // lanes in total
+//
+//   int base;
+//   if (lane == 0) base = atomicAdd(out_count, total);        // ONE atomic per warp
+//   base = __shfl_sync(0xFFFFFFFF, base, 0);                  // broadcast it
+//
+//   if (keep) out_indices[base + prefix] = my_index;
+//
+// The mask (1u << lane) - 1 clears bit `lane` and above, giving an EXCLUSIVE
+// prefix -- your own slot shouldn't be counted before you write to it. It's
+// correct at lane 31 too: (1u << 31) - 1 == 0x7FFFFFFF.
+//
+// One atomicAdd per warp instead of one per passing pixel: up to 32x less
+// contention. Same warp-aggregation idea Day 9 generalizes as privatization.
+__global__ void extract_indices_ballot(const unsigned char *img, size_t img_step,
+                                        int width, int height, unsigned char threshold,
+                                        int *out_indices, int *out_count)
 {
     // TODO
 }

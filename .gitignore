@@ -47,10 +47,16 @@ out/
 *.ii
 *.gpu
 
-# Day executables (templates compile to bare `dayNN`, no extension on Linux)
+# Day executables. On Linux `nvcc -o day05` produces an extensionless binary
+# with the same name as the day's directory, so these patterns MUST be
+# re-negated for directories -- a bare `day15` pattern matches the day15/
+# folder as well as the day15 binary, and git then refuses to look inside it
+# at all (even `git add day15/foo.svg` fails).
 day0[1-9]
 day1[0-5]
 matrix_add
+!day0[1-9]/
+!day1[0-5]/
 
 # Profiler output
 *.nsys-rep

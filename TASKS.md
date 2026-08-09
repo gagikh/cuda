@@ -62,6 +62,10 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 38. Use the scan result to compact indices of pixels above a threshold. *(Day 8)*
 39. Implement a 32-point FFT butterfly using warp shuffles. *(Day 8)*
 40. Compare warp-shuffle reduction against a shared-memory reduction for the same problem size. *(Bonus)*
+40a. Extend the warp reduction to a full `block_reduce_sum` (warp → shared → warp), then reduce a whole grid via one `atomicAdd` per block. Count the `__syncthreads()` calls against a classic tree reduction. *(Day 8)*
+40b. Rewrite the reduction with `__shfl_xor_sync` so every lane holds the total; confirm the cost is unchanged and say when you'd want it. *(Day 8)*
+40c. Redo the compaction with `__ballot_sync` + `__popc` and one warp-aggregated atomic. Time it against the scan version at 5% and 95% pass rates. *(Day 8)*
+40d. Write the divergence bug deliberately — `warp_reduce_sum` inside `if (id < n)` with `n` not a multiple of 32 — and run it under `compute-sanitizer --tool synccheck`. *(Day 8)*
 
 ## Day 9 — Warp-Level Data Exchange
 41. Compute an image's mean pixel value using warp reduction + `atomicAdd`. *(Day 9)*

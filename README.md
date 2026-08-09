@@ -60,10 +60,11 @@
 - Event-based timing
 
 ### [Day 8: Warp-Level Intrinsics – Reduction](day08/README.md)
-- Warp shuffle functions  
-- Intra-warp communication  
-- Parallel reduction  
-- Performance tuning
+- Warp shuffle functions; the lane mask and why divergence here is UB, not just slow  
+- Intra-warp communication without shared memory or barriers  
+- Parallel reduction: warp-level, then block-level (warp → shared → warp)  
+- Inclusive scan, stream compaction, and warp-aggregated atomics  
+- Performance tuning: shuffles vs. shared memory
 
 ### [Day 9: Warp-Level Data Exchange](day09/README.md)
 - Warp vote functions  
@@ -102,8 +103,9 @@
 
 ### [Day 15: Stream-Ordered Memory Allocation](day15/README.md)
 - `cudaMallocAsync` / `cudaFreeAsync`  
-- Stream-ordered allocation semantics  
-- Memory pools
+- Stream-ordered allocation semantics; cross-stream use needs an explicit event  
+- Memory pools: default vs. explicit, release threshold, reserved/used, trimming  
+- Reuse policies, IPC pools, and why `cudaMalloc` can't be graph-captured
 
 ---
 

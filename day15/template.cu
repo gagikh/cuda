@@ -44,6 +44,52 @@ void benchmark_alloc_overhead(int iterations, size_t bytes)
     // TODO 2 (self-learning #2): time `iterations` iterations of cudaMalloc+cudaFree
     // vs. cudaMallocAsync+cudaFreeAsync for a small `bytes` allocation, using
     // cudaEvents around each loop (CUDA_CHECK every call). Which one wins, and by how much?
+    //
+    // Then run the async loop a second time with the pool's release threshold
+    // raised, and compare all three. By default the pool returns memory to the
+    // OS at every device sync, which throws away the reuse you're paying for:
+    //
+    //   cudaMemPool_t pool;
+    //   CUDA_CHECK(cudaDeviceGetDefaultMemPool(&pool, 0));
+    //   size_t threshold = 256ull * 1024 * 1024;   // or UINT64_MAX for "never"
+    //   CUDA_CHECK(cudaMemPoolSetAttribute(pool, cudaMemPoolAttrReleaseThreshold, &threshold));
+}
+
+// TODO 3 (self-learning #5): report what the pool is holding.
+//   - cudaMemPoolAttrReservedMemCurrent = bytes the pool has taken from the OS
+//   - cudaMemPoolAttrUsedMemCurrent     = bytes actually handed out right now
+// A large gap means the pool is hoarding. cudaMemPoolTrimTo(pool, 0) gives it back.
+void report_pool_usage(const char *label)
+{
+    // TODO: cudaMemPool_t pool; cudaDeviceGetDefaultMemPool(&pool, 0);
+    //       cuuint64_t reserved = 0, used = 0;
+    //       cudaMemPoolGetAttribute(pool, cudaMemPoolAttrReservedMemCurrent, &reserved);
+    //       cudaMemPoolGetAttribute(pool, cudaMemPoolAttrUsedMemCurrent, &used);
+    //       printf("%-12s reserved %.2f MB, used %.2f MB\n", label,
+    //              reserved / 1048576.0, used / 1048576.0);
+    (void)label;
+}
+
+// TODO 4 (self-learning #3): build an explicit pool and allocate from it.
+// Why not just use the default pool: isolation between subsystems, per-pool
+// release policies, and IPC (set props.handleTypes to share across processes).
+//
+//   cudaMemPoolProps props = {};
+//   props.allocType     = cudaMemAllocationTypePinned;
+//   props.location.type = cudaMemLocationTypeDevice;
+//   props.location.id   = 0;
+//   // props.handleTypes = cudaMemHandleTypePosixFileDescriptor;  // IPC-capable
+//   CUDA_CHECK(cudaMemPoolCreate(&pool, &props));
+//   CUDA_CHECK(cudaMallocFromPoolAsync(&ptr, bytes, pool, stream));
+//   CUDA_CHECK(cudaFreeAsync(ptr, stream));      // no pool argument needed
+//   CUDA_CHECK(cudaMemPoolDestroy(pool));        // after a sync
+//
+// A pool is per-DEVICE, not per-stream: drive the same pool from two streams
+// and confirm both get valid, non-overlapping allocations.
+void run_with_explicit_pool(cudaStream_t s1, cudaStream_t s2, size_t bytes)
+{
+    (void)s1; (void)s2; (void)bytes;
+    // TODO
 }
 
 int main(int argc, char **argv)
@@ -75,10 +121,20 @@ int main(int argc, char **argv)
     cv::imshow("contrast adjusted (cudaMallocAsync)", h_result);
     cv::waitKey(0);
 
+    report_pool_usage("before");
     benchmark_alloc_overhead(1000, 4096);
+    report_pool_usage("after");
+    // TODO: cudaMemPoolTrimTo(pool, 0) here, then report again -- reserved should drop.
 
-    // TODO (self-learning #3): create an explicit cudaMemPool_t with cudaDeviceGetDefaultMemPool
-    // or cudaMemPoolCreate, and drive allocations on it from two different streams.
+    // TODO (self-learning #3): drive an explicit pool from two streams.
+    //   run_with_explicit_pool(stream, stream2, 1 << 20);
+
+    // TODO (self-learning #6): the cross-stream bug worth making on purpose.
+    // Allocate on `stream`, then launch adjust_contrast on a SECOND stream using
+    // that pointer, with no event between them. Stream-ordered means ordered
+    // *within one stream* -- another stream has no dependency on the allocation
+    // and may run before it completes. It will often appear to work. Run it
+    // under compute-sanitizer (Day 1), then fix it with a cudaEvent (Day 6).
 
     CUDA_CHECK(cudaFreeHost(h_out));
     CUDA_CHECK(cudaStreamDestroy(stream));
