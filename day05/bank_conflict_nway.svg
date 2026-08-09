@@ -1,0 +1,210 @@
+<svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="400" fill="#0d1117"/>
+  <text x="450" y="26" text-anchor="middle" fill="#e6edf3" font-size="17" font-weight="bold">N-Way Bank Conflicts: how access stride sets the transaction count</text>
+  <text x="450" y="44" text-anchor="middle" fill="#8b949e" font-size="11">32 threads of one warp &#183; 32 shared-memory banks &#183; bar height = how many threads land on that bank &#183; loops continuously</text>
+
+  <!-- phase captions (cross-fade) -->
+  <g font-size="14" font-weight="bold" text-anchor="middle">
+    <text x="450" y="74" fill="#2ea043">stride 1 &#8212; <tspan font-weight="normal">s[tid]</tspan> &#8594; every thread a different bank &#183; conflict-free &#183; 1 transaction
+      <animate attributeName="opacity" values="1;0;0;0;1" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </text>
+    <text x="450" y="74" fill="#d29922" opacity="0">stride 2 &#8212; <tspan font-weight="normal">s[2*tid]</tspan> &#8594; 2 threads per even bank &#183; 2-way conflict &#183; 2 transactions
+      <animate attributeName="opacity" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </text>
+    <text x="450" y="74" fill="#f0883e" opacity="0">stride 4 &#8212; <tspan font-weight="normal">s[4*tid]</tspan> &#8594; 4 threads per 4th bank &#183; 4-way conflict &#183; 4 transactions
+      <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </text>
+    <text x="450" y="74" fill="#f85149" opacity="0">stride 32 &#8212; <tspan font-weight="normal">tile[tid][col]</tspan> &#8594; all 32 threads on bank 0 &#183; 32-way conflict &#183; 32 transactions
+      <animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </text>
+  </g>
+
+  <!-- grid guides -->
+  <g stroke="#21262d" stroke-width="1">
+    <line x1="40" y1="300" x2="872" y2="300"/>
+    <line x1="40" y1="282" x2="872" y2="282" stroke-dasharray="3 5"/>
+    <line x1="40" y1="264" x2="872" y2="264" stroke-dasharray="3 5"/>
+    <line x1="40" y1="228" x2="872" y2="228" stroke-dasharray="3 5"/>
+    <line x1="40" y1="130" x2="872" y2="130" stroke-dasharray="3 5"/>
+  </g>
+  <g fill="#484f58" font-size="9" text-anchor="end">
+    <text x="34" y="286">1</text>
+    <text x="34" y="268">2</text>
+    <text x="34" y="232">4</text>
+    <text x="34" y="134">32</text>
+  </g>
+
+  <!-- bars: one per bank. Four keyframes = the four stride phases. -->
+  <g>
+    <!-- bank 0: hit in every phase -->
+    <rect x="40" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;130;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;170;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f85149;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 1 (odd): only stride-1 -->
+    <rect x="66" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 2 (even, not /4) -->
+    <rect x="92" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="118" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 4 (/4) -->
+    <rect x="144" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="170" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="196" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="222" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 8 (/4) -->
+    <rect x="248" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="274" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="300" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="326" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 12 (/4) -->
+    <rect x="352" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="378" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="404" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="430" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 16 (/4) -->
+    <rect x="456" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="482" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="508" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="534" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 20 (/4) -->
+    <rect x="560" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="586" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="612" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="638" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 24 (/4) -->
+    <rect x="664" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="690" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="716" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="742" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <!-- bank 28 (/4) -->
+    <rect x="768" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;228;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;72;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#f0883e;#f0883e;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="794" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="820" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;264;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;36;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#2ea043;#d29922;#d29922;#d29922;#2ea043" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="846" y="282" width="22" height="18" rx="2" fill="#2ea043">
+      <animate attributeName="y" values="282;300;300;300;282" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="height" values="18;0;0;0;18" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- bank axis labels -->
+  <g fill="#8b949e" font-size="9" text-anchor="middle">
+    <text x="51" y="314">B0</text>
+    <text x="155" y="314">B4</text>
+    <text x="259" y="314">B8</text>
+    <text x="363" y="314">B12</text>
+    <text x="467" y="314">B16</text>
+    <text x="571" y="314">B20</text>
+    <text x="675" y="314">B24</text>
+    <text x="779" y="314">B28</text>
+  </g>
+  <text x="450" y="336" text-anchor="middle" fill="#8b949e" font-size="11">shared-memory bank = (byte address / 4) mod 32 &#183; each bank serves one 4-byte word per cycle</text>
+
+  <text x="450" y="364" text-anchor="middle" fill="#e6edf3" font-size="12">Cost of a warp's shared-memory access = the <tspan font-weight="bold">tallest bar</tspan>, not the number of bars.</text>
+  <text x="450" y="384" text-anchor="middle" fill="#8b949e" font-size="11">Special case (not shown): if every thread reads the <tspan font-style="italic">same</tspan> address, the bank broadcasts &#8212; 1 transaction, not 32.</text>
+</svg>

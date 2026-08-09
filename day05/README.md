@@ -21,6 +21,15 @@
 
 Shared memory is split into 32 banks so that 32 threads can be serviced in one transaction — but only if each thread hits a different bank. Stride-32 access patterns (common when indexing by a tile width that's a multiple of 32) collapse onto the same bank and get serialized. Padding the row stride by one element is the standard fix, and it's exactly what `tiled_filter` in [`template.cu`](template.cu) is set up for.
 
+## Animated
+![A 32-bank histogram cycling through four access strides: stride 1 gives one thread per bank, stride 2 piles two threads on every even bank, stride 4 piles four threads on every fourth bank, and stride 32 piles all 32 threads onto bank 0](bank_conflict_nway.svg)
+
+Four strides, same warp, same 32 banks. The cost of a shared-memory access is the **tallest bar**, not the number of bars: whatever the worst-hit bank has to serve, every other lane waits for. Stride 1 → 1 transaction, stride 2 → 2, stride 4 → 4, stride 32 → 32.
+
+The general rule behind the picture: lane `t` lands on bank `(t × stride) mod 32`, so the conflict degree is exactly **`gcd(stride, 32)`**. That has a consequence worth internalizing — *every odd stride is conflict-free*. Stride 3, 7, 17 and 31 all cost one transaction, identical to stride 1. Only strides sharing a factor of two with 32 hurt, and each extra factor doubles the damage. Padding a tile to `[TILE][TILE+1]` is nothing more cunning than forcing an even row stride to become odd.
+
+For a configurable version — drag the stride to any value 1–33, sweep it, and step through the transpose read/write phases under all three layouts (plain, padded, swizzled) — see [`bank_conflict_animations.html`](bank_conflict_animations.html), open locally in a browser since GitHub's file viewer only shows HTML as source rather than running it. The transpose tab is the concrete setup for Day 12's `transpose_shared` kernel.
+
 ## OpenCV Basics
 Starting today, day templates load real images/video through OpenCV instead of filling synthetic buffers by hand. Four things to know:
 
@@ -52,6 +61,7 @@ Use shared memory for a 2D filter, loaded from a real image via `cv::imread`. Fi
 No answers given — these are for you to reason through, or discuss with a classmate/instructor.
 
 1. Why do 32 threads reading `tile[threadIdx.x][k]` for a fixed `k` all collide on the same shared-memory bank?
+1b. A warp accesses shared memory with stride 3. How many transactions does it cost, and why isn't the answer 3? (Then check yourself against the stride explorer in [`bank_conflict_animations.html`](bank_conflict_animations.html).)
 2. Why does `GpuMat::step` differ from `cols * elemSize()`, and what breaks in a kernel that ignores that and assumes rows are contiguous?
 3. What does `__syncthreads()` actually guarantee, and what does it explicitly *not* guarantee?
 

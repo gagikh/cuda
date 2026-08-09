@@ -16,6 +16,8 @@
 
 Graphs don't make the GPU compute faster — they cut the CPU-side overhead of re-issuing the same sequence of launches over and over. The win shows up when you run the same fixed pipeline many times (self-learning task 4 below is designed to make that overhead visible).
 
+The kernel being captured today, `transpose_shared`, is also the textbook worst case for shared-memory bank conflicts: the write walks the tile by row (stride 1, harmless) but the read walks it by column (stride 32, a full 32-way conflict). That's why the template declares `tile[TILE_DIM][TILE_DIM + 1]` rather than the obvious square array. The **Transpose** tab of Day 5's [`bank_conflict_animations.html`](../day05/bank_conflict_animations.html) lets you flip between the write and read phases under all three layouts (plain, padded, swizzled) and watch the transaction count move — worth a minute before writing the kernel, so the `+ 1` isn't just a magic number you copied.
+
 ## Resources
 https://www.olcf.ornl.gov/wp-content/uploads/2021/10/013_CUDA_Graphs.pdf
 https://developer.nvidia.com/blog/cuda-graphs/
