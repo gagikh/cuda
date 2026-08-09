@@ -2,7 +2,9 @@
 // Goal: replace cudaMalloc/cudaFree with stream-ordered cudaMallocAsync/cudaFreeAsync,
 // applied to a real image-contrast kernel, then benchmark allocation overhead.
 //
-// Compile:  nvcc -arch=sm_60 day15_template.cu -o day15 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day15 `pkg-config --cflags --libs opencv4`
+//           (cudaMallocAsync needs compute capability >= 6.0 and CUDA >= 11.2;
+//            sm_75 is this course's floor anyway.)
 // Run:      ./day15 <path-to-image>
 
 #include <cstdio>

@@ -1,7 +1,7 @@
 // Day 6: Streams and Events
 // Goal: image derivative kernel on a real image (via GpuMat), timed precisely with cudaEvents.
 //
-// Compile:  nvcc -arch=sm_50 day06_template.cu -o day06 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day06 `pkg-config --cflags --libs opencv4`
 // Run:      ./day06 <path-to-image>
 
 #include <cstdio>

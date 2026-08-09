@@ -2,7 +2,7 @@
 // Goal: shared-memory transpose of a real image, captured into a CUDA graph
 // and launched repeatedly.
 //
-// Compile:  nvcc -arch=sm_50 day12_template.cu -o day12 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day12 `pkg-config --cflags --libs opencv4`
 // Run:      ./day12 <path-to-image>
 
 #include <cstdio>

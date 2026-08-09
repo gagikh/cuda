@@ -2,7 +2,7 @@
 // Goal: warp-level sum reduction using __shfl_down_sync, then extract the
 // indices of pixels above a threshold in a real image using warp scan.
 //
-// Compile:  nvcc -arch=sm_50 day08_template.cu -o day08 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day08 `pkg-config --cflags --libs opencv4`
 // Run:      ./day08 <path-to-image>
 
 #include <cstdio>

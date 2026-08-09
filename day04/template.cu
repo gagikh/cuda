@@ -1,7 +1,7 @@
 // Day 4: CUDA Memory Types and Management
 // Goal: compare pageable vs. pinned vs. unified memory for the same transfer/compute.
 //
-// Compile:  nvcc -arch=sm_50 day04_template.cu -o day04  (profile with: nsys profile ./day04)
+// Compile:  nvcc -arch=sm_75 template.cu -o day04  (profile with: nsys profile ./day04)
 // Run:      ./day04
 
 #include <cstdio>

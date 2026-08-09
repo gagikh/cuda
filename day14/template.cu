@@ -2,7 +2,7 @@
 // Goal: estimate pi via Monte Carlo sampling using cuRAND, plus a bonus:
 // fill a real cv::cuda::GpuMat with cuRAND-generated noise.
 //
-// Compile:  nvcc -arch=sm_50 day14_template.cu -o day14 -lcurand `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day14 -lcurand `pkg-config --cflags --libs opencv4`
 // Run:      ./day14
 
 #include <cstdio>

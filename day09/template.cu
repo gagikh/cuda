@@ -2,7 +2,7 @@
 // Goal: image mean via warp reduction + atomicAdd, and __ballot_sync bit packing,
 // on a real image loaded via OpenCV.
 //
-// Compile:  nvcc -arch=sm_50 day09_template.cu -o day09 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day09 `pkg-config --cflags --libs opencv4`
 // Run:      ./day09 <path-to-image>
 
 #include <cstdio>

@@ -1,7 +1,7 @@
 // Day 13: Cache Behavior and Optimization
 // Goal: apply __ldg and bank-conflict-free shared memory to a real image.
 //
-// Compile:  nvcc -arch=sm_50 day13_template.cu -o day13 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day13 `pkg-config --cflags --libs opencv4`
 // Run:      ./day13 <path-to-image>
 
 #include <cstdio>

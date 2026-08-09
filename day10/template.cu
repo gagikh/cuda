@@ -2,7 +2,7 @@
 // Goal: naive matrix multiplication, then Hamming distance matching on real
 // ORB descriptors extracted from an image.
 //
-// Compile:  nvcc -arch=sm_50 day10_template.cu -o day10 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day10 `pkg-config --cflags --libs opencv4`
 // Run:      ./day10 <path-to-image>
 
 #include <cstdio>

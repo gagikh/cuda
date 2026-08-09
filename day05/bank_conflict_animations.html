@@ -24,42 +24,28 @@
   button.ctl{background:var(--box); border:1px solid var(--border); color:var(--text); padding:6px 14px;
              border-radius:6px; cursor:pointer; font-size:12px;}
   button.ctl:hover{border-color:var(--purple);}
-  button.ctl:disabled{opacity:.4; cursor:default;}
   button.ctl.on{border-color:var(--purple); background:#241a35; color:#c9a6ff;}
-  input[type=range]{accent-color:var(--purple); width:260px; vertical-align:middle;}
+  input[type=range]{accent-color:var(--purple); width:280px; vertical-align:middle;}
   code{background:var(--box); padding:1px 5px; border-radius:3px; font-size:11px;}
   .caption{font-size:12px; color:var(--border); margin-top:14px; line-height:1.55;}
   .backlink{text-align:center; font-size:12px; margin-bottom:14px;}
   .backlink a{color:#c9a6ff;}
-  .verdict{text-align:center; font-size:16px; font-weight:bold; margin:8px 0 2px;}
+  .verdict{text-align:center; font-size:16px; font-weight:bold; margin:6px 0 2px;}
   .verdict small{display:block; font-weight:normal; font-size:11px; color:var(--border); margin-top:4px;}
+  .hint{text-align:center; font-size:11px; color:#484f58; margin-top:2px; height:14px;}
+  svg{display:block; margin:0 auto; max-width:100%;}
+  .lanebox{cursor:pointer;}
 
-  /* histogram */
-  .hist{display:flex; align-items:flex-end; justify-content:center; gap:2px; height:190px;
-        border-bottom:1px solid var(--dim); padding-bottom:0; margin-top:6px;}
-  .hcol{width:22px; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%;}
-  .hbar{width:100%; border-radius:2px 2px 0 0; background:var(--green); transition:height .35s ease, background .35s ease;}
-  .hnum{font-size:9px; color:var(--border); height:12px; line-height:12px;}
-  .axis{display:flex; justify-content:center; gap:2px; margin-top:2px;}
-  .axis span{width:22px; text-align:center; font-size:8px; color:#484f58;}
-
-  /* lane strip */
-  .lanes{display:flex; gap:2px; justify-content:center; flex-wrap:wrap; margin:10px 0 4px;}
-  .lane{width:22px; height:16px; border-radius:2px; background:var(--dim); border:1px solid #30363d;
-        font-size:8px; line-height:14px; text-align:center; color:var(--border); transition:background .3s;}
-
-  /* transpose grid */
-  .tgrid{display:grid; grid-template-columns:repeat(32, 1fr); gap:1px; max-width:560px; margin:10px auto;}
+  /* transpose tile */
+  .tgrid{display:grid; grid-template-columns:repeat(32, 1fr); gap:1px; max-width:420px; margin:10px auto;}
   .cell{aspect-ratio:1; background:var(--dim); border-radius:1px; transition:background .25s;}
   .cell.act{background:var(--blue);}
-  .legend{display:flex; gap:16px; justify-content:center; font-size:11px; color:var(--border); margin-top:8px; flex-wrap:wrap;}
-  .swatch{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:-1px;}
 </style>
 </head>
 <body>
 
 <h1>Day 5: Bank Conflict Animations</h1>
-<div class="sub">Configurable companion to bank_conflicts.svg and bank_conflict_nway.svg &mdash; change the stride, watch the cost</div>
+<div class="sub">Configurable companion to bank_conflict_nway.svg &mdash; set any stride, see exactly which bank each lane lands on</div>
 <div class="backlink"><a href="README.md">&larr; back to Day 5</a></div>
 
 <div class="tabs">
@@ -71,39 +57,56 @@
 <!-- ============ STRIDE EXPLORER ============ -->
 <div class="panel active" id="p1">
   <div class="controls">
+    <span style="font-size:11px; color:var(--border);">pattern:</span>
+    <button class="ctl on" id="modeStride">constant stride &mdash; s[t * stride]</button>
+    <button class="ctl" id="modeGather">gather &mdash; s[idx[t]]</button>
+  </div>
+
+  <div class="controls" id="rowStride">
     <label>stride <b id="sval" style="color:#c9a6ff;">1</b></label>
     <input type="range" id="stride" min="1" max="33" value="1">
     <button class="ctl" id="sweep">Sweep 1&rarr;33</button>
     <button class="ctl" id="sreset">Reset</button>
   </div>
 
-  <div class="verdict" id="verdict"></div>
-
-  <div class="hist" id="hist"></div>
-  <div class="axis" id="axis"></div>
-
-  <div class="lanes" id="lanes"></div>
-  <div style="text-align:center; font-size:11px; color:var(--border);">
-    32 lanes of one warp &middot; lane <i>t</i> reads <code id="expr">s[t * 1]</code> &middot; bank = (t &times; stride) mod 32
+  <div class="controls" id="rowGather" style="display:none;">
+    <label>target conflict degree <b id="gval" style="color:#c9a6ff;">3</b>-way</label>
+    <input type="range" id="gather" min="1" max="32" value="3">
   </div>
 
+  <div class="verdict" id="verdict"></div>
+  <div id="wire1"></div>
+  <div class="hint" id="hint1">hover a lane to trace it</div>
+
   <div class="caption">
-    <b>The rule:</b> with stride <i>s</i>, lane <i>t</i> lands on bank <code>(t&times;s) mod 32</code>. That map hits
-    <code>32 / gcd(s,32)</code> distinct banks, with <code>gcd(s,32)</code> lanes piled on each one &mdash; so the
-    conflict degree is exactly <b>gcd(stride, 32)</b> and the warp pays that many transactions.
+    <b>The mapping:</b> lane <i>t</i> reads word <code>t &times; stride</code>, which lives in bank
+    <code>(t &times; stride) mod 32</code>. Every wire landing on the same bank is one more serialized
+    transaction &mdash; the bank can only serve one word per cycle, so the whole warp waits for the busiest one.
     <br><br>
-    <b>The consequence students usually miss:</b> every <i>odd</i> stride is conflict-free. Stride 3, 7, 17, 31 all
-    give <code>gcd = 1</code> and cost one transaction, same as stride 1 &mdash; try them. Only strides sharing a
-    factor of two with 32 hurt, and the damage doubles with each factor: 2&rarr;2-way, 4&rarr;4-way, 8&rarr;8-way,
-    16&rarr;16-way, 32&rarr;32-way. This is why padding a tile to <code>[TILE][TILE+1]</code> works &mdash; it turns
-    an even row stride into an odd one.
+    <b>The rule that falls out:</b> that map covers <code>32 / gcd(s,32)</code> distinct banks with
+    <code>gcd(s,32)</code> lanes piled on each, so the conflict degree is exactly <b>gcd(stride, 32)</b>.
+    <br><br>
+    <b>The part most people get wrong:</b> every <i>odd</i> stride is conflict-free. Drag to 3, 7, 17, 31 &mdash;
+    the wires cross wildly but never collide, and the cost is one transaction, identical to stride 1. Only strides
+    sharing a factor of two with 32 hurt, and each extra factor doubles the damage: 2&rarr;2-way, 4&rarr;4-way,
+    8&rarr;8-way, 16&rarr;16-way, 32&rarr;32-way. Padding a tile to <code>[TILE][TILE+1]</code> isn't magic &mdash;
+    it just forces an even row stride to become odd.
+    <br><br>
+    <b>Why there's no "stride 3-way" button:</b> sweep the whole slider and you'll only ever see degrees 1, 2, 4,
+    8, 16 and 32. That's not a gap in the demo &mdash; <code>gcd(s, 32)</code> divides 32, so from a constant stride
+    the conflict degree is <i>always</i> a power of two. A 3-way (or 5-, or 7-way) conflict is perfectly real, but it
+    can only come from an <b>irregular</b> access pattern: an indirect gather <code>s[idx[t]]</code>, a lookup table,
+    a compaction, or any index the compiler can't express as <code>t &times; k</code>. Switch to
+    <b>gather</b> above and dial in any degree you like. The practical upshot: if you're writing a regular tiled
+    kernel, checking <code>gcd(row_stride, 32)</code> tells you everything; if you're writing a gather, the only way
+    to know is to profile it (<code>ncu --metrics l1tex__data_bank_conflicts_pipe_lsu_mem_shared</code>).
   </div>
 </div>
 
 <!-- ============ TRANSPOSE ============ -->
 <div class="panel" id="p2">
   <div style="text-align:center; font-size:12px; color:var(--border); margin-bottom:6px;">
-    A 32&times;32 <code>__shared__</code> tile in a transpose kernel. The write is by row, the read is by column &mdash;
+    A 32&times;32 <code>__shared__</code> tile in a transpose kernel. The write goes by row, the read by column &mdash;
     same tile, wildly different cost.
   </div>
 
@@ -119,54 +122,45 @@
   </div>
 
   <div class="verdict" id="tverdict"></div>
-
   <div class="tgrid" id="tgrid"></div>
-  <div class="legend">
-    <span><span class="swatch" style="background:var(--blue);"></span>words this warp touches</span>
-    <span><span class="swatch" style="background:var(--dim);"></span>rest of the tile</span>
-  </div>
-
-  <div class="hist" id="thist" style="height:150px;"></div>
-  <div class="axis" id="taxis"></div>
+  <div id="wire2"></div>
+  <div class="hint" id="hint2">hover a lane to trace it</div>
 
   <div class="caption">
-    <b>Write by row</b> (<code>tile[ty][tx] = in[...]</code>): consecutive lanes touch consecutive words, stride 1 &mdash;
-    always conflict-free, whatever the layout.
+    <b>Write by row</b> (<code>tile[ty][tx] = in[...]</code>): consecutive lanes touch consecutive words &mdash;
+    stride 1, conflict-free under every layout.
     <br>
     <b>Read by column</b> (<code>out[...] = tile[tx][ty]</code>): consecutive lanes step a whole row apart. With
-    <code>tile[32][32]</code> the row stride is 32 words, so all 32 lanes hit bank 0 &mdash; a full 32-way conflict, the
-    single worst case shared memory has. The kernel looks innocent; it runs ~32&times; slower on that access.
+    <code>tile[32][32]</code> the row stride is 32 words, so all 32 wires funnel into bank 0 &mdash; a full 32-way
+    conflict, the worst case shared memory has. The kernel looks innocent; that one access runs ~32&times; slower.
     <br><br>
-    <b>Two fixes, same result, different trade-off.</b> Padding to <code>[32][33]</code> makes the row stride 33 words,
-    so lane <i>t</i> lands on bank <code>(33t + c) mod 32 = (t + c) mod 32</code> &mdash; all distinct. Cost: one wasted
-    column of shared memory per row (128 bytes here), and it doesn't generalise to vectorised (<code>float4</code>)
-    access. Swizzling with <code>tile[r][c ^ r]</code> puts lane <i>t</i> on bank <code>c ^ t</code> &mdash; also all
-    distinct, with zero wasted memory, but you must apply the same XOR on <i>both</i> the write and the read, and the
-    clean permutation only holds when the row width is a power of two.
+    <b>Two fixes, same result, different trade-off.</b> Padding to <code>[32][33]</code> makes the row stride 33
+    words, so lane <i>t</i> lands on bank <code>(33t + c) mod 32 = (t + c) mod 32</code> &mdash; all distinct. Cost:
+    one wasted column per row, and it doesn't survive vectorised (<code>float4</code>) access. Swizzling with
+    <code>tile[r][c ^ r]</code> puts lane <i>t</i> on bank <code>c ^ t</code> &mdash; also all distinct, zero wasted
+    memory, but you must apply the same XOR on <i>both</i> the write and the read, and the clean permutation only
+    holds when the row width is a power of two.
   </div>
 </div>
 
 <!-- ============ BROADCAST ============ -->
 <div class="panel" id="p3">
   <div style="text-align:center; font-size:12px; color:var(--border);">
-    All 32 lanes read the <i>same</i> address. Naively that looks like the worst possible 32-way conflict.
+    All 32 lanes read the <i>same address</i>. Naively that looks like the worst possible 32-way conflict.
   </div>
-  <div class="controls">
-    <button class="ctl" id="brun">Run</button>
-  </div>
+  <div class="controls"><button class="ctl" id="brun">Run</button></div>
   <div class="verdict" id="bverdict">&nbsp;</div>
-  <div class="lanes" id="blanes"></div>
-  <div class="hist" id="bhist" style="height:120px;"></div>
-  <div class="axis" id="baxis"></div>
+  <div id="wire3"></div>
+  <div class="hint">&nbsp;</div>
   <div class="caption">
-    It isn't. Shared memory has a <b>broadcast</b> path: when multiple lanes in a warp request the <i>same word</i>, the
-    bank reads it once and fans it out to all of them in a single transaction. A conflict only happens when lanes want
-    <i>different</i> words that happen to live in the same bank.
+    It isn't. Shared memory has a <b>broadcast</b> path: when several lanes request the <i>same word</i>, the bank
+    reads it once and fans it out to all of them in a single transaction. A conflict only happens when lanes want
+    <i>different</i> words that happen to share a bank.
     <br><br>
-    So the real rule is narrower than "don't let two lanes share a bank": <b>same bank + same address = free
-    (broadcast); same bank + different addresses = serialized.</b> This is why a lookup table every thread reads
-    identically is fine in shared memory, and why constant memory (which broadcasts by design &mdash; see
-    <code>ARCHITECTURE.md</code>) is a good home for that kind of data in the first place.
+    So the real rule is narrower than "never let two lanes share a bank": <b>same bank + same address = free
+    (broadcast); same bank + different addresses = serialized.</b> That's why a lookup table every thread reads
+    identically is perfectly fine in shared memory &mdash; and why constant memory, which broadcasts by design (see
+    <code>ARCHITECTURE.md</code>), is the natural home for that kind of data in the first place.
   </div>
 </div>
 
@@ -181,90 +175,146 @@ document.querySelectorAll('.tab').forEach(tab=>{
   };
 });
 
-const COLORS = {1:'#2ea043', 2:'#d29922', 4:'#f0883e', 8:'#f0883e', 16:'#f85149', 32:'#f85149'};
+const NS='http://www.w3.org/2000/svg';
+const CX = i => 43 + i*27;          // centre of lane/bank i
+const LANE_Y = 30, BANK_Y = 140, BOX = 22;
+
 function degColor(d){ return d<=1?'#2ea043' : d<=2?'#d29922' : d<=8?'#f0883e' : '#f85149'; }
 function gcd(a,b){ while(b){ [a,b]=[b,a%b]; } return a; }
 
-// build a 32-column histogram into `el`, return the bar elements
-function buildHist(el, axisEl){
-  el.innerHTML=''; if(axisEl) axisEl.innerHTML='';
-  const bars=[];
-  for(let b=0;b<32;b++){
-    const col=document.createElement('div'); col.className='hcol';
-    const num=document.createElement('div'); num.className='hnum';
-    const bar=document.createElement('div'); bar.className='hbar'; bar.style.height='0%';
-    col.appendChild(num); col.appendChild(bar); el.appendChild(col);
-    bars.push({bar,num});
-    if(axisEl){
-      const s=document.createElement('span');
-      s.textContent = (b%4===0) ? b : '';
-      axisEl.appendChild(s);
-    }
+// Build a lane -> bank wire diagram. Returns handles for updating it.
+function buildWires(hostId, hintId){
+  const host=document.getElementById(hostId);
+  const svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','0 0 900 185');
+  svg.setAttribute('width','900');
+  host.appendChild(svg);
+
+  const mk=(t,attrs)=>{ const e=document.createElementNS(NS,t);
+    for(const k in attrs) e.setAttribute(k,attrs[k]); svg.appendChild(e); return e; };
+
+  mk('text',{x:36,y:LANE_Y+15,'text-anchor':'end',fill:'#58a6ff','font-size':10,'font-weight':'bold'}).textContent='lanes';
+  mk('text',{x:36,y:BANK_Y+15,'text-anchor':'end',fill:'#8b949e','font-size':10,'font-weight':'bold'}).textContent='banks';
+
+  const wires=[], lanes=[], banks=[];
+  for(let i=0;i<32;i++){
+    wires.push(mk('line',{x1:CX(i),y1:LANE_Y+BOX,x2:CX(i),y2:BANK_Y,
+      stroke:'#2ea043','stroke-width':1.6,opacity:0.8}));
   }
-  return bars;
+  for(let i=0;i<32;i++){
+    banks.push(mk('rect',{x:CX(i)-11,y:BANK_Y,width:BOX,height:BOX,rx:3,
+      fill:'#21262d',stroke:'#30363d','stroke-width':0.5}));
+  }
+  for(let i=0;i<32;i++){
+    const r=mk('rect',{x:CX(i)-11,y:LANE_Y,width:BOX,height:BOX,rx:3,fill:'#1f6feb',opacity:0.9});
+    r.setAttribute('class','lanebox');
+    r.addEventListener('mouseenter',()=>focusLane(i));
+    r.addEventListener('mouseleave',()=>focusLane(-1));
+    lanes.push(r);
+  }
+  for(let i=0;i<32;i+=4){
+    mk('text',{x:CX(i),y:LANE_Y-6,'text-anchor':'middle',fill:'#8b949e','font-size':9}).textContent='L'+i;
+    mk('text',{x:CX(i),y:BANK_Y+BOX+12,'text-anchor':'middle',fill:'#8b949e','font-size':9}).textContent='B'+i;
+  }
+
+  let lastBankOf=t=>t;
+  function focusLane(sel){
+    const hint=hintId?document.getElementById(hintId):null;
+    wires.forEach((w,i)=>{
+      w.setAttribute('opacity', sel<0 ? 0.8 : (i===sel?1:0.12));
+      w.setAttribute('stroke-width', sel===i ? 3.5 : 1.6);
+    });
+    lanes.forEach((l,i)=>l.setAttribute('opacity', sel<0?0.9:(i===sel?1:0.3)));
+    if(hint) hint.textContent = sel<0 ? 'hover a lane to trace it'
+      : 'lane ' + sel + '  →  bank ' + lastBankOf(sel);
+  }
+
+  return {
+    // bankOf(t) -> bank index for lane t
+    update(bankOf){
+      lastBankOf = bankOf;
+      const counts=new Array(32).fill(0);
+      for(let t=0;t<32;t++) counts[bankOf(t)]++;
+      const deg=Math.max(...counts), col=degColor(deg);
+      for(let t=0;t<32;t++){
+        wires[t].setAttribute('x2', CX(bankOf(t)));
+        wires[t].setAttribute('stroke', counts[bankOf(t)]>1 ? col : '#2ea043');
+      }
+      banks.forEach((b,i)=>b.setAttribute('fill',
+        counts[i]===0 ? '#21262d' : (counts[i]>1 ? col : '#2ea043')));
+      return {deg, distinct: counts.filter(c=>c>0).length};
+    },
+    focusLane
+  };
 }
 
 // ---------- Stride Explorer ----------
-const histBars = buildHist(document.getElementById('hist'), document.getElementById('axis'));
-const lanesEl = document.getElementById('lanes');
-for(let t=0;t<32;t++){
-  const d=document.createElement('div'); d.className='lane'; d.id='lane'+t; d.textContent=t;
-  lanesEl.appendChild(d);
-}
+const w1 = buildWires('wire1','hint1');
+let mode = 'stride';
 
-function renderStride(s){
-  document.getElementById('sval').textContent = s;
-  document.getElementById('expr').textContent = 's[t * ' + s + ']';
+// Gather mode: hand-build idx[] so that exactly `d` lanes share each bank.
+// This is the only way to reach an odd conflict degree — gcd(s,32) is always
+// a power of two, so no constant stride can ever produce a 3-way conflict.
+const gatherBank = d => (t => Math.floor(t / d) % 32);
 
-  const counts = new Array(32).fill(0);
-  for(let t=0;t<32;t++){
-    const bank = ((t*s) % 32 + 32) % 32;
-    counts[bank]++;
-    document.getElementById('lane'+t).style.background = '#1f6feb';
-    document.getElementById('lane'+t).textContent = bank;
-  }
-  const deg = Math.max(...counts);          // == gcd(s,32)
-  const distinct = counts.filter(c=>c>0).length;
-  const col = degColor(deg);
-
-  histBars.forEach((h,b)=>{
-    h.bar.style.height = (counts[b] / 32 * 100) + '%';
-    h.bar.style.background = counts[b] > 1 ? col : (counts[b] ? '#2ea043' : 'transparent');
-    h.num.textContent = counts[b] > 1 ? counts[b] : '';
-  });
-
+function render(){
   const v = document.getElementById('verdict');
-  v.style.color = col;
-  if(deg === 1){
-    v.innerHTML = 'conflict-free &middot; 1 transaction' +
-      '<small>gcd(' + s + ', 32) = 1 &rarr; all 32 lanes land on 32 distinct banks</small>';
+  if(mode === 'stride'){
+    const s = parseInt(document.getElementById('stride').value, 10);
+    document.getElementById('sval').textContent = s;
+    const {deg, distinct} = w1.update(t => (t*s) % 32);
+    v.style.color = degColor(deg);
+    v.innerHTML = (deg === 1)
+      ? 'conflict-free &middot; 1 transaction' +
+        '<small>lane t &rarr; bank (t&times;' + s + ') mod 32 &middot; gcd(' + s +
+        ', 32) = 1, so all 32 lanes reach 32 distinct banks</small>'
+      : deg + '-way conflict &middot; ' + deg + ' transactions &middot; ' + deg + '&times; slower' +
+        '<small>lane t &rarr; bank (t&times;' + s + ') mod 32 &middot; gcd(' + s + ', 32) = ' + deg +
+        ', so only ' + distinct + ' banks are reachable and ' + deg + ' lanes pile on each</small>';
   } else {
-    v.innerHTML = deg + '-way conflict &middot; ' + deg + ' transactions &middot; ' +
-      deg + '&times; slower' +
-      '<small>gcd(' + s + ', 32) = ' + deg + ' &rarr; only ' + distinct +
-      ' banks used, ' + deg + ' lanes piled on each</small>';
+    const d = parseInt(document.getElementById('gather').value, 10);
+    document.getElementById('gval').textContent = d;
+    const {deg, distinct} = w1.update(gatherBank(d));
+    v.style.color = degColor(deg);
+    v.innerHTML = (deg === 1)
+      ? 'conflict-free &middot; 1 transaction' +
+        '<small>idx[] happens to give every lane its own bank &mdash; a gather can be perfect, it just isn\'t guaranteed</small>'
+      : deg + '-way conflict &middot; ' + deg + ' transactions &middot; ' + deg + '&times; slower' +
+        '<small>idx[] puts ' + deg + ' lanes on each of ' + distinct + ' banks' +
+        (d % 2 ? ' &mdash; an <b>odd</b> degree, unreachable from any constant stride' : '') + '</small>';
   }
 }
+function setMode(m){
+  mode = m;
+  document.getElementById('modeStride').classList.toggle('on', m==='stride');
+  document.getElementById('modeGather').classList.toggle('on', m==='gather');
+  document.getElementById('rowStride').style.display = m==='stride' ? 'flex' : 'none';
+  document.getElementById('rowGather').style.display = m==='gather' ? 'flex' : 'none';
+  render();
+}
+document.getElementById('modeStride').onclick = ()=>setMode('stride');
+document.getElementById('modeGather').onclick = ()=>setMode('gather');
+document.getElementById('gather').oninput = render;
 
 const slider = document.getElementById('stride');
-slider.oninput = ()=>renderStride(parseInt(slider.value,10));
-renderStride(1);
+slider.oninput = render;
+render();
 
 let sweepTimer=null;
 document.getElementById('sweep').onclick = (e)=>{
-  if(sweepTimer){ clearInterval(sweepTimer); sweepTimer=null; e.target.textContent='Sweep 1→33'; e.target.classList.remove('on'); return; }
+  if(sweepTimer){ clearInterval(sweepTimer); sweepTimer=null;
+    e.target.textContent='Sweep 1→33'; e.target.classList.remove('on'); return; }
   e.target.textContent='Stop'; e.target.classList.add('on');
-  let s = 1;
+  let s = parseInt(slider.value,10);
   sweepTimer = setInterval(()=>{
     s = s >= 33 ? 1 : s + 1;
-    slider.value = s;
-    renderStride(s);
-  }, 750);
+    slider.value = s; render();
+  }, 900);
 };
 document.getElementById('sreset').onclick = ()=>{
   if(sweepTimer){ clearInterval(sweepTimer); sweepTimer=null;
     const b=document.getElementById('sweep'); b.textContent='Sweep 1→33'; b.classList.remove('on'); }
-  slider.value = 1; renderStride(1);
+  slider.value = 1; setMode('stride');
 };
 
 // ---------- Transpose ----------
@@ -272,64 +322,48 @@ const tgrid = document.getElementById('tgrid');
 for(let i=0;i<32*32;i++){
   const c=document.createElement('div'); c.className='cell'; c.id='c'+i; tgrid.appendChild(c);
 }
-const tBars = buildHist(document.getElementById('thist'), document.getElementById('taxis'));
-let tPhase = 'write';   // 'write' | 'read'
-let tLayout = 0;        // 0 = plain, 1 = padded, 2 = swizzled
+const w2 = buildWires('wire2','hint2');
+let tPhase='write', tLayout=0;
 
+// word index of tile element (r, c) under the current layout
 function wordIndex(r, c){
-  if(tLayout === 1) return r*33 + c;      // padded [32][33]
-  if(tLayout === 2) return r*32 + (c ^ r); // swizzled
-  return r*32 + c;                         // plain [32][32]
+  if(tLayout === 1) return r*33 + c;       // padded  [32][33]
+  if(tLayout === 2) return r*32 + (c ^ r); // swizzled tile[r][c^r]
+  return r*32 + c;                          // plain   [32][32]
 }
+// lane t touches (row 0, col t) when writing, (row t, col 0) when reading
+const tRow = t => tPhase==='write' ? 0 : t;
+const tCol = t => tPhase==='write' ? t : 0;
 
 function renderTranspose(){
-  const counts = new Array(32).fill(0);
   for(let i=0;i<32*32;i++) document.getElementById('c'+i).classList.remove('act');
+  for(let t=0;t<32;t++) document.getElementById('c' + (tRow(t)*32 + tCol(t))).classList.add('act');
 
-  // one warp, 32 lanes. write: lane t -> (row 0, col t). read: lane t -> (row t, col 0).
-  for(let t=0;t<32;t++){
-    const r = (tPhase === 'write') ? 0 : t;
-    const c = (tPhase === 'write') ? t : 0;
-    document.getElementById('c' + (r*32 + c)).classList.add('act');
-    counts[ wordIndex(r, c) % 32 ]++;
-  }
-
-  const deg = Math.max(...counts);
-  const col = degColor(deg);
-  tBars.forEach((h,b)=>{
-    h.bar.style.height = (counts[b] / 32 * 100) + '%';
-    h.bar.style.background = counts[b] > 1 ? col : (counts[b] ? '#2ea043' : 'transparent');
-    h.num.textContent = counts[b] > 1 ? counts[b] : '';
-  });
-
-  const layoutName = ['tile[32][32]', 'tile[32][33] (padded)', 'tile[r][c^r] (swizzled)'][tLayout];
+  const {deg} = w2.update(t => wordIndex(tRow(t), tCol(t)) % 32);
+  const layoutName = ['tile[32][32]','tile[32][33] (padded)','tile[r][c^r] (swizzled)'][tLayout];
   const strideWords = [32, 33, 32][tLayout];
   const v = document.getElementById('tverdict');
-  v.style.color = col;
+  v.style.color = degColor(deg);
   if(deg === 1){
     v.innerHTML = layoutName + ' &middot; ' + tPhase + ' &rarr; conflict-free, 1 transaction' +
       '<small>' + (tPhase==='write'
-        ? 'lanes walk consecutive words &mdash; stride 1 regardless of layout'
-        : (tLayout===2 ? 'lane t lands on bank (c ^ t) &mdash; XOR of distinct t gives distinct banks'
-                       : 'row stride ' + strideWords + ' words is odd &rarr; gcd(' + strideWords + ', 32) = 1')) +
+        ? 'lanes walk consecutive words &mdash; stride 1 whatever the layout'
+        : (tLayout===2 ? 'lane t lands on bank (c ^ t); XOR of distinct t gives distinct banks'
+                       : 'row stride ' + strideWords + ' words is odd, so gcd(' + strideWords + ', 32) = 1')) +
       '</small>';
   } else {
     v.innerHTML = layoutName + ' &middot; ' + tPhase + ' &rarr; ' + deg + '-way conflict, ' + deg + ' transactions' +
-      '<small>row stride ' + strideWords + ' words &rarr; gcd(' + strideWords + ', 32) = ' + deg +
-      ' &mdash; every lane collides on bank 0</small>';
+      '<small>row stride ' + strideWords + ' words, gcd(' + strideWords + ', 32) = ' + deg +
+      ' &mdash; every lane funnels into bank 0</small>';
   }
 }
-function setPhase(p){
-  tPhase = p;
+function setPhase(p){ tPhase=p;
   document.getElementById('tw').classList.toggle('on', p==='write');
   document.getElementById('tr').classList.toggle('on', p==='read');
-  renderTranspose();
-}
-function setLayout(l){
-  tLayout = l;
+  renderTranspose(); }
+function setLayout(l){ tLayout=l;
   [0,1,2].forEach(i=>document.getElementById('lay'+i).classList.toggle('on', i===l));
-  renderTranspose();
-}
+  renderTranspose(); }
 document.getElementById('tw').onclick = ()=>setPhase('write');
 document.getElementById('tr').onclick = ()=>setPhase('read');
 document.getElementById('lay0').onclick = ()=>setLayout(0);
@@ -338,26 +372,19 @@ document.getElementById('lay2').onclick = ()=>setLayout(2);
 renderTranspose();
 
 // ---------- Broadcast ----------
-const blanesEl = document.getElementById('blanes');
-for(let t=0;t<32;t++){
-  const d=document.createElement('div'); d.className='lane'; d.id='blane'+t; d.textContent=t;
-  blanesEl.appendChild(d);
-}
-const bBars = buildHist(document.getElementById('bhist'), document.getElementById('baxis'));
+const w3 = buildWires('wire3', null);
+w3.update(t => t);   // start conflict-free so the change is visible
 document.getElementById('brun').onclick = ()=>{
-  for(let t=0;t<32;t++){
-    const el=document.getElementById('blane'+t);
-    setTimeout(()=>{ el.style.background='#1f6feb'; el.textContent='B7'; }, t*25);
-  }
-  bBars.forEach((h,b)=>{
-    h.bar.style.height = b===7 ? '100%' : '0%';
-    h.bar.style.background = '#2ea043';
-    h.num.textContent = b===7 ? '32' : '';
+  w3.update(() => 7);                       // every lane -> bank 7, same address
+  document.querySelectorAll('#wire3 line').forEach(l=>l.setAttribute('stroke','#2ea043'));
+  document.querySelectorAll('#wire3 rect').forEach(r=>{
+    if(r.getAttribute('y')==String(BANK_Y) && r.getAttribute('x')==String(CX(7)-11))
+      r.setAttribute('fill','#2ea043');
   });
   const v=document.getElementById('bverdict');
   v.style.color='#2ea043';
   v.innerHTML='32 lanes, 1 bank, 1 transaction &mdash; broadcast, not conflict' +
-    '<small>same bank <i>and</i> same address &rarr; the bank reads the word once and fans it out</small>';
+    '<small>same bank <i>and</i> same address: the bank reads the word once and fans it out to every lane</small>';
 };
 </script>
 </body>

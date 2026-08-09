@@ -1,7 +1,10 @@
 // Day 1: CUDA Basics and Programming Model
 // Goal: compile, launch, and run a minimal kernel; inspect thread/block identity.
 //
-// Compile:  nvcc -arch=sm_50 day01_template.cu -o day01
+// Compile:  nvcc -arch=sm_75 template.cu -o day01
+//           (-arch=native targets whatever GPU you're building on; sm_75/Turing
+//            is this course's documented floor. CUDA 13 removed Maxwell/Pascal/
+//            Volta, so sm_50/sm_60/sm_70 no longer compile at all.)
 // Run:      ./day01
 
 #include <cstdio>

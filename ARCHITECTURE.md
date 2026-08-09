@@ -11,13 +11,13 @@ Exact unit counts differ by architecture — this describes the general layout e
 
 **Registers / register file.** Each SM has a large, fixed-size register file (`regsPerMultiprocessor` in `report_device_capabilities()`), divided up among all threads currently resident on that SM. A thread's local variables live here — it's the fastest storage that exists, faster than shared memory. The catch: the compiler decides how many registers each thread needs at compile time, and that count multiplied by your block size can't exceed what the SM has. Use too many registers per thread and either fewer blocks fit on the SM at once (occupancy drops), or the compiler starts *spilling* excess variables into **local memory** (see below) — which is actually global memory in disguise, so a spill is a silent, expensive round-trip you didn't ask for. `-Xptxas -v` (Day 1) reports spills; `-maxrregcount` caps registers per thread if you want to trade register pressure for occupancy deliberately.
 
-**ALUs (CUDA cores).** The INT32 arithmetic/logic units — what NVIDIA's marketing calls "CUDA cores." Each SM partition has a bank of these, and a warp's integer instruction (indexing math, comparisons, bitwise ops) is issued across 32 of them at once, one per thread in the warp.
+**ALUs (CUDA cores).** "CUDA core" is a marketing count of the **FP32** lanes, not the integer units — a GPU advertised with 10,752 CUDA cores has 10,752 FP32 lanes. Turing and newer pair those with a *separate* bank of INT32 units in each SM partition, so a warp's integer work (indexing math, comparisons, bitwise ops) and its float work can issue in the same cycle instead of competing for one datapath. Either way a warp's instruction is issued across 32 lanes at once, one per thread. The exact split varies: A100 (GA100) has 64 FP32 + 64 INT32 per SM, while the consumer GA10x SMs advertise 128 CUDA cores per SM by making one of the two datapaths dual-purpose FP32/INT32 — which is why "CUDA cores" isn't a number you can reason about portably, and why the concrete figures come from `report_device_capabilities()`.
 
 **FPUs — FP32 and FP64.** Separate hardware from the INT32 ALUs. FP32 (single precision) units are usually plentiful — often 1:1 with INT32 cores on recent architectures. FP64 (double precision) units are deliberately scarce on consumer/gaming GPUs, sometimes as few as 1/32nd or 1/64th the FP32 count. That ratio is exactly `prop.singleToDoublePrecisionPerfRatio`, already printed by `report_device_capabilities()` — if it reports 32, your `double` math runs at roughly 1/32 the throughput of the equivalent `float` math on that GPU. This is why `float` is the default choice in this course's kernels unless precision genuinely demands `double`.
 
 **SFU (Special Function Units).** Hardware for fast, lower-precision transcendental math — `sin`, `cos`, `exp`, reciprocal, `sqrt` approximations. What `--use_fast_math` (Day 1) routes your math through instead of the fully IEEE-754-accurate software implementations.
 
-**Tensor Cores.** Matrix-multiply-accumulate hardware, present from Volta onward (compute capability ≥ 7.0). `report_device_capabilities()` reports how many your GPU has per SM; 0 on anything older. Libraries like cuBLAS (Day 14) use these automatically for supported operations and data types.
+**Tensor Cores.** Matrix-multiply-accumulate hardware, present from Volta onward (compute capability ≥ 7.0). `report_device_capabilities()` prints a count per SM, but note *how* it gets that number: NVIDIA doesn't expose tensor-core counts through `cudaDeviceProp` at all, so `device_info.h` looks the value up from a hardcoded per-generation table (8 for Volta/Turing, 4 for Ampere onward). Unlike every other figure in that report, it isn't queried from your actual GPU — it's an educated guess from the compute capability. Libraries like cuBLAS (Day 14) use these automatically for supported operations and data types.
 
 **Warp scheduler + dispatch unit.** Each SM is split into partitions (commonly 4), each with its own warp scheduler. Every cycle, a scheduler picks one *ready* warp from among all the warps resident in its partition and issues its next instruction to the execution units — this is the hardware behind the latency-hiding story from Day 3: if warp A is stalled waiting on a memory load, the scheduler just issues from warp B instead, so the pipeline doesn't sit idle.
 
@@ -29,7 +29,7 @@ Day 1 explained that nvcc compiles your device code to PTX (virtual assembly), t
 
 **How to inspect real output for your own kernel** (Day 1's `--keep` flag, taken further):
 ```bash
-nvcc --keep -arch=sm_75 day01_template.cu -o day01   # .ptx lands next to your output
+nvcc --keep -arch=sm_75 template.cu -o day01          # .ptx lands next to your output
 cuobjdump --dump-ptx  day01                           # PTX pulled back out of the binary
 cuobjdump --dump-sass day01                           # SASS pulled back out of the binary
 nvdisasm day01.cubin                                  # alternative SASS disassembler, if you kept the .cubin
@@ -129,8 +129,12 @@ A practical pattern from this week's material: in a kernel like Day 13's `tiled_
 | `warpSize` | Threads per warp — almost always 32, never hardcode it anyway |
 | `maxThreadsPerMultiProcessor` | Ceiling on resident warps per SM — the other half of the occupancy equation |
 | `singleToDoublePrecisionPerfRatio` | How many FP32 units exist per FP64 unit |
-| tensor cores per SM | Whether/how much cuBLAS-style matrix hardware you have (Day 14) |
-| `memoryClockRate` / `memoryBusWidth` | Theoretical global-memory bandwidth — the ceiling nothing beats |
+| tensor cores per SM † | Whether/how much cuBLAS-style matrix hardware you have (Day 14) |
+| `memoryClockRate` / `memoryBusWidth` ‡ | Theoretical global-memory bandwidth — the ceiling nothing beats |
+
+† Not a `cudaDeviceProp` field. `device_info.h` derives this from a hardcoded compute-capability table, unlike every other row here, which is queried from the driver.
+
+‡ Both deprecated in CUDA 12+ (still functional, but they warn). The modern spellings are `cudaDeviceGetAttribute(&v, cudaDevAttrMemoryClockRate, dev)` and `cudaDevAttrGlobalMemoryBusWidth`.
 
 Texture cache size specifically isn't exposed through `cudaDeviceProp` the way the others are — NVIDIA doesn't publish it as a queryable attribute, so there's no row for it here.
 

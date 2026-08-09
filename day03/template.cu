@@ -1,7 +1,7 @@
 // Day 3: Warp-Level Execution and Control Flow
 // Goal: large vector addition with timing, then BGR->grayscale conversion.
 //
-// Compile:  nvcc -arch=sm_50 day03_template.cu -o day03
+// Compile:  nvcc -arch=sm_75 template.cu -o day03
 // Run:      ./day03
 
 #include <cstdio>

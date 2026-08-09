@@ -5,7 +5,7 @@
 // on, day templates load real images/video through OpenCV and operate on
 // cv::cuda::GpuMat instead of a plain device pointer you fill by hand.
 //
-// Compile:  nvcc -arch=sm_50 day05_template.cu -o day05 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day05 `pkg-config --cflags --libs opencv4`
 // Run:      ./day05 <path-to-image>
 
 #include <cstdio>

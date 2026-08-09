@@ -1,6 +1,6 @@
 # Glossary
 
-Terms used across this course, alphabetically. Each entry notes the day it's first introduced (`(Day N)`) — that's where to look for the full explanation and a diagram, if there is one.
+Terms used across this course, alphabetically. Each entry notes the day it's first introduced (`(Day N)`) — that's where to look for the full explanation and a diagram, if there is one. For the device-side *functions* rather than the concepts, see [INTRINSICS.md](INTRINSICS.md).
 
 **Bank conflict** — When multiple threads in a warp access shared memory addresses that map to the same bank in the same transaction, forcing those accesses to be serialized instead of serviced in parallel. Fixed by padding (Day 5) or index swizzling (Day 13). *(Day 5)*
 

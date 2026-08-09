@@ -1,7 +1,7 @@
 // Day 11: Textures and Surfaces
 // Goal: bind a texture object and use it to zoom (upscale) a real image with bilinear filtering.
 //
-// Compile:  nvcc -arch=sm_50 day11_template.cu -o day11 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day11 `pkg-config --cflags --libs opencv4`
 // Run:      ./day11 <path-to-image>
 
 #include <cstdio>

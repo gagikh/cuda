@@ -2,7 +2,7 @@
 // Goal: overlap async H2D copy with kernel execution using streams, applied
 // to horizontal bands of a real image loaded via OpenCV.
 //
-// Compile:  nvcc -arch=sm_50 day07_template.cu -o day07 `pkg-config --cflags --libs opencv4`
+// Compile:  nvcc -arch=sm_75 template.cu -o day07 `pkg-config --cflags --libs opencv4`
 // Run:      ./day07 <path-to-image>
 
 #include <cstdio>

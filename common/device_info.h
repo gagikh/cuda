@@ -85,6 +85,11 @@ inline std::string report_device_capabilities()
     std::cerr << "CUDA global L1: " << (prop.globalL1CacheSupported ? "Yes" : "No") << std::endl;
     std::cerr << "CUDA local L1: " << (prop.localL1CacheSupported ? "Yes" : "No") << std::endl;
     std::cerr << "CUDA float/double perf ratio: " << prop.singleToDoublePrecisionPerfRatio << std::endl;
+    // NOTE: clockRate and memoryClockRate are deprecated as of CUDA 12 (they
+    // still work, but the headers warn). The modern spelling is
+    // cudaDeviceGetAttribute(&v, cudaDevAttrClockRate, 0) and
+    // cudaDevAttrMemoryClockRate. Kept as-is here because the field names
+    // read more clearly alongside the rest of this report.
     std::cerr << "CUDA clock rate: " << prop.clockRate / 1000.0 << " MHz" << std::endl;
     std::cerr << "CUDA memory clock rate: " << prop.memoryClockRate / 1000.0 << " MHz" << std::endl;
     std::cerr << "CUDA bus width: " << prop.memoryBusWidth / 8 << " bytes" << std::endl;
@@ -102,8 +107,11 @@ inline std::string report_device_capabilities()
     std::cerr << "Using " << prop.multiProcessorCount << " SMs, compute capability " << prop.major << "."
               << prop.minor << std::endl;
 
-    // Tensor Core count per SM (approximate -- NVIDIA doesn't expose this
-    // via cudaDeviceProp directly, so these are known-generation values).
+    // Tensor Core count per SM. Unlike everything else in this report, this
+    // is NOT queried from the driver -- NVIDIA doesn't expose it through
+    // cudaDeviceProp at all, so this is a hardcoded per-generation lookup.
+    // Treat it as an educated guess from the compute capability, not a fact
+    // about the card in your machine.
     int tensorCoresPerSM = 0;
     if (prop.major >= 7) { // Volta and newer
         if (prop.major == 7) tensorCoresPerSM = 8;       // Volta / Turing

@@ -1,7 +1,7 @@
 // Day 2: Thread Hierarchy & Execution Model
 // Goal: 1D vector addition, a grid-stride loop variant, then 2D "image addition".
 //
-// Compile:  nvcc -arch=sm_50 day02_template.cu -o day02
+// Compile:  nvcc -arch=sm_75 template.cu -o day02
 // Run:      ./day02
 
 #include <cstdio>
@@ -45,7 +45,13 @@ __global__ void image_add(const unsigned char *a, const unsigned char *b,
 int main()
 {
     // --- Part 1: vector add, grid sized exactly to n ---
-    const int n = 1 << 20; // not a multiple of small block sizes on purpose
+    // Deliberately NOT a round power of two: 1048583 is prime, so it isn't a
+    // multiple of 32, 64, 128 or 256. That makes the last block partially
+    // empty for every block size you'll try, which is exactly the case the
+    // `if (i < n)` bounds check in vector_add exists to handle. Drop the
+    // check and this size will write past the end of the buffer; a round
+    // 1 << 20 would have quietly let the bug through.
+    const int n = (1 << 20) + 7;
     size_t bytes = n * sizeof(float);
 
     float *d_a, *d_b, *d_c;
