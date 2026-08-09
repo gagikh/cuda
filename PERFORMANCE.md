@@ -77,6 +77,33 @@ t.report_bandwidth("my_kernel", 3.0 * n * sizeof(float));   // read a, read b, w
 my_kernel                   0.412 ms     763.1 GB/s  (76% of 1008 GB/s peak)
 ```
 
+### A note on the profilers
+
+The arithmetic above tells you *whether* a kernel is slow. When you need to know *why*, there are two tools, and picking the wrong one wastes an afternoon:
+
+- **`nsys` (Nsight Systems) — timeline, whole application.** Answers "where does wall-clock time actually go?" Use it when the GPU looks idle, when you suspect transfers dominate compute (Days 4, 6, 7), or when you want to confirm streams are genuinely overlapping rather than serializing. `nsys profile -o report ./day07`, then open `report.nsys-rep` in the GUI. The give-away pattern is a timeline with gaps between kernels: your bottleneck is host-side or a missing async copy, and no amount of kernel tuning will help.
+- **`ncu` (Nsight Compute) — one kernel, in depth.** Answers "why is *this* kernel slow?" Use it once `nsys` has told you which kernel matters. `ncu --set full -o report ./day13` is thorough and slow; targeted metrics are faster:
+
+```bash
+ncu --metrics gpu__time_duration.sum,\
+dram__bytes.sum.per_second,\
+sm__throughput.avg.pct_of_peak_sustained_elapsed,\
+gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed ./day13
+```
+
+Those last two are the whole memory-bound-vs-compute-bound question in two numbers: whichever percentage is higher is your bottleneck, and if neither is above ~60% you're latency-bound (not enough work in flight — look at occupancy, §2). Two more worth knowing:
+
+```bash
+# coalescing (§1): sectors per request. 4 is perfect for float, ~32 means every lane its own line
+ncu --metrics l1tex__t_sectors_pipe_lsu_mem_global_op_ld.sum,l1tex__t_requests_pipe_lsu_mem_global_op_ld.sum ./prog
+# shared-memory bank conflicts (Day 5). Should be 0
+ncu --metrics l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum ./prog
+```
+
+`ncu` also has a **Speed of Light** section that reports achieved vs. peak for compute and memory directly — the same ratio as §0, computed for you. If you only ever read one thing in the profiler, read that.
+
+Two practical notes: `ncu` needs elevated permissions on many systems (`--target-processes all`, or the `NVreg_RestrictProfilingToAdminUsers=0` driver option on Linux), and always compile with `-lineinfo` (Day 1) so the profiler can attribute stalls to source lines.
+
 ### The other half: TFLOP/s
 
 Bandwidth is the right metric for a memory-bound kernel. For a compute-bound one — matmul, convolution, anything with real arithmetic per byte — the metric is **TFLOP/s**, and the shape is the same: count the useful operations, divide by time, compare against peak.

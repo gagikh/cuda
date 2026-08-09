@@ -19,7 +19,7 @@ The texture unit does this interpolation in hardware — you just pass a fractio
 ## Resources
 https://developer.download.nvidia.com/CUDA/training/texture_webinar_aug_2011.pdf
 
-http://cuda-programming.blogspot.com/2013/02/texture-memory-in-cuda-what-is-texture.html?m=1
+https://cuda-programming.blogspot.com/2013/02/texture-memory-in-cuda-what-is-texture.html?m=1
 
 ## Code Walkthrough
 Texture object wrapper around an OpenCV `GpuMat` (pitched 2D resource, linear filtering, clamp addressing):

@@ -108,7 +108,8 @@ Threads, blocks, grids
 - How to enumerate
 - How to devide
 
-[https://slideplayer.com/slide/15057888/](https://eximia.co/understanding-the-basics-of-cuda-thread-hierarchies/)
+- [Understanding the basics of CUDA thread hierarchies](https://eximia.co/understanding-the-basics-of-cuda-thread-hierarchies/)
+- [CUDA thread hierarchy slides](https://slideplayer.com/slide/15057888/)
 
 ## Hands-On Task
 Example project using VS — add 2 vectors (block/grid config, pipeline), then change it to add 2 images.

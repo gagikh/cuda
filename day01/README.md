@@ -108,7 +108,7 @@ https://harmanani.github.io/classes/csc447/Notes/Lecture02.pdf
 https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
 
 // PPT
-http://developer.download.nvidia.com/compute/developertrainingmaterials/presentations/cuda_language/Introduction_to_CUDA_C.pptx
+https://developer.download.nvidia.com/compute/developertrainingmaterials/presentations/cuda_language/Introduction_to_CUDA_C.pptx
 
 // Resources
 https://developer.nvidia.com/cuda-education

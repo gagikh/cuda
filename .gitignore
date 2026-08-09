@@ -1,0 +1,76 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+out/
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.suo
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.ipch
+*.aps
+*.pdb
+*.idb
+*.ilk
+*.tlog
+
+# Compiled binaries and objects
+*.exe
+*.dll
+*.lib
+*.exp
+*.o
+*.obj
+*.so
+*.a
+
+# CUDA intermediates (nvcc --keep leaves these next to the output)
+*.ptx
+*.cubin
+*.fatbin
+*.fatbin.c
+*.cudafe1.*
+*.module_id
+*.sm_*.cubin
+*.reg.c
+*.i
+*.ii
+*.gpu
+
+# Day executables (templates compile to bare `dayNN`, no extension on Linux)
+day0[1-9]
+day1[0-5]
+matrix_add
+
+# Profiler output
+*.nsys-rep
+*.qdrep
+*.qdstrm
+*.ncu-rep
+*.nvvp
+*.sqlite
+perf.csv
+
+# CMake, if anyone adds it later
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+# Editors / OS
+.vscode/
+.idea/
+.qtcreator/
+*.swp
+*~
+.DS_Store
+Thumbs.db
