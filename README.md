@@ -1,7 +1,7 @@
 # CUDA Course (Compute Unified Device Architecture)
 
 **Title**: Fundamentals of Accelerated Computation Using CUDA C/C++  
-**University**: Armenian Slavonic University – Lectures & Labs (15 Days)  
+**University**: Armenian Slavonic University/Yerevan State University – Lectures & Labs (15 Days)  
 **Instructor**: Gagik Hakobyan
 
 📖 [Glossary](GLOSSARY.md) — the terms this course uses, alphabetical, tagged with the day it's introduced.  
