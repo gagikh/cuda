@@ -48,8 +48,8 @@ int main(int argc, char **argv)
 
     // Pinned host memory is required for true async cudaMemcpyAsync overlap (see Day 4).
     unsigned char *h_in, *h_out;
-    CUDA_CHECK(cudaMallocHost(&h_in, total));
-    CUDA_CHECK(cudaMallocHost(&h_out, total));
+    CUDA_CHECK(cudaHostAlloc(&h_in, total, cudaHostAllocDefault));
+    CUDA_CHECK(cudaHostAlloc(&h_out, total, cudaHostAllocDefault));
     memcpy(h_in, h_img.data, total);
 
     unsigned char *d_in, *d_out;

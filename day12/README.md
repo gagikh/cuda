@@ -69,7 +69,7 @@ struct graph_t
         CV_Assert(nullptr == m_graph);
         CV_Assert(INITIALIZED == m_status);
         cudaStreamEndCapture(cv::cuda::custream(stream), &m_graph);
-        cudaGraphInstantiate(&m_instance, m_graph, NULL, NULL, 0);
+        cudaGraphInstantiate(&m_instance, m_graph, 0);   // CUDA 12+ signature
         m_status = GRAPH_CRATED;
     }
 };

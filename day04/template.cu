@@ -28,7 +28,8 @@ void run_with_pageable_memory()
 
 void run_with_pinned_memory()
 {
-    // TODO: allocate host buffers with CUDA_CHECK(cudaMallocHost(...)) instead,
+    // TODO: allocate host buffers with CUDA_CHECK(cudaHostAlloc(&p, bytes,
+    //       cudaHostAllocDefault)) instead,
     // otherwise same as above. Compare the transfer time against
     // run_with_pageable_memory().
 }

@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     const int n = h_img.rows * h_img.cols;
 
     unsigned char *h_out;
-    CUDA_CHECK(cudaMallocHost(&h_out, n)); // pinned, for a clean async copy-out (see Day 4/7)
+    CUDA_CHECK(cudaHostAlloc(&h_out, n, cudaHostAllocDefault)); // pinned, for a clean async copy-out (see Day 4/7)
 
     cudaStream_t stream;
     CUDA_CHECK(cudaStreamCreate(&stream));

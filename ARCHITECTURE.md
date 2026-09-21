@@ -130,11 +130,11 @@ A practical pattern from this week's material: in a kernel like Day 13's `tiled_
 | `maxThreadsPerMultiProcessor` | Ceiling on resident warps per SM — the other half of the occupancy equation |
 | `singleToDoublePrecisionPerfRatio` | How many FP32 units exist per FP64 unit |
 | tensor cores per SM † | Whether/how much cuBLAS-style matrix hardware you have (Day 14) |
-| `memoryClockRate` / `memoryBusWidth` ‡ | Theoretical global-memory bandwidth — the ceiling nothing beats |
+| `cudaDevAttrMemoryClockRate` / `cudaDevAttrGlobalMemoryBusWidth` ‡ | Theoretical global-memory bandwidth — the ceiling nothing beats |
 
 † Not a `cudaDeviceProp` field. `device_info.h` derives this from a hardcoded compute-capability table, unlike every other row here, which is queried from the driver.
 
-‡ Both deprecated in CUDA 12+ (still functional, but they warn). The modern spellings are `cudaDeviceGetAttribute(&v, cudaDevAttrMemoryClockRate, dev)` and `cudaDevAttrGlobalMemoryBusWidth`.
+‡ Queried with `cudaDeviceGetAttribute`, not read from `cudaDeviceProp`: the equivalent `clockRate` / `memoryClockRate` struct fields are deprecated as of CUDA 12.
 
 Texture cache size specifically isn't exposed through `cudaDeviceProp` the way the others are — NVIDIA doesn't publish it as a queryable attribute, so there's no row for it here.
 

@@ -88,7 +88,9 @@ struct graph_t
     void create_graph(cudaStream_t stream)
     {
         // TODO: CUDA_CHECK(cudaStreamEndCapture(stream, &m_graph));
-        // TODO: CUDA_CHECK(cudaGraphInstantiate(&m_instance, m_graph, nullptr, nullptr, 0));
+        // TODO: CUDA_CHECK(cudaGraphInstantiate(&m_instance, m_graph, 0));
+        //       (3-argument form. The 5-argument version with pErrorNode/pLogBuffer
+        //        was CUDA 11 and does not compile against CUDA 12 or newer.)
         // TODO: m_status = graph_status_t::GRAPH_CREATED;
     }
 

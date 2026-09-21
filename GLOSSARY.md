@@ -154,7 +154,7 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **PCIe** — The bus connecting host and device on most systems. Its bandwidth is an order of magnitude below device memory bandwidth. *(Day 4)*
 
-**Pinned memory** — Page-locked host memory allocated with `cudaMallocHost`, so the GPU can transfer it by DMA with no staging copy. Required for `cudaMemcpyAsync` to be genuinely asynchronous. OpenCV's equivalent type is `cv::cuda::HostMem`. *(Day 4)*
+**Pinned memory** — Page-locked host memory allocated with `cudaHostAlloc(&p, n, cudaHostAllocDefault)`, so the GPU can transfer it by DMA with no staging copy. Required for `cudaMemcpyAsync` to be genuinely asynchronous. OpenCV's equivalent type is `cv::cuda::HostMem`. *(Day 4)*
 
 **Pitch** — The actual byte stride between rows of a 2D allocation (`cudaMallocPitch`, or a `GpuMat`'s `.step`), normally larger than `width * elementSize` because of alignment padding. Kernels touching pitched memory must index rows by pitch, not by width. *(Day 5)*
 

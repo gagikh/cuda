@@ -110,14 +110,19 @@ struct kernel_timer_t
     // Every term earns its place -- work through it once and you'll never
     // have to look it up again:
     //
-    //   p.memoryClockRate       UNIT: kilohertz. Not Hz, not MHz -- the CUDA
+    //   cudaDevAttrMemoryClockRate
+    //                           UNIT: kilohertz. Not Hz, not MHz -- the CUDA
     //                           runtime reports clocks in kHz. An RTX 4090
-    //                           reports 10501000.
+    //                           reports 10501000. (The cudaDeviceProp fields
+    //                           clockRate/memoryClockRate give the same
+    //                           numbers but are deprecated as of CUDA 12, so
+    //                           this queries the attributes instead.)
     //
     //   / 1000.0                kHz -> MHz, i.e. millions of cycles/second.
     //                           10501000 kHz -> 10501 MHz.
     //
-    //   p.memoryBusWidth        UNIT: BITS. How many bits the memory bus
+    //   cudaDevAttrGlobalMemoryBusWidth
+    //                           UNIT: BITS. How many bits the memory bus
     //                           moves per transfer. 384 on a 4090, 5120 on
     //                           an A100 (HBM is very wide and comparatively
     //                           slow; GDDR is narrow and fast).
@@ -157,9 +162,10 @@ struct kernel_timer_t
     // turnaround. Treat >80% as "done", not as "20% left on the table".
     static double peak_gb_per_s(int device = 0)
     {
-        cudaDeviceProp p;
-        CUDA_CHECK(cudaGetDeviceProperties(&p, device));
-        return 2.0 * (p.memoryClockRate / 1000.0) * (p.memoryBusWidth / 8) / 1000.0;
+        int khz = 0, bits = 0;
+        CUDA_CHECK(cudaDeviceGetAttribute(&khz,  cudaDevAttrMemoryClockRate,      device));
+        CUDA_CHECK(cudaDeviceGetAttribute(&bits, cudaDevAttrGlobalMemoryBusWidth, device));
+        return 2.0 * (khz / 1000.0) * (bits / 8) / 1000.0;
     }
 
     // Peak FP32 in TFLOP/s. FP32 lanes per SM is NOT queryable through
@@ -168,16 +174,19 @@ struct kernel_timer_t
     // tensor-core count in device_info.h: an educated guess, not a fact.
     static double peak_tflops_fp32(int device = 0)
     {
-        cudaDeviceProp p;
-        CUDA_CHECK(cudaGetDeviceProperties(&p, device));
+        int major = 0, minor = 0, sms = 0, khz = 0;
+        CUDA_CHECK(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, device));
+        CUDA_CHECK(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, device));
+        CUDA_CHECK(cudaDeviceGetAttribute(&sms,   cudaDevAttrMultiProcessorCount,    device));
+        CUDA_CHECK(cudaDeviceGetAttribute(&khz,   cudaDevAttrClockRate,              device));
 
         int lanes = 128;
-        if (p.major == 7 && p.minor == 0) lanes = 64;   // Volta
-        else if (p.major == 8 && p.minor == 0) lanes = 64; // A100
-        else if (p.major == 6 && p.minor == 0) lanes = 64; // P100
+        if (major == 7 && minor == 0) lanes = 64;        // Volta
+        else if (major == 8 && minor == 0) lanes = 64;   // A100
+        else if (major == 6 && minor == 0) lanes = 64;   // P100
 
-        const double ghz = p.clockRate / 1e6;           // kHz -> GHz
-        return 2.0 * p.multiProcessorCount * lanes * ghz / 1000.0;
+        const double ghz = khz / 1e6;                    // kHz -> GHz
+        return 2.0 * sms * lanes * ghz / 1000.0;
     }
 
     // ---- reporting -------------------------------------------------------

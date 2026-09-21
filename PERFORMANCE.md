@@ -13,8 +13,12 @@ The single most common mistake in GPU optimization is optimizing the thing that 
 **Theoretical peak bandwidth**, printed by `report_device_capabilities()` on Day 1:
 
 ```c++
-const auto memory_clock_rate_mhz = prop.memoryClockRate / 1000.0;
-const auto bus_width_bytes       = prop.memoryBusWidth / 8;
+int mem_clock_khz = 0, bus_bits = 0;
+cudaDeviceGetAttribute(&mem_clock_khz, cudaDevAttrMemoryClockRate,      device);
+cudaDeviceGetAttribute(&bus_bits,      cudaDevAttrGlobalMemoryBusWidth, device);
+
+const auto memory_clock_rate_mhz = mem_clock_khz / 1000.0;
+const auto bus_width_bytes       = bus_bits / 8;
 const auto bandwidth_gb_s        = 2.0 * memory_clock_rate_mhz * bus_width_bytes / 1000.0;
 ```
 
@@ -22,9 +26,9 @@ Every term in that line earns its place, and each one is a unit conversion peopl
 
 | Term | Why |
 |---|---|
-| `prop.memoryClockRate` | **The unit is kilohertz.** Not Hz, not MHz — the CUDA runtime reports all clocks in kHz. An RTX 4090 returns `10501000`. |
+| `cudaDevAttrMemoryClockRate` | **The unit is kilohertz.** Not Hz, not MHz — the CUDA runtime reports all clocks in kHz. An RTX 4090 returns `10501000`. (The `cudaDeviceProp::memoryClockRate` field gives the same number but is deprecated as of CUDA 12.) |
 | `/ 1000.0` | kHz → MHz, i.e. millions of cycles per second. `10501000 kHz` → `10501 MHz`. |
-| `prop.memoryBusWidth` | **The unit is bits** — how many bits move across the bus per transfer. 384 on a 4090; 5120 on an A100, because HBM is very wide and comparatively slow where GDDR is narrow and fast. |
+| `cudaDevAttrGlobalMemoryBusWidth` | **The unit is bits** — how many bits move across the bus per transfer. 384 on a 4090; 5120 on an A100, because HBM is very wide and comparatively slow where GDDR is narrow and fast. |
 | `/ 8` | bits → bytes, because bandwidth is quoted in bytes. 384 bits → 48 bytes per transfer. Integer division is safe here: every real bus width (64, 128, 192, 256, 384, 512, 5120) is a multiple of 8. |
 | `2.0 *` | **DDR — Double Data Rate.** GDDR and HBM both transfer on the rising *and* the falling edge of every clock cycle, so one cycle moves two bus-widths of data. This 2 is a property of the memory technology. It is **not** the same 2 as in the peak-FLOPs formula below, where the 2 is an FMA counting as two operations — unrelated things that happen to share a constant. |
 | `/ 1000.0` | `MHz × bytes` is already MB/s (10⁶ transfers/s × bytes each), so one more factor of 1000 gives GB/s. |

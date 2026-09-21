@@ -85,14 +85,17 @@ inline std::string report_device_capabilities()
     std::cerr << "CUDA global L1: " << (prop.globalL1CacheSupported ? "Yes" : "No") << std::endl;
     std::cerr << "CUDA local L1: " << (prop.localL1CacheSupported ? "Yes" : "No") << std::endl;
     std::cerr << "CUDA float/double perf ratio: " << prop.singleToDoublePrecisionPerfRatio << std::endl;
-    // NOTE: clockRate and memoryClockRate are deprecated as of CUDA 12 (they
-    // still work, but the headers warn). The modern spelling is
-    // cudaDeviceGetAttribute(&v, cudaDevAttrClockRate, 0) and
-    // cudaDevAttrMemoryClockRate. Kept as-is here because the field names
-    // read more clearly alongside the rest of this report.
-    std::cerr << "CUDA clock rate: " << prop.clockRate / 1000.0 << " MHz" << std::endl;
-    std::cerr << "CUDA memory clock rate: " << prop.memoryClockRate / 1000.0 << " MHz" << std::endl;
-    std::cerr << "CUDA bus width: " << prop.memoryBusWidth / 8 << " bytes" << std::endl;
+    // Clocks come from cudaDeviceGetAttribute, not cudaDeviceProp: the
+    // prop.clockRate / prop.memoryClockRate fields are deprecated as of
+    // CUDA 12. Both report KILOHERTZ, hence the /1000 to reach MHz.
+    int clock_khz = 0, mem_clock_khz = 0, bus_bits = 0;
+    CUDA_CHECK(cudaDeviceGetAttribute(&clock_khz,     cudaDevAttrClockRate,            0));
+    CUDA_CHECK(cudaDeviceGetAttribute(&mem_clock_khz, cudaDevAttrMemoryClockRate,      0));
+    CUDA_CHECK(cudaDeviceGetAttribute(&bus_bits,      cudaDevAttrGlobalMemoryBusWidth, 0));
+
+    std::cerr << "CUDA clock rate: " << clock_khz / 1000.0 << " MHz" << std::endl;
+    std::cerr << "CUDA memory clock rate: " << mem_clock_khz / 1000.0 << " MHz" << std::endl;
+    std::cerr << "CUDA bus width: " << bus_bits / 8 << " bytes" << std::endl;
     std::cerr << "CUDA reserved shared mem per block: " << UBytes(prop.reservedSharedMemPerBlock) << std::endl;
     std::cerr << "CUDA concurrent kernels: " << prop.concurrentKernels << std::endl;
 
@@ -133,8 +136,8 @@ inline std::string report_device_capabilities()
     std::cerr << "Free GPU memory: " << UBytes(free_bytes) << std::endl;
     std::cerr << "Memory usage: " << UBytes(total_bytes - free_bytes) << " / " << UBytes(total_bytes) << std::endl;
 
-    const auto memory_clock_rate_mhz = prop.memoryClockRate / 1000.0;
-    const auto bus_width_bytes = prop.memoryBusWidth / 8;
+    const auto memory_clock_rate_mhz = mem_clock_khz / 1000.0;   // kHz -> MHz
+    const auto bus_width_bytes = bus_bits / 8;                   // bits -> bytes
     const auto memory_bandwidth_gbps = 2.0 * memory_clock_rate_mhz * bus_width_bytes / 1000.0;
     std::cerr << "Theoretical memory bandwidth: " << memory_bandwidth_gbps << " GB/s" << std::endl;
 

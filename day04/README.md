@@ -3,7 +3,7 @@
 ## Objectives
 - Distinguish paged, pinned, page-locked, mapped, and unified memory
 - Explain what page-locking actually does, and why the DMA engine requires it
-- Know the API for each (`malloc`, `cudaMallocHost`, `cudaHostRegister`, `cudaHostAlloc`, `cudaMallocManaged`)
+- Know the API for each (`malloc`, `cudaHostAlloc`, `cudaHostRegister`, `cudaMallocManaged`)
 - Explain the pros/cons and typical use case of each, including the cost of over-pinning
 - Distinguish zero-copy's per-access bus traffic from unified memory's per-migration page traffic, and recognize ping-ponging
 - Use `__managed__` for small host/device-shared variables without an explicit allocation
@@ -16,7 +16,7 @@
 
 Memory management system:
 - paged memory (refer to OS mem paging) — `malloc`, pros, cons
-- pinned memory — `cudaMallocHost`, pros, cons
+- pinned memory — `cudaHostAlloc` with `cudaHostAllocDefault`, pros, cons
 - page locking (preventing OS to move pages around) — `cudaHostRegister`, pros, cons
 - mapped memory (zero-copy memory) — `cudaHostAlloc` with `cudaHostAllocMapped` flag set, pros, cons
 - unified memory — `cudaMallocManaged`, pros, cons, `__managed__`
@@ -30,7 +30,7 @@ Every memory type is really a different answer to the same question: how does da
 
 | | **Pageable** | **Pinned** | **Mapped (zero-copy)** | **Unified (managed)** | **Device** |
 |---|---|---|---|---|---|
-| **Allocate** | `malloc` / `new` | `cudaMallocHost`<br>or `cudaHostRegister` | `cudaHostAlloc(..., cudaHostAllocMapped)` | `cudaMallocManaged`<br>or `__managed__` | `cudaMalloc` |
+| **Allocate** | `malloc` / `new` | `cudaHostAlloc(..., cudaHostAllocDefault)`<br>or `cudaHostRegister` | `cudaHostAlloc(..., cudaHostAllocMapped)` | `cudaMallocManaged`<br>or `__managed__` | `cudaMalloc` |
 | **Free** | `free` / `delete` | `cudaFreeHost`<br>/ `cudaHostUnregister` | `cudaFreeHost` | `cudaFree` | `cudaFree` |
 | **Page-locked?** | No | Yes | Yes | n/a (driver-managed) | n/a (device memory) |
 | **Where does the data live?** | Host RAM | Host RAM | Host RAM, always | Wherever last touched | Device VRAM |
@@ -79,7 +79,7 @@ Note what locking is *not*. It doesn't move anything, doesn't make the buffer ph
 
 Without that guarantee the driver's hands are tied: for pageable memory it must copy your data into a small buffer *it* has already locked, and DMA that instead. That's the hidden staging copy:
 
-![Left: pageable host pages the OS may move or swap to disk, so a transfer needs a CPU copy into the driver's hidden staging buffer and then a DMA to VRAM. Right: page-locked pages the OS may not move, so the DMA engine reads them directly in a single copy. Below: cudaMallocHost allocates pinned up front, cudaHostRegister pins a buffer that already exists](page_locking.svg)
+![Left: pageable host pages the OS may move or swap to disk, so a transfer needs a CPU copy into the driver's hidden staging buffer and then a DMA to VRAM. Right: page-locked pages the OS may not move, so the DMA engine reads them directly in a single copy. Below: cudaHostAlloc allocates pinned up front, cudaHostRegister pins a buffer that already exists](page_locking.svg)
 
 With the pages locked, the copy engine reads your buffer directly and the CPU never touches the data — which is what makes the transfer overlappable with kernel execution.
 
@@ -92,7 +92,7 @@ Two consequences worth remembering, both of which cost people real time:
 
 ```c++
 // Route 1 -- you control the allocation
-cudaMallocHost(&p, n);                 // allocated already pinned
+cudaHostAlloc(&p, n, cudaHostAllocDefault);        // allocated already pinned
 cudaFreeHost(p);
 
 // Route 2 -- the buffer already exists and you can't replace it
@@ -100,7 +100,18 @@ cudaHostRegister(p, n, cudaHostRegisterDefault);   // pin it in place
 cudaHostUnregister(p);                             // ALWAYS before free()
 ```
 
-`cudaHostRegister(void *ptr, size_t size, unsigned int flags)` is the one to reach for with legacy code, a third-party library's buffer, or a container you don't own — anywhere you can't swap `malloc` for `cudaMallocHost`. The flags worth knowing:
+One API, one flag argument, four behaviours — which is why this course uses `cudaHostAlloc` throughout rather than `cudaMallocHost`. The two are equivalent for plain pinned memory (`cudaMallocHost(&p, n)` is exactly `cudaHostAlloc(&p, n, cudaHostAllocDefault)`), but only `cudaHostAlloc` extends to the mapped and portable cases below, so there is no reason to learn two names:
+
+| Flag | Effect |
+|---|---|
+| `cudaHostAllocDefault` | Plain page-locked memory. Identical to `cudaMallocHost` |
+| `cudaHostAllocMapped` | Also mapped into the device address space — zero-copy (see below) |
+| `cudaHostAllocPortable` | Pinned as far as *all* CUDA contexts are concerned |
+| `cudaHostAllocWriteCombined` | Skips the CPU cache: faster for the GPU to read, but very slow for the host to read back. Use for write-once, upload-only staging buffers |
+
+Both routes are released the same way — `cudaFreeHost` for what you allocated, `cudaHostUnregister` for what you pinned in place.
+
+`cudaHostRegister(void *ptr, size_t size, unsigned int flags)` is the one to reach for with an existing codebase, a third-party library's buffer, or a container you don't own — anywhere you can't swap `malloc` for `cudaHostAlloc`. Its flags mirror the allocation ones:
 
 | Flag | Effect |
 |---|---|
@@ -180,7 +191,7 @@ The rules that matter:
 Where it earns its place: a counter, a flag, a small parameter struct — anything you'd otherwise have to `cudaMalloc`, memcpy in, pass as an argument, and copy back. It removes that plumbing entirely. Where it doesn't: bulk data, since it is still one more region that can ping-pong, and you lose the ability to prefetch it per-launch.
 
 ## Looking ahead: pinned memory in OpenCV
-Starting Day 5 this course uses OpenCV's `cv::cuda::GpuMat` for image I/O. The library has its own name for pinned memory: `cv::cuda::HostMem`. `GpuMat::download()`/`upload()` into a `cv::Mat` always uses a regular (pageable) host buffer under the hood; downloading into a `cv::cuda::HostMem` instead — and passing a `cv::cuda::Stream` — gets you the same direct-DMA, non-blocking transfer that `cudaMallocHost` gets you here, just through OpenCV's API instead of the raw CUDA one.
+Starting Day 5 this course uses OpenCV's `cv::cuda::GpuMat` for image I/O. The library has its own name for pinned memory: `cv::cuda::HostMem`. `GpuMat::download()`/`upload()` into a `cv::Mat` always uses a regular (pageable) host buffer under the hood; downloading into a `cv::cuda::HostMem` instead — and passing a `cv::cuda::Stream` — gets you the same direct-DMA, non-blocking transfer that `cudaHostAlloc` gets you here, just through OpenCV's API instead of the raw CUDA one.
 
 ## Resources
 - [CUDA memory model](https://medium.com/analytics-vidhya/cuda-memory-model-823f02cef0bf)
@@ -190,7 +201,7 @@ Starting Day 5 this course uses OpenCV's `cv::cuda::GpuMat` for image I/O. The l
 Use pinned memory. Improve the Day 2/3 vector-add algorithm using pinned memory and monitor the difference using Nsight Systems.
 
 ## Self-Learning
-1. Benchmark `cudaMemcpy` using pageable host memory vs. pinned host memory (`cudaMallocHost`) for a large transfer.
+1. Benchmark `cudaMemcpy` using pageable host memory vs. pinned host memory (`cudaHostAlloc` with `cudaHostAllocDefault`) for a large transfer.
 2. Take an existing pageable buffer and page-lock it in place with `cudaHostRegister` instead of allocating pinned memory up front — compare. Time the `cudaHostRegister` call itself too: pinning is not instant, so it only pays off if you transfer the buffer more than once.
 2b. Issue a `cudaMemcpyAsync` on a *pageable* buffer and time it against the same call on a pinned one. Confirm in Nsight Systems that the pageable version did not actually run asynchronously, even though the API call returned immediately.
 3. Rewrite the Day 2/3 vector-add to use `cudaMallocManaged` (unified memory) and compare code complexity and performance. Then add `cudaMemPrefetchAsync` before the launch and measure again — in Nsight Systems you should see a crowd of small fault-driven transfers collapse into one.
@@ -207,7 +218,7 @@ No answers given — these are for you to reason through, or discuss with a clas
 3. When would zero-copy (mapped) memory actually outperform copying data to the device first?
 4. You call `cudaMemcpyAsync` on a `malloc`'d buffer and it returns immediately, but the profiler shows no overlap with your kernel. What happened, and why did nothing report an error?
 5. A colleague pins every host buffer in the application "to be safe" and the whole machine — including unrelated processes — gets slower. Explain the mechanism.
-6. When is `cudaHostRegister` the right tool rather than just switching the allocation to `cudaMallocHost`?
+6. When is `cudaHostRegister` the right tool rather than just switching the allocation to `cudaHostAlloc`?
 7. The OS relocates one of your pages to a different physical frame. Your CPU code notices nothing and keeps running correctly. Why can't the GPU's copy engine be given the same treatment?
 8. Pinning does not make a buffer physically contiguous. Given that, how does the copy engine transfer a 4 MB pinned buffer that is scattered across a thousand unrelated frames?
 9. Zero-copy and unified memory can both generate heavy traffic in both directions. Name the mechanism in each case, and explain why "the dirty page is migrated back" is true of only one of them.

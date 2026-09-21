@@ -61,7 +61,7 @@ CUDA_CHECK_LAST_ERROR();
 ```
 Without it, an invalid launch just does nothing, and your program carries on as if everything were fine — exactly the "silent failure" beginners run into and can't explain.
 
-**`compute-sanitizer`** (bundled with the CUDA toolkit, formerly `cuda-memcheck`) catches problems `CUDA_CHECK` can't: out-of-bounds device memory access, uninitialized reads, and — with its `racecheck` tool — shared-memory races between threads in the same block. Worth running once now on a deliberately broken kernel so you know it exists before you actually need it:
+**`compute-sanitizer`** (bundled with the CUDA toolkit) catches problems `CUDA_CHECK` can't: out-of-bounds device memory access, uninitialized reads, and — with its `racecheck` tool — shared-memory races between threads in the same block. Worth running once now on a deliberately broken kernel so you know it exists before you actually need it:
 ```bash
 compute-sanitizer ./day01                     # default: memcheck (out-of-bounds/misaligned access)
 compute-sanitizer --tool racecheck ./day01     # shared-memory race detection
@@ -72,7 +72,7 @@ compute-sanitizer --tool racecheck ./day01     # shared-memory race detection
 
 **How nvcc splits your code**
 - A `.cu` file is split into host code and device code (anything inside `__global__`/`__device__` functions, plus kernel launch syntax).
-- Host code is handed off, mostly unchanged, to your normal host compiler (gcc/clang/MSVC — pick one explicitly with `-ccbin` if you need a specific version, e.g. `-ccbin gcc-7`, which is exactly what [`examples/matrix_add.cu`](../examples/matrix_add.cu)'s compile comment does).
+- Host code is handed off, mostly unchanged, to your normal host compiler (gcc/clang/MSVC). Use `-ccbin` if you need to point nvcc at a specific one — e.g. `-ccbin clang++` — since each CUDA release supports only a bounded range of host-compiler versions.
 - Device code goes through nvcc's own front end and is compiled to **PTX** — a virtual, forward-compatible assembly language, *not* real machine code yet.
 - `ptxas` then assembles PTX into **SASS**, the actual machine code (cubin) for one specific GPU architecture.
 - The result is a "fat binary": one executable can embed SASS for several architectures plus PTX for JIT compilation on anything newer, so the same binary can run on GPUs that didn't exist when you compiled it.
