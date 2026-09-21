@@ -1,0 +1,60 @@
+<svg viewBox="0 0 900 326" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="326" fill="#0d1117"/>
+  <text x="450" y="22" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">2 &#183; The OS rewrites that map whenever it likes</text>
+  <text x="450" y="38" text-anchor="middle" fill="#8b949e" font-size="10">dashed = where the page used to be &#183; two things have happened here</text>
+  <text x="450" y="58" text-anchor="middle" fill="#1f6feb" font-size="10.5" font-weight="bold">Virtual address space &#8212; identical to before</text>
+    <rect x="90" y="66" width="110" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="145" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">page p0</text>
+    <rect x="210" y="66" width="110" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="265" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">page p1</text>
+    <rect x="330" y="66" width="110" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="385" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">page p2</text>
+    <rect x="450" y="66" width="110" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="505" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">page p3</text>
+    <rect x="570" y="66" width="110" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="625" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">page p4</text>
+    <rect x="690" y="66" width="110" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="745" y="88" text-anchor="middle" fill="#e6edf3" font-size="11">page p5</text>
+    <line x1="145" y1="100" x2="222" y2="176" stroke="#1f6feb" stroke-width="1.8" opacity="0.85"/>
+    <line x1="265" y1="100" x2="532" y2="176" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <line x1="265" y1="100" x2="450" y2="252" stroke="#f85149" stroke-width="1.8"/>
+    <line x1="385" y1="100" x2="160" y2="176" stroke="#1f6feb" stroke-width="1.8" opacity="0.85"/>
+    <line x1="505" y1="100" x2="656" y2="176" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <line x1="505" y1="100" x2="470" y2="176" stroke="#f0883e" stroke-width="1.8"/>
+    <line x1="625" y1="100" x2="346" y2="176" stroke="#1f6feb" stroke-width="1.8" opacity="0.85"/>
+    <line x1="745" y1="100" x2="780" y2="176" stroke="#1f6feb" stroke-width="1.8" opacity="0.85"/>
+  <rect x="300" y="112" width="300" height="15" fill="#0d1117"/>
+  <text x="450" y="123" text-anchor="middle" fill="#8b949e" font-size="9">the page table is updated for you &#8212; your pointer never notices</text>
+    <rect x="70" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="98" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f0</text>
+    <rect x="132" y="176" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="160" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f1</text>
+    <rect x="194" y="176" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="222" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f2</text>
+    <rect x="256" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="284" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f3</text>
+    <rect x="318" y="176" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="346" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f4</text>
+    <rect x="380" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="408" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f5</text>
+    <rect x="442" y="176" width="56" height="30" rx="3" fill="#2e1d0e" stroke="#f0883e" stroke-width="1.2"/>
+    <text x="470" y="195" text-anchor="middle" fill="#f0883e" font-size="9">f6</text>
+    <rect x="504" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="532" y="195" text-anchor="middle" fill="#484f58" font-size="9">f7</text>
+    <rect x="566" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="594" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f8</text>
+    <rect x="628" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="656" y="195" text-anchor="middle" fill="#484f58" font-size="9">f9</text>
+    <rect x="690" y="176" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="718" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f10</text>
+    <rect x="752" y="176" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="780" y="195" text-anchor="middle" fill="#8b949e" font-size="9">f11</text>
+  <path d="M 656 210 C 656 232, 470 232, 470 212" fill="none" stroke="#f0883e" stroke-width="1.6"/>
+  <path d="M 470 212 l -4 8 l 8 0 z" fill="#f0883e"/>
+  <text x="563" y="246" text-anchor="middle" fill="#f0883e" font-size="9">relocated</text>
+  <text x="532" y="168" text-anchor="middle" fill="#f85149" font-size="9">evicted</text>
+  <rect x="418" y="252" width="64" height="28" rx="3" fill="#2d1214" stroke="#f85149" stroke-width="1"/>
+  <text x="450" y="270" text-anchor="middle" fill="#f85149" font-size="9">disk</text>
+  <text x="450" y="300" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">Your code is unaffected. A physical address written down earlier is now simply wrong.</text>
+  <text x="450" y="317" text-anchor="middle" fill="#8b949e" font-size="9.5">The CPU re-reads the page table on every access. The GPU's copy engine cannot &#8212; it has no access to your page table.</text>
+</svg>

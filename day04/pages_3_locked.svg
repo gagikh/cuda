@@ -1,0 +1,45 @@
+<svg viewBox="0 0 900 262" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="262" fill="#0d1117"/>
+  <text x="450" y="22" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold">3 &#183; cudaHostRegister locks those frames in place</text>
+  <text x="450" y="38" text-anchor="middle" fill="#8b949e" font-size="10">the OS may no longer relocate or evict them, so the physical address is finally stable</text>
+  <rect x="632" y="60" width="240" height="40" rx="5" fill="#21262d" stroke="#30363d"/>
+  <text x="752" y="76" text-anchor="middle" fill="#e6edf3" font-size="10" font-weight="bold">GPU copy engine</text>
+  <text x="752" y="89" text-anchor="middle" fill="#8b949e" font-size="9">speaks physical addresses only</text>
+    <rect x="70" y="118" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="98" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f0</text>
+    <rect x="132" y="118" width="56" height="30" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1.2"/>
+    <text x="147" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f1</text>
+    <path d="M 171.6 131 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="170.4" y="131" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    <rect x="194" y="118" width="56" height="30" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1.2"/>
+    <text x="209" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f2</text>
+    <path d="M 233.6 131 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="232.4" y="131" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    <rect x="256" y="118" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="284" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f3</text>
+    <rect x="318" y="118" width="56" height="30" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1.2"/>
+    <text x="333" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f4</text>
+    <path d="M 357.6 131 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="356.4" y="131" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    <rect x="380" y="118" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="408" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f5</text>
+    <rect x="442" y="118" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="470" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f6</text>
+    <rect x="504" y="118" width="56" height="30" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1.2"/>
+    <text x="519" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f7</text>
+    <path d="M 543.6 131 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="542.4" y="131" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    <rect x="566" y="118" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="594" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f8</text>
+    <rect x="628" y="118" width="56" height="30" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1.2"/>
+    <text x="643" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f9</text>
+    <path d="M 667.6 131 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="666.4" y="131" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    <rect x="690" y="118" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2"/>
+    <text x="718" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f10</text>
+    <rect x="752" y="118" width="56" height="30" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1.2"/>
+    <text x="767" y="137" text-anchor="middle" fill="#8b949e" font-size="9">f11</text>
+    <path d="M 791.6 131 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="790.4" y="131" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+  <path d="M 812 100 L 812 170 L 106 170" fill="none" stroke="#2ea043" stroke-width="2"/>
+  <path d="M 106 170 l 8 -4 l 0 8 z" fill="#2ea043"/>
+  <text x="440" y="166" text-anchor="middle" fill="#2ea043" font-size="9">the copy engine reads these frames directly &#8212; no CPU, no staging buffer</text>
+  <text x="450" y="198" text-anchor="middle" fill="#8b949e" font-size="10.5" font-weight="bold">Physical RAM &#8212; the six frames holding your buffer, now locked</text>
+  <text x="450" y="220" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">Locking removes the OS's freedom to move a page. It does not move, copy, or reorder anything.</text>
+  <text x="450" y="236" text-anchor="middle" fill="#8b949e" font-size="9.5">The frames stay exactly as scattered as they were. The engine just walks the list, now that the list stays true.</text>
+  <text x="450" y="253" text-anchor="middle" fill="#484f58" font-size="9">The cost: locked frames leave the pool the OS can reclaim, for every process on the machine.</text>
+</svg>

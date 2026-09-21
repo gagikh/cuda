@@ -122,7 +122,9 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **LRU** — Least recently used, the eviction order the caches approximate. *(Day 13)*
 
-**Mapped (zero-copy) memory** — Page-locked host memory that also has a device address, from `cudaHostAlloc` with `cudaHostAllocMapped`. A kernel reads and writes it directly across the link with no explicit copy, paying link latency on every access. *(Day 4)*
+**Mapped (zero-copy) memory** — Page-locked host memory that also has a device address, from `cudaHostAlloc` with `cudaHostAllocMapped`. A kernel reads and writes it directly across the link with no explicit copy and no migration: the data never leaves host RAM, so there is no page to mark dirty. It isn't cached on the device either, so every repeated access is another bus round trip — read or write each byte once, and coalesce. *(Day 4)*
+
+**`__managed__`** — A file-scope declaration (`__device__ __managed__ int x;`) placing a variable in managed memory automatically, readable and writable by name from both host and device without `cudaMallocManaged` or passing a pointer. Same synchronization rules as any managed memory: synchronize before the host touches it after a launch. *(Day 4)*
 
 **Memory bandwidth** — Bytes per second between the SMs and device memory. Theoretical peak is bus width times memory clock times transfers per clock; the achieved figure is what a kernel actually reaches. *(Day 4)*
 
@@ -216,7 +218,7 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **Tiling** — Staging a block of data in shared memory once and reading it many times on chip, cutting global traffic by roughly the reuse factor. The technique behind tiled matrix multiply and every stencil and filter kernel in this course. *(Day 5, Day 10, Day 12)*
 
-**Unified memory** — One allocation, `cudaMallocManaged`, addressable from both host and device, with the driver migrating pages between them on demand. *(Day 4)*
+**Unified memory** — One allocation, `cudaMallocManaged`, addressable from both host and device, with the driver migrating whole pages between them on demand via page faults. A page the device wrote is dirty and migrates back when the host next touches it; a page both sides keep touching ping-pongs across the bus, which is unified memory's characteristic failure mode. Unlike zero-copy, the cost is per migration rather than per access. *(Day 4)*
 
 **Virtual and real architecture** — `-arch=compute_XX` names the virtual architecture PTX is generated for; `-code=sm_XX` names the real architecture SASS is generated for. `-arch=sm_XX` sets both. *(Day 1)*
 
