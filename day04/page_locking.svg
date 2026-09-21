@@ -1,0 +1,86 @@
+<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="430" fill="#0d1117"/>
+  <text x="450" y="24" text-anchor="middle" fill="#e6edf3" font-size="17" font-weight="bold">Page-Locking: Why Pinned Memory Is Faster</text>
+  <text x="450" y="42" text-anchor="middle" fill="#8b949e" font-size="11">the DMA engine needs a physical address that will still be valid when the transfer runs</text>
+
+  <!-- ================= LEFT: pageable ================= -->
+  <rect x="24" y="58" width="412" height="238" rx="8" fill="none" stroke="#f85149" stroke-width="1.2" opacity="0.6"/>
+  <text x="230" y="78" text-anchor="middle" fill="#f85149" font-size="13" font-weight="bold">Pageable &#183; malloc / new / std::vector</text>
+
+  <text x="44" y="102" fill="#8b949e" font-size="10">host RAM &#8212; the OS owns these pages</text>
+  <g>
+    <rect x="44" y="110" width="38" height="26" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1" opacity="1"/>
+    <rect x="88" y="110" width="38" height="26" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1" opacity="1"/>
+    <rect x="132" y="110" width="38" height="26" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1" opacity="1"/>
+    <rect x="176" y="110" width="38" height="26" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1" opacity="1"/>
+    <rect x="220" y="110" width="38" height="26" rx="3" fill="#21262d" stroke="#f85149" stroke-width="1.5" stroke-dasharray="3 3"/>
+  </g>
+  <path d="M 239 140 L 239 166" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="248" y="160" fill="#f85149" font-size="9">may be moved or swapped out</text>
+  <rect x="210" y="166" width="58" height="22" rx="3" fill="#2d1214" stroke="#f85149" stroke-width="1"/>
+  <text x="239" y="181" text-anchor="middle" fill="#f85149" font-size="9">disk</text>
+
+  <text x="44" y="212" fill="#e6edf3" font-size="11" font-weight="bold">So a transfer takes two copies:</text>
+  <rect x="44" y="222" width="104" height="30" rx="4" fill="#21262d" stroke="#30363d"/>
+  <text x="96" y="241" text-anchor="middle" fill="#e6edf3" font-size="9">your buffer</text>
+  <path d="M 150 237 L 176 237" stroke="#f85149" stroke-width="2"/>
+  <text x="163" y="233" text-anchor="middle" fill="#f85149" font-size="8">CPU copy</text>
+  <rect x="178" y="222" width="116" height="30" rx="4" fill="#21262d" stroke="#d29922"/>
+  <text x="236" y="236" text-anchor="middle" fill="#d29922" font-size="9">driver's hidden</text>
+  <text x="236" y="247" text-anchor="middle" fill="#d29922" font-size="9">pinned staging buffer</text>
+  <path d="M 296 237 L 322 237" stroke="#f85149" stroke-width="2"/>
+  <text x="309" y="233" text-anchor="middle" fill="#f85149" font-size="8">DMA</text>
+  <rect x="324" y="222" width="90" height="30" rx="4" fill="#21262d" stroke="#30363d"/>
+  <text x="369" y="241" text-anchor="middle" fill="#e6edf3" font-size="9">device VRAM</text>
+
+  <text x="230" y="275" text-anchor="middle" fill="#8b949e" font-size="10">You never asked for the staging copy and it never appears in your code.</text>
+  <text x="230" y="288" text-anchor="middle" fill="#f85149" font-size="10">cudaMemcpyAsync on pageable memory silently becomes synchronous.</text>
+
+  <!-- ================= RIGHT: page-locked ================= -->
+  <rect x="464" y="58" width="412" height="238" rx="8" fill="none" stroke="#2ea043" stroke-width="1.2" opacity="0.6"/>
+  <text x="670" y="78" text-anchor="middle" fill="#2ea043" font-size="13" font-weight="bold">Page-locked &#183; &#8220;pinned&#8221;</text>
+
+  <text x="484" y="102" fill="#8b949e" font-size="10">same host RAM, but the OS is forbidden to move these</text>
+  <g>
+    <rect x="484" y="110" width="38" height="26" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1" opacity="1"/>
+    <rect x="528" y="110" width="38" height="26" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1" opacity="1"/>
+    <rect x="572" y="110" width="38" height="26" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1" opacity="1"/>
+    <rect x="616" y="110" width="38" height="26" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1" opacity="1"/>
+    <rect x="660" y="110" width="38" height="26" rx="3" fill="#11291a" stroke="#2ea043" stroke-width="1" opacity="1"/>
+  </g>
+  <g>
+    <path d="M 499 120 a 4 4 0 0 1 8 0" fill="none" stroke="#2ea043" stroke-width="1.4"/><rect x="497.5" y="120" width="11" height="8" rx="1.5" fill="#2ea043"/>
+    <path d="M 543 120 a 4 4 0 0 1 8 0" fill="none" stroke="#2ea043" stroke-width="1.4"/><rect x="541.5" y="120" width="11" height="8" rx="1.5" fill="#2ea043"/>
+    <path d="M 587 120 a 4 4 0 0 1 8 0" fill="none" stroke="#2ea043" stroke-width="1.4"/><rect x="585.5" y="120" width="11" height="8" rx="1.5" fill="#2ea043"/>
+    <path d="M 631 120 a 4 4 0 0 1 8 0" fill="none" stroke="#2ea043" stroke-width="1.4"/><rect x="629.5" y="120" width="11" height="8" rx="1.5" fill="#2ea043"/>
+    <path d="M 675 120 a 4 4 0 0 1 8 0" fill="none" stroke="#2ea043" stroke-width="1.4"/><rect x="673.5" y="120" width="11" height="8" rx="1.5" fill="#2ea043"/>
+  </g>
+  <text x="484" y="160" fill="#2ea043" font-size="9">physical address stays valid &#8594; the copy engine can be pointed straight at it</text>
+
+  <text x="484" y="212" fill="#e6edf3" font-size="11" font-weight="bold">One copy, done by the DMA engine:</text>
+  <rect x="484" y="222" width="150" height="30" rx="4" fill="#21262d" stroke="#2ea043"/>
+  <text x="559" y="241" text-anchor="middle" fill="#e6edf3" font-size="9">your pinned buffer</text>
+  <path d="M 636 237 L 686 237" stroke="#2ea043" stroke-width="2.5"/>
+  <text x="661" y="233" text-anchor="middle" fill="#2ea043" font-size="8">DMA</text>
+  <rect x="688" y="222" width="90" height="30" rx="4" fill="#21262d" stroke="#30363d"/>
+  <text x="733" y="241" text-anchor="middle" fill="#e6edf3" font-size="9">device VRAM</text>
+
+  <text x="670" y="275" text-anchor="middle" fill="#8b949e" font-size="10">No CPU involvement, so the transfer can overlap with kernels.</text>
+  <text x="670" y="288" text-anchor="middle" fill="#2ea043" font-size="10">Required for cudaMemcpyAsync to be genuinely asynchronous.</text>
+
+  <!-- ================= two routes ================= -->
+  <text x="450" y="322" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">Two ways to get page-locked memory</text>
+
+  <rect x="60" y="332" width="370" height="54" rx="6" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1"/>
+  <text x="245" y="350" text-anchor="middle" fill="#1f6feb" font-size="11" font-weight="bold">cudaMallocHost(&amp;p, n)</text>
+  <text x="245" y="364" text-anchor="middle" fill="#e6edf3" font-size="9">allocate it pinned from the start</text>
+  <text x="245" y="377" text-anchor="middle" fill="#8b949e" font-size="9">free with cudaFreeHost &#183; when you control the allocation</text>
+
+  <rect x="470" y="332" width="370" height="54" rx="6" fill="#241a35" stroke="#a371f7" stroke-width="1"/>
+  <text x="655" y="350" text-anchor="middle" fill="#a371f7" font-size="11" font-weight="bold">cudaHostRegister(p, n, flags)</text>
+  <text x="655" y="364" text-anchor="middle" fill="#e6edf3" font-size="9">pin a buffer that already exists, in place</text>
+  <text x="655" y="377" text-anchor="middle" fill="#8b949e" font-size="9">cudaHostUnregister before free &#183; for legacy or third-party buffers</text>
+
+  <text x="450" y="406" text-anchor="middle" fill="#e6edf3" font-size="11">The cost is real: locked pages cannot be swapped, so pinning too much starves the OS and slows the whole machine.</text>
+  <text x="450" y="422" text-anchor="middle" fill="#8b949e" font-size="10">Pin the buffers you transfer repeatedly, not everything.</text>
+</svg>

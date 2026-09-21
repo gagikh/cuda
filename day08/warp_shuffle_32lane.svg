@@ -1,0 +1,252 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="380" fill="#0d1117"/>
+  <text x="450" y="24" text-anchor="middle" fill="#e6edf3" font-size="17" font-weight="bold">The Four Warp Shuffles, All 32 Lanes</text>
+  <text x="450" y="41" text-anchor="middle" fill="#8b949e" font-size="11">each line runs from the lane a value is READ FROM down to the lane that receives it &#183; loops continuously</text>
+  <g>
+    <g opacity="1"><animate attributeName="opacity" values="1;0.3;0.3;0.3;1" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <rect x="18" y="50" width="212" height="42" rx="5" fill="#241a35" stroke="#a371f7" stroke-width="1"/>
+      <text x="124" y="65" text-anchor="middle" fill="#a371f7" font-size="11" font-weight="bold">__shfl_sync(m, v, 5)</text>
+      <text x="124" y="78" text-anchor="middle" fill="#e6edf3" font-size="9">every lane reads lane 5</text>
+      <text x="124" y="88" text-anchor="middle" fill="#8b949e" font-size="8">broadcast to all</text>
+    </g>
+    <g opacity="0.3"><animate attributeName="opacity" values="0.3;1;0.3;0.3;0.3" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <rect x="239" y="50" width="212" height="42" rx="5" fill="#11291a" stroke="#2ea043" stroke-width="1"/>
+      <text x="345" y="65" text-anchor="middle" fill="#2ea043" font-size="11" font-weight="bold">__shfl_up_sync(m, v, 4)</text>
+      <text x="345" y="78" text-anchor="middle" fill="#e6edf3" font-size="9">lane i reads lane i-4</text>
+      <text x="345" y="88" text-anchor="middle" fill="#8b949e" font-size="8">lanes 0-3 keep own value</text>
+    </g>
+    <g opacity="0.3"><animate attributeName="opacity" values="0.3;0.3;1;0.3;0.3" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <rect x="460" y="50" width="212" height="42" rx="5" fill="#2b2410" stroke="#d29922" stroke-width="1"/>
+      <text x="566" y="65" text-anchor="middle" fill="#d29922" font-size="11" font-weight="bold">__shfl_down_sync(m, v, 4)</text>
+      <text x="566" y="78" text-anchor="middle" fill="#e6edf3" font-size="9">lane i reads lane i+4</text>
+      <text x="566" y="88" text-anchor="middle" fill="#8b949e" font-size="8">lanes 28-31 keep own value</text>
+    </g>
+    <g opacity="0.3"><animate attributeName="opacity" values="0.3;0.3;0.3;1;0.3" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <rect x="681" y="50" width="212" height="42" rx="5" fill="#2e1d0e" stroke="#f0883e" stroke-width="1"/>
+      <text x="787" y="65" text-anchor="middle" fill="#f0883e" font-size="11" font-weight="bold">__shfl_xor_sync(m, v, 4)</text>
+      <text x="787" y="78" text-anchor="middle" fill="#e6edf3" font-size="9">lane i swaps with lane i^4</text>
+      <text x="787" y="88" text-anchor="middle" fill="#8b949e" font-size="8">every lane sends and receives</text>
+    </g>
+  </g>
+  <text x="44" y="165" text-anchor="end" fill="#58a6ff" font-size="10" font-weight="bold">from</text>
+  <text x="44" y="301" text-anchor="end" fill="#8b949e" font-size="10" font-weight="bold">to</text>
+  <g>
+    <line x1="190" y1="172" x2="60" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;60;164;164;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="86" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;86;190;190;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="112" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;112;216;216;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="138" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;138;242;242;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="164" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;60;268;60;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="190" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;86;294;86;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="216" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;112;320;112;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="242" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;138;346;138;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="268" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;164;372;372;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="294" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;190;398;398;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="320" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;216;424;424;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="346" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;242;450;450;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="372" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;268;476;268;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="398" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;294;502;294;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="424" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;320;528;320;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="450" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;346;554;346;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="476" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;372;580;580;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="502" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;398;606;606;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="528" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;424;632;632;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="554" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;450;658;658;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="580" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;476;684;476;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="606" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;502;710;502;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="632" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;528;736;528;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="658" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;554;762;554;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="684" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;580;788;788;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="710" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;606;814;814;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="736" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;632;840;840;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="762" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;658;866;866;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="788" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;684;788;684;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="814" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;710;814;710;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="840" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;736;840;736;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+    <line x1="190" y1="172" x2="866" y2="286" stroke="#a371f7" stroke-width="1.5" opacity="0.75">
+      <animate attributeName="x1" values="190;762;866;762;190" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#a371f7;#2ea043;#d29922;#f0883e;#a371f7" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="16s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <g>
+    <rect x="49" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="75" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="101" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="127" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="153" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="179" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="205" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="231" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="257" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="283" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="309" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="335" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="361" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="387" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="413" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="439" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="465" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="491" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="517" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="543" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="569" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="595" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="621" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="647" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="673" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="699" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="725" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="751" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="777" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="803" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="829" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+    <rect x="855" y="150" width="22" height="22" rx="3" fill="#1f6feb" opacity="0.85"/>
+  </g>
+  <g>
+    <rect x="49" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="75" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="101" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="127" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="153" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="179" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="205" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="231" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="257" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="283" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="309" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="335" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="361" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="387" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="413" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="439" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="465" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="491" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="517" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="543" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="569" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="595" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="621" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="647" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="673" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="699" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="725" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="751" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="777" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="803" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="829" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+    <rect x="855" y="286" width="22" height="22" rx="3" fill="#21262d" stroke="#30363d" stroke-width="0.5"/>
+  </g>
+  <g>
+    <text x="60" y="144" text-anchor="middle" fill="#8b949e" font-size="9">0</text>
+    <text x="60" y="320" text-anchor="middle" fill="#8b949e" font-size="9">0</text>
+    <text x="164" y="144" text-anchor="middle" fill="#8b949e" font-size="9">4</text>
+    <text x="164" y="320" text-anchor="middle" fill="#8b949e" font-size="9">4</text>
+    <text x="268" y="144" text-anchor="middle" fill="#8b949e" font-size="9">8</text>
+    <text x="268" y="320" text-anchor="middle" fill="#8b949e" font-size="9">8</text>
+    <text x="372" y="144" text-anchor="middle" fill="#8b949e" font-size="9">12</text>
+    <text x="372" y="320" text-anchor="middle" fill="#8b949e" font-size="9">12</text>
+    <text x="476" y="144" text-anchor="middle" fill="#8b949e" font-size="9">16</text>
+    <text x="476" y="320" text-anchor="middle" fill="#8b949e" font-size="9">16</text>
+    <text x="580" y="144" text-anchor="middle" fill="#8b949e" font-size="9">20</text>
+    <text x="580" y="320" text-anchor="middle" fill="#8b949e" font-size="9">20</text>
+    <text x="684" y="144" text-anchor="middle" fill="#8b949e" font-size="9">24</text>
+    <text x="684" y="320" text-anchor="middle" fill="#8b949e" font-size="9">24</text>
+    <text x="788" y="144" text-anchor="middle" fill="#8b949e" font-size="9">28</text>
+    <text x="788" y="320" text-anchor="middle" fill="#8b949e" font-size="9">28</text>
+  </g>
+  <text x="450" y="340" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">A shuffle is register-to-register inside one warp: no shared memory, no barrier, one SHFL instruction.</text>
+  <text x="450" y="357" text-anchor="middle" fill="#8b949e" font-size="10">A lane whose source falls outside 0-31 receives its own value back &#8212; which is why the reduction loop needs no bounds check.</text>
+  <text x="450" y="372" text-anchor="middle" fill="#484f58" font-size="9">`m` is the lane mask. 0xFFFFFFFF asserts all 32 lanes reach the instruction; if that is not true, the result is undefined.</text>
+</svg>

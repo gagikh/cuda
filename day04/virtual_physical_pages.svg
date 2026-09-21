@@ -1,0 +1,173 @@
+<svg viewBox="0 0 900 418" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="900" height="418" fill="#0d1117"/>
+  <text x="450" y="22" text-anchor="middle" fill="#e6edf3" font-size="17" font-weight="bold">Virtual Pages, Physical Frames, and What Locking Actually Locks</text>
+  <text x="450" y="37" text-anchor="middle" fill="#8b949e" font-size="10.5">one malloc'd buffer followed through four states &#183; loops continuously</text>
+  <g>
+    <g opacity="0.3"><animate attributeName="opacity" values="1;0.3;0.3;0.3;1" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <rect x="18" y="44" width="212" height="34" rx="5" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1"/>
+      <text x="124" y="59" text-anchor="middle" fill="#1f6feb" font-size="11" font-weight="bold">1 &#183; virtual &#8594; physical</text>
+      <text x="124" y="72" text-anchor="middle" fill="#e6edf3" font-size="8.5">your contiguous buffer is scattered across frames</text>
+    </g>
+    <g opacity="0.3"><animate attributeName="opacity" values="0.3;1;0.3;0.3;0.3" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <rect x="239" y="44" width="212" height="34" rx="5" fill="#2e1d0e" stroke="#f0883e" stroke-width="1"/>
+      <text x="345" y="59" text-anchor="middle" fill="#f0883e" font-size="11" font-weight="bold">2 &#183; the OS relocates a page</text>
+      <text x="345" y="72" text-anchor="middle" fill="#e6edf3" font-size="8.5">p3 moves f9 &#8594; f6; your pointer never changes</text>
+    </g>
+    <g opacity="0.3"><animate attributeName="opacity" values="0.3;0.3;1;0.3;0.3" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <rect x="460" y="44" width="212" height="34" rx="5" fill="#2d1214" stroke="#f85149" stroke-width="1"/>
+      <text x="566" y="59" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">3 &#183; or evicts it to disk</text>
+      <text x="566" y="72" text-anchor="middle" fill="#e6edf3" font-size="8.5">p1 is swapped out; its frame is gone</text>
+    </g>
+    <g opacity="0.3"><animate attributeName="opacity" values="0.3;0.3;0.3;1;0.3" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <rect x="681" y="44" width="212" height="34" rx="5" fill="#11291a" stroke="#2ea043" stroke-width="1"/>
+      <text x="787" y="59" text-anchor="middle" fill="#2ea043" font-size="11" font-weight="bold">4 &#183; cudaHostRegister</text>
+      <text x="787" y="72" text-anchor="middle" fill="#e6edf3" font-size="8.5">frames locked: no move, no evict, DMA goes direct</text>
+    </g>
+  </g>
+
+  <text x="450" y="96" text-anchor="middle" fill="#1f6feb" font-size="11" font-weight="bold">Virtual address space &#8212; what your pointer sees: one contiguous buffer</text>
+  <g>
+    <rect x="62" y="104" width="96" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="110" y="125" text-anchor="middle" fill="#e6edf3" font-size="10">page p0</text>
+    <rect x="162" y="104" width="96" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="210" y="125" text-anchor="middle" fill="#e6edf3" font-size="10">page p1</text>
+    <rect x="262" y="104" width="96" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="310" y="125" text-anchor="middle" fill="#e6edf3" font-size="10">page p2</text>
+    <rect x="362" y="104" width="96" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="410" y="125" text-anchor="middle" fill="#e6edf3" font-size="10">page p3</text>
+    <rect x="462" y="104" width="96" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="510" y="125" text-anchor="middle" fill="#e6edf3" font-size="10">page p4</text>
+    <rect x="562" y="104" width="96" height="34" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1.2"/>
+    <text x="610" y="125" text-anchor="middle" fill="#e6edf3" font-size="10">page p5</text>
+  </g>
+
+  <g>
+    <line x1="110" y1="138" x2="193" y2="262" stroke="#1f6feb" stroke-width="1.8" opacity="0.85">
+      <animate attributeName="x2" values="193;193;193;193;193" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </line>
+    <line x1="210" y1="138" x2="503" y2="262" stroke="#1f6feb" stroke-width="1.8" opacity="0.85">
+      <animate attributeName="x2" values="503;503;838;503;503" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </line>
+    <line x1="310" y1="138" x2="131" y2="262" stroke="#1f6feb" stroke-width="1.8" opacity="0.85">
+      <animate attributeName="x2" values="131;131;131;131;131" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </line>
+    <line x1="410" y1="138" x2="627" y2="262" stroke="#1f6feb" stroke-width="1.8" opacity="0.85">
+      <animate attributeName="x2" values="627;441;441;441;627" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </line>
+    <line x1="510" y1="138" x2="317" y2="262" stroke="#1f6feb" stroke-width="1.8" opacity="0.85">
+      <animate attributeName="x2" values="317;317;317;317;317" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </line>
+    <line x1="610" y1="138" x2="751" y2="262" stroke="#1f6feb" stroke-width="1.8" opacity="0.85">
+      <animate attributeName="x2" values="751;751;751;751;751" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </line>
+  </g>
+
+  <rect x="286" y="150" width="328" height="15" fill="#0d1117"/>
+  <text x="450" y="161" text-anchor="middle" fill="#8b949e" font-size="9">page table &#183; the OS may rewrite these mappings at any time</text>
+
+  <g>
+    <rect x="41" y="262" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2">
+      <animate attributeName="fill" values="#21262d;#21262d;#21262d;#21262d;#21262d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#30363d;#30363d;#30363d;#30363d;#30363d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="55" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f0</text>
+    <rect x="103" y="262" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2">
+      <animate attributeName="fill" values="#0f1b2d;#0f1b2d;#0f1b2d;#11291a;#0f1b2d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="117" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f1</text>
+    <rect x="165" y="262" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2">
+      <animate attributeName="fill" values="#0f1b2d;#0f1b2d;#0f1b2d;#11291a;#0f1b2d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="179" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f2</text>
+    <rect x="227" y="262" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2">
+      <animate attributeName="fill" values="#21262d;#21262d;#21262d;#21262d;#21262d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#30363d;#30363d;#30363d;#30363d;#30363d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="241" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f3</text>
+    <rect x="289" y="262" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2">
+      <animate attributeName="fill" values="#0f1b2d;#0f1b2d;#0f1b2d;#11291a;#0f1b2d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="303" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f4</text>
+    <rect x="351" y="262" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2">
+      <animate attributeName="fill" values="#21262d;#21262d;#21262d;#21262d;#21262d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#30363d;#30363d;#30363d;#30363d;#30363d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="365" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f5</text>
+    <rect x="413" y="262" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2">
+      <animate attributeName="fill" values="#21262d;#0f1b2d;#0f1b2d;#11291a;#21262d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#30363d;#f0883e;#f85149;#2ea043;#30363d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="427" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f6</text>
+    <rect x="475" y="262" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2">
+      <animate attributeName="fill" values="#0f1b2d;#0f1b2d;#21262d;#11291a;#0f1b2d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#30363d;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="489" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f7</text>
+    <rect x="537" y="262" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2">
+      <animate attributeName="fill" values="#21262d;#21262d;#21262d;#21262d;#21262d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#30363d;#30363d;#30363d;#30363d;#30363d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="551" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f8</text>
+    <rect x="599" y="262" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2">
+      <animate attributeName="fill" values="#0f1b2d;#21262d;#21262d;#21262d;#0f1b2d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#30363d;#30363d;#30363d;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="613" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f9</text>
+    <rect x="661" y="262" width="56" height="30" rx="3" fill="#21262d" stroke="#30363d" stroke-width="1.2">
+      <animate attributeName="fill" values="#21262d;#21262d;#21262d;#21262d;#21262d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#30363d;#30363d;#30363d;#30363d;#30363d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="675" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f10</text>
+    <rect x="723" y="262" width="56" height="30" rx="3" fill="#0f1b2d" stroke="#1f6feb" stroke-width="1.2">
+      <animate attributeName="fill" values="#0f1b2d;#0f1b2d;#0f1b2d;#11291a;#0f1b2d" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="stroke" values="#1f6feb;#f0883e;#f85149;#2ea043;#1f6feb" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    </rect>
+    <text x="737" y="281" text-anchor="middle" fill="#8b949e" font-size="9">f11</text>
+  </g>
+  <g>
+    <g opacity="0"><animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <path d="M 204.6 275 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="203.4" y="275" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <path d="M 514.6 275 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="513.4" y="275" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <path d="M 142.6 275 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="141.4" y="275" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <path d="M 452.6 275 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="451.4" y="275" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <path d="M 328.6 275 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="327.4" y="275" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+      <path d="M 762.6 275 a 3.4 3.4 0 0 1 6.8 0" fill="none" stroke="#2ea043" stroke-width="1.2"/><rect x="761.4" y="275" width="9.2" height="7" rx="1.3" fill="#2ea043"/>
+    </g>
+  </g>
+  <rect x="806" y="262" width="64" height="30" rx="3" fill="#2d1214" stroke="#f85149" stroke-width="1"/>
+  <text x="838" y="281" text-anchor="middle" fill="#f85149" font-size="9">disk</text>
+  <text x="380" y="326" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="bold">Physical RAM &#8212; what the copy engine sees: scattered frames</text>
+
+  <rect x="716" y="212" width="168" height="40" rx="5" fill="#21262d" stroke="#30363d"/>
+  <text x="800" y="228" text-anchor="middle" fill="#e6edf3" font-size="10" font-weight="bold">GPU copy engine</text>
+  <text x="800" y="241" text-anchor="middle" fill="#8b949e" font-size="9">speaks physical addresses only</text>
+  <g opacity="0.25"><animate attributeName="opacity" values="0.25;0.25;0.25;1;0.25" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="20s" repeatCount="indefinite"/>
+    <path d="M 800 252 L 800 306 L 96 306" fill="none" stroke="#2ea043" stroke-width="2"/>
+    <path d="M 96 306 l 8 -4 l 0 8 z" fill="#2ea043"/>
+    <text x="448" y="302" text-anchor="middle" fill="#2ea043" font-size="9">DMA reads the locked frames directly &#8212; no CPU, no staging buffer</text>
+  </g>
+
+  <text x="450" y="360" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">Your pointer is a virtual address. The copy engine needs a physical one, and only locking makes that stable.</text>
+  <text x="450" y="377" text-anchor="middle" fill="#8b949e" font-size="10">States 2 and 3 are invisible to your program: the OS rewrites the page table, so the pointer keeps working. A physical address the driver recorded does not.</text>
+  <text x="450" y="393" text-anchor="middle" fill="#8b949e" font-size="10">That is exactly why a pageable transfer stages through a buffer the driver has already locked, instead of reading yours.</text>
+  <text x="450" y="409" text-anchor="middle" fill="#484f58" font-size="9">Locking is per-page and costs real memory: those frames leave the pool the OS can reclaim, for every process on the machine.</text>
+</svg>

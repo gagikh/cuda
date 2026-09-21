@@ -144,7 +144,9 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **Pageable memory** — Ordinary host memory from `malloc` or `new`. The operating system may move or swap its pages, so the GPU cannot access it directly: a transfer first copies it into a page-locked staging buffer held by the driver. *(Day 4)*
 
-**Page-locked memory** — Host memory whose pages the operating system may not move or swap out. *(Day 4)*
+**Page-locked memory** — Host memory whose pages the operating system may not relocate to another physical frame or swap out. This makes the *physical* address stable, which is what the GPU's copy engine needs, since it has no access to your process's page table. Locking does not make the memory contiguous or move it; it only removes the OS's freedom to. *(Day 4)*
+
+**Page table** — The per-process map from virtual pages to physical frames. The OS may rewrite it at any time — your pointer is unaffected, but any physical address recorded elsewhere becomes stale. *(Day 4)*
 
 **Page migration** — The movement of a unified-memory page to the processor that faulted on it. Repeated migration in both directions is the usual reason unified memory is slow; `cudaMemPrefetchAsync` and `cudaMemAdvise` control it. *(Day 4)*
 

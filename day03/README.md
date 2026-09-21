@@ -51,27 +51,58 @@ Hint: https://people.maths.ox.ac.uk/~gilesm/cuda/
 + loop unrolling
 
 ## Code Walkthrough
-Warp-level reduction, with a debug-mode fallback using `__shfl_xor_sync`:
+
+### Where divergence falls relative to the warp
+
+The cost of a branch has nothing to do with how complicated the condition is. It depends entirely on whether the 32 lanes of a warp agree on the answer.
 
 ```c++
-// --- Allocate temporary storage in shared memory
-#ifdef NDEBUG
-	typedef cub::WarpReduce<int> WarpReduceT;
+// DIVERGENT: lanes alternate, so every warp takes both paths.
+// The warp runs A() with the odd lanes masked off, then B() with the even
+// lanes masked off. Cost = A + B, every warp, always.
+if (threadIdx.x % 2 == 0) { A(); } else { B(); }
 
-	 __shared__ typename WarpReduceT::TempStorage temp_storage;
-	const auto result = WarpReduceT(temp_storage).Sum(r);
-#else
-	// in debug mode, it consumes much resources, so lets use this one
-	int result = r;
-#pragma unroll
-	for (auto i = 1; i < 32; i *= 2) {
-		result += __shfl_xor_sync(0xFFFFFFFF, result, i);
-	}
-#endif
+// FREE: the condition is constant across each warp, so each warp takes
+// exactly one path and nothing is masked. Cost = A or B, never both.
+if ((threadIdx.x / 32) % 2 == 0) { A(); } else { B(); }
 ```
-![image](https://github.com/gagikh/cuda/assets/7694001/d483440c-3828-4ae7-8f7a-f6601242d0a5)
 
-Large vector addition kernel (ignore warp logic for this part — see Self-Learning below):
+Same branch, same total work, completely different cost. Self-Learning task 3 below is this comparison, measured.
+
+Two sources of divergence that don't look like branches:
+
+```c++
+// A bounds check IS a branch. Harmless here -- only the last warp diverges,
+// and only on its tail -- but the same shape inside a loop is not.
+if (id < n) c[id] = a[id] + b[id];
+
+// A data-dependent trip count: the whole warp runs until the LAST lane
+// finishes, so one outlier lane costs every lane in the warp.
+while (residual[id] > tol) { ... }
+```
+
+### Loop unrolling
+
+```c++
+// The compiler knows the trip count, so it will usually unroll this anyway.
+for (int k = 0; k < 4; ++k) sum += w[k] * x[i + k];
+
+// Say it explicitly when the trip count is a compile-time constant and you
+// want the branch and index arithmetic gone for certain.
+#pragma unroll
+for (int k = 0; k < 4; ++k) sum += w[k] * x[i + k];
+
+// And the opposite: stop the compiler unrolling a large loop into a register
+// blowup that costs you occupancy (Day 2).
+#pragma unroll 1
+for (int k = 0; k < BIG; ++k) { ... }
+```
+
+Unrolling removes the loop counter increment, the comparison and the branch, and it exposes independent multiply-adds the scheduler can overlap. It costs registers and instruction cache. Check with `nvcc -Xptxas -v` (Day 1) whether an unroll pushed register usage up far enough to cost you resident warps — that's the trade, and it's measurable rather than a matter of taste.
+
+### Large vector addition
+
+The kernel the Hands-On task below builds on:
 
 ```c++
 // Kernel
@@ -99,7 +130,7 @@ cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
 ```
 
 ## Hands-On Task
-Large vector addition and time estimation (ignore warp logic at this point). Then: BGR to grayscale conversion with CUDA.
+Large vector addition and time estimation. Then: BGR to grayscale conversion with CUDA.
 
 ## Self-Learning
 1. Implement the large vector addition above and time it against an equivalent CPU loop.

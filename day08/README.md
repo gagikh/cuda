@@ -17,14 +17,44 @@
 - Performance tuning: shuffles vs. shared memory
 
 ## Visual
+
+### The full warp: 32 lanes, 5 steps
+
+![Six rows of 32 lanes. Every lane starts holding 1; each step halves the number of lanes holding a useful partial (16, 8, 4, 2, 1) with arrows running from lane i+offset down to lane i, until lane 0 alone holds 32](warp_reduce_32lane.svg)
+
+The whole reduction at real warp width. Every lane starts with `1`; after five halvings lane 0 holds `32`. Three things the picture makes concrete that the loop body doesn't:
+
+- **The lanes that still matter halve every step.** By the last step 31 of 32 lanes are contributing nothing. That looks wasteful and isn't — they cost no extra instructions, because the warp issues the shuffle for all 32 lanes whether or not the results are used.
+- **Data only ever moves down in lane id.** That is the whole reason lane 0 is the one holding the answer, and why lane 16 ends up with a 16-element partial rather than the total.
+- **Five steps, not 31.** log₂(32) = 5. A sequential sum of 32 values takes 31 additions; this takes 5 instructions.
+
+### All four shuffles
+
+![Two rows of 32 lanes, source above and destination below, with one line per lane. The lines re-route through four patterns: all converging on lane 5 for shfl_sync, shifted left by four for shfl_up, shifted right by four for shfl_down, and crossing in groups of eight for shfl_xor](warp_shuffle_32lane.svg)
+
+Each line runs from the lane a value is **read from** down to the lane that receives it. The four intrinsics differ only in how that source is computed:
+
+| Intrinsic | lane `i` reads from | shape |
+|---|---|---|
+| `__shfl_sync(m, v, n)` | lane `n` | every line converges on one lane — a broadcast |
+| `__shfl_up_sync(m, v, d)` | lane `i - d` | parallel shift toward higher lanes; lanes `< d` keep their own value |
+| `__shfl_down_sync(m, v, d)` | lane `i + d` | parallel shift toward lower lanes; lanes `≥ 32-d` keep their own value |
+| `__shfl_xor_sync(m, v, k)` | lane `i ^ k` | butterfly — lines cross in pairs, every lane both sends and receives |
+
+The "keeps their own value" cases are the ones to notice: a lane whose computed source falls outside 0–31 gets its own value back rather than garbage. That's precisely why the reduction loop above needs no bounds check.
+
+`__shfl_xor_sync` is the odd one out in a useful way. Because the exchange is symmetric, running the reduction with it leaves *every* lane holding the total instead of just lane 0 — same five steps, same cost, no broadcast needed afterwards. That's what makes it the right choice for the FFT butterfly in the stretch task, and for any case where all 32 lanes need the result to continue.
+
+<details>
+<summary>The original 8-lane diagrams (easier to trace by hand)</summary>
+
 ![Warp shuffle reduction: 8 lanes shown, each step halving the active offset (4, 2, 1) via __shfl_down_sync until lane 0 holds the total sum](warp_reduction.svg)
 
-`__shfl_down_sync` lets a lane read a value directly from another lane's register — no shared memory, no `__syncthreads()`. Halving the offset each step (16 → 8 → 4 → 2 → 1 for a full warp) sums all 32 values in just 5 steps, with lane 0 ending up holding the result.
-
-## Animated
 ![8 lanes cycling through three shuffle intrinsics: __shfl_down_sync where lane i reads from lane i+1, __shfl_up_sync where lane i reads from lane i-1, and __shfl_xor_sync where lanes swap in pairs](warp_shuffle_intrinsics.svg)
 
-Same 8-lane fragment, three different intrinsics: `__shfl_down_sync` and `__shfl_up_sync` shift values one direction or the other by a fixed offset; `__shfl_xor_sync` exchanges values between paired lanes (`i` and `i^mask`), which is what makes it useful for butterfly-style reductions and the FFT stretch task below — every lane both sends and receives in one instruction, instead of the one-directional shift of up/down.
+Same mechanics on an 8-lane fragment, animated. Useful for following a single value through the steps before looking at all 32 at once.
+
+</details>
 
 ## Code Walkthrough
 
@@ -167,6 +197,40 @@ if (keep) out_indices[base + prefix] = my_index;
 
 The mask `(1u << lane) - 1` clears bit `lane` and everything above it, leaving only lanes strictly below you — an *exclusive* prefix, which is what you want since your own slot shouldn't be counted before you write to it. It's correct at `lane == 31` too: `(1u << 31) - 1` is `0x7FFFFFFF`.
 
+### Or don't write it at all: `cub::WarpReduce`
+
+Everything above is worth understanding, and in production code you will often still reach for the library version. CUB ships with the toolkit and has a warp reduction already tuned per architecture:
+
+```c++
+#include <cub/cub.cuh>
+
+#ifdef NDEBUG
+    typedef cub::WarpReduce<int> WarpReduceT;
+
+    __shared__ typename WarpReduceT::TempStorage temp_storage;
+    const auto result = WarpReduceT(temp_storage).Sum(r);
+#else
+    // In a debug build the CUB path costs far more registers and shared memory,
+    // which can drop occupancy enough to change what you're measuring. The
+    // hand-written butterfly is cheap in every build.
+    int result = r;
+#pragma unroll
+    for (int i = 1; i < 32; i *= 2) {
+        result += __shfl_xor_sync(0xFFFFFFFF, result, i);
+    }
+#endif
+```
+
+![Warp reduction: 32 lanes collapsing pairwise to a single sum](https://github.com/gagikh/cuda/assets/7694001/d483440c-3828-4ae7-8f7a-f6601242d0a5)
+
+Three things this snippet is actually teaching:
+
+- **The `#else` branch is the butterfly from above**, written out. `__shfl_xor_sync` with `i` doubling from 1 to 16 is the same five steps, and every lane finishes holding the sum — which is why no broadcast follows it.
+- **CUB needs `__shared__` scratch; the shuffle version needs none.** That's the real difference between the two branches. `WarpReduceT::TempStorage` is a per-warp shared-memory allocation, and shared memory is an occupancy resource (Day 2). The comment in the original is blunt about it: in a debug build, where nothing is inlined and registers aren't reused, that cost is high enough to distort a measurement.
+- **`#pragma unroll` on a 5-iteration compile-time loop** is Day 3 material doing real work here: it removes the loop entirely so the five shuffles issue back to back.
+
+When to use which: reach for CUB when you want a reduction and don't care how it's done — it handles types, operators other than sum, and partial warps, and it will track future architectures. Write the shuffle by hand when you need to fuse the reduction into something else, when you're avoiding the shared-memory footprint, or when you're learning what the library is doing. `cub::BlockReduce` is the drop-in for `block_reduce_sum` above, and Day 14 covers the libraries properly.
+
 ### Why any of this beats shared memory
 
 `__shfl_*_sync` compiles to a single `SHFL` instruction (see [ARCHITECTURE.md](../ARCHITECTURE.md#from-cc-to-sass-instruction-reference)) that moves data directly between registers in the same warp. Concretely, against a shared-memory reduction:
@@ -195,7 +259,8 @@ https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
 5. Rewrite `warp_reduce_sum` with `__shfl_xor_sync` so every lane ends up with the total, and confirm the timing is unchanged. When would you want this version?
 6. Redo task 3 with `__ballot_sync` + `__popc` instead of the scan, with one warp-aggregated `atomicAdd` per warp. Time both against an image where ~5% of pixels pass, and again where ~95% do.
 7. Write the divergence bug on purpose: call `warp_reduce_sum` inside `if (id < n)` with an `n` that isn't a multiple of 32. Does it give the wrong answer, hang, or appear to work? Try it under `compute-sanitizer --tool synccheck` (Day 1), then fix it with the identity-value approach.
-8. (Stretch) Implement a 32-point FFT butterfly using warp shuffles.
+8. Replace your `warp_reduce_sum` with `cub::WarpReduce<int>` and confirm the same answer. Then compile both a debug and a release build with `-Xptxas -v` and compare register and shared-memory usage — the `#ifdef NDEBUG` in the walkthrough above exists because of what you'll see.
+9. (Stretch) Implement a 32-point FFT butterfly using warp shuffles.
 
 ## Self-Check
 No answers given — these are for you to reason through, or discuss with a classmate/instructor.
