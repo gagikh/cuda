@@ -3,6 +3,8 @@
 //
 // Compile:  nvcc -arch=sm_75 template.cu -o day03
 // Run:      ./day03
+// No GPU?   Use the course Colab notebook (free T4, compute 7.5 = sm_75):
+//           https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing
 
 #include <cstdio>
 #include <chrono>

@@ -6,6 +6,8 @@
 //            is this course's documented floor. CUDA 13 removed Maxwell/Pascal/
 //            Volta, so sm_50/sm_60/sm_70 no longer compile at all.)
 // Run:      ./day01
+// No GPU?   Use the course Colab notebook (free T4, compute 7.5 = sm_75):
+//           https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing
 
 #include <cstdio>
 #include <chrono>

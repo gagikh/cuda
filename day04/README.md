@@ -48,3 +48,5 @@ No answers given — these are for you to reason through, or discuss with a clas
 
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.
+
+No CUDA GPU on your machine? Run this lab in the [course Colab notebook](https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing) instead — free T4, compute capability 7.5, which is exactly the `-arch=sm_75` the template compiles for. Setup and caveats are in the [root README](../README.md#-no-cuda-gpu-start-here).

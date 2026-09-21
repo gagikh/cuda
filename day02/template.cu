@@ -3,6 +3,8 @@
 //
 // Compile:  nvcc -arch=sm_75 template.cu -o day02
 // Run:      ./day02
+// No GPU?   Use the course Colab notebook (free T4, compute 7.5 = sm_75):
+//           https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing
 
 #include <cstdio>
 #include <cuda_runtime.h>

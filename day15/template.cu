@@ -6,6 +6,12 @@
 //           (cudaMallocAsync needs compute capability >= 6.0 and CUDA >= 11.2;
 //            sm_75 is this course's floor anyway.)
 // Run:      ./day15 <path-to-image>
+// No GPU?   Use the course Colab notebook (free T4, compute 7.5 = sm_75):
+//           https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing
+//           Colab's stock OpenCV is CPU-only, so cv::cuda::GpuMat will not
+//           link there. Build OpenCV with -DWITH_CUDA=ON in the notebook, or
+//           swap the image I/O for a cudaMalloc buffer -- the CUDA content of
+//           this day is the same either way.
 
 #include <cstdio>
 #include <cuda_runtime.h>

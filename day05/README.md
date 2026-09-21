@@ -44,9 +44,11 @@ Starting today, day templates load real images/video through OpenCV instead of f
 Build note: you'll need OpenCV built with its CUDA module (`opencv_cudaarithm`, `opencv_cudaimgproc`, `opencv_highgui`, `opencv_videoio`). With pkg-config: `` `pkg-config --cflags --libs opencv4` ``.
 
 ## Resources
-http://homepages.math.uic.edu/~jan/mcs572f16/mcs572notes/lec35.html
+- [CUDA C Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/) — *Shared Memory* and *Compute Capabilities* (the per-architecture bank layout)
+- [Using Shared Memory in CUDA C/C++](https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/) — NVIDIA's own walkthrough, including the padding fix
+- [CUDA C++ Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/) — *Shared Memory and Memory Banks*
 
-Task reference: https://developer.download.nvidia.com/compute/DevZone/C/html_x64/3_Imaging/convolutionSeparable/doc/convolutionSeparable.pdf
+Task reference: [separable convolution](https://developer.download.nvidia.com/compute/DevZone/C/html_x64/3_Imaging/convolutionSeparable/doc/convolutionSeparable.pdf) (NVIDIA sample write-up)
 
 ## Reference Implementation
 [`examples/matrix_add.cu`](../examples/matrix_add.cu) at the repo root uses `cudaMallocPitch` / `cudaMemcpy2D` — a working example of pitched memory referenced in this day's material, and the same pitch idea `GpuMat::step` is built on.
@@ -70,3 +72,5 @@ No answers given — these are for you to reason through, or discuss with a clas
 
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.
+
+No CUDA GPU on your machine? Run this lab in the [course Colab notebook](https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing) instead — free T4, compute capability 7.5, which is exactly the `-arch=sm_75` the template compiles for. One caveat for this day: Colab's preinstalled OpenCV is CPU-only, so `cv::cuda::GpuMat` will not link. Either build OpenCV with `-DWITH_CUDA=ON` in the notebook, or swap the image I/O for a `cudaMalloc` buffer and a synthetic image — the CUDA content of this day is unchanged either way. Full setup in the [root README](../README.md#-no-cuda-gpu-start-here).

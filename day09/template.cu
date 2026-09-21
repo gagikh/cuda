@@ -4,6 +4,12 @@
 //
 // Compile:  nvcc -arch=sm_75 template.cu -o day09 `pkg-config --cflags --libs opencv4`
 // Run:      ./day09 <path-to-image>
+// No GPU?   Use the course Colab notebook (free T4, compute 7.5 = sm_75):
+//           https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing
+//           Colab's stock OpenCV is CPU-only, so cv::cuda::GpuMat will not
+//           link there. Build OpenCV with -DWITH_CUDA=ON in the notebook, or
+//           swap the image I/O for a cudaMalloc buffer -- the CUDA content of
+//           this day is the same either way.
 
 #include <cstdio>
 #include <cuda_runtime.h>

@@ -13,6 +13,29 @@
 
 ---
 
+## 💻 No CUDA GPU? Start here
+
+**[▶ Open the course Colab notebook](https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing)**
+
+You do not need a CUDA-capable machine to take this course. The notebook above gives you a free NVIDIA GPU in the browser and is the baseline environment for every lab — clone the repo into it, paste a day's `template.cu` into a cell, compile and run.
+
+Set it up once: **Runtime → Change runtime type → Hardware accelerator → GPU**, then confirm you actually have one:
+
+```
+!nvcc --version
+!nvidia-smi
+```
+
+Three things to know before you rely on it:
+
+- **The GPU is usually a Tesla T4**, compute capability 7.5 — which is exactly the `-arch=sm_75` this course compiles for, so every template builds unmodified. Run Day 1's `report_device_capabilities()` first and write down *your* session's numbers; a free session can also hand you a different card.
+- **Days 5 onward need OpenCV built with CUDA.** Colab's preinstalled `opencv-python` is CPU-only, so `cv::cuda::GpuMat` will not link. Either build OpenCV with `-DWITH_CUDA=ON` in the notebook (slow, but done once per session), or replace the image I/O with a plain `cudaMalloc` buffer and a synthetic image — the CUDA content of each day is unaffected either way.
+- **Sessions are ephemeral.** Anything not saved to Drive disappears when the runtime recycles, and idle sessions are reclaimed. Keep your work in a Drive-mounted folder or a GitHub fork.
+
+Local builds are still preferred where you have the hardware — profiling with Nsight Systems and Nsight Compute (Days 4, 13 and [PERFORMANCE.md](PERFORMANCE.md)) is far more usable on a real desktop.
+
+---
+
 ## 📘 Course Outline
 
 ### [Day 1: CUDA Basics and Programming Model](day01/README.md)
@@ -109,30 +132,43 @@
 
 ---
 
-## 📚 Recommended Resources
+## 📚 Bibliography
 
-### CUDA Programming Guides
-- [CUDA C Programming Guide (HTML)](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)  
-- [CUDA C Programming Guide (PDF)](https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf)
+### Primary
 
-### Oxford CUDA Course by Mike Giles
-- [Main Page](https://people.maths.ox.ac.uk/~gilesm/cuda/)
-- [Lecture 1 – Introduction & Vector Add](https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_01.pdf)  
-- [Lecture 2 – Memory & Kernel Basics](https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_02.pdf)  
-- [Lecture 3 – Control Flow & Atomics](https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_03.pdf)  
-- [Lecture 4 – Warp Programming (Advanced)](https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_04.pdf)  
-- [Lecture 5 – Libraries (Skip)](https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_05.pdf)  
-- [Lecture 6 – Streams & Host Code](https://people.maths.ox.ac.uk/~gilesm/cuda/2019/lecture_06.pdf)
+- NVIDIA. *CUDA C Programming Guide* — [PDF](https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf) · [HTML](https://docs.nvidia.com/cuda/cuda-programming-guide/)  
+  The course's primary reading. Each day's `Resources` section names the chapters for that session.
+- NVIDIA. *CUDA C++ Best Practices Guide* — https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/
+- Hwu W., Kirk D., El Hajj I. *Programming Massively Parallel Processors*, 5th ed., Elsevier, 2026  
+  The standard text. Chapters 5–6 cover the same ground as [PERFORMANCE.md](PERFORMANCE.md).
 
-### Labs & Exercises
-- [ETH Zurich CUDA Labs (PDF)](https://iis-people.ee.ethz.ch/~gmichi/asocd_2014/exercises/ex_03.pdf)
+### Profiling and performance
 
-### Extra Reading
-- [CUDA by Example](http://www.mat.unimi.it/users/sansotte/cuda/CUDA_by_Example.pdf)  
-- [Parallel Programming with CUDA (David Muench)](http://www.davidmuench.de/studienarbeit.pdf)
+- NVIDIA. *Nsight Compute* — https://docs.nvidia.com/nsight-compute/
+- NVIDIA. *Nsight Systems* — https://docs.nvidia.com/nsight-systems/
+- Williams S., Waterman A., Patterson D. Roofline: An Insightful Visual Performance Model. *CACM* 52(4), 2009
 
-### NVIDIA Course Materials
-- [NVIDIA Educator Courses](https://developer.nvidia.com/educators/existing-courses#2)
+### Libraries and precision
+
+- cuBLAS, cuSOLVER, cuSPARSE, cuFFT, cuRAND — https://docs.nvidia.com/cuda/
+- cuDNN — https://docs.nvidia.com/deeplearning/cudnn/
+- CUB — https://nvidia.github.io/cccl/cub/ · Thrust — https://nvidia.github.io/cccl/thrust/
+- NVIDIA. *Train With Mixed Precision* — https://docs.nvidia.com/deeplearning/performance/
+- Micikevicius P. et al. Mixed Precision Training. *ICLR*, 2018. arXiv:1710.03740
+
+### Computer vision
+
+Days 5 onward operate on real images through OpenCV.
+
+- OpenCV CUDA module — https://docs.opencv.org/4.x/d1/d1e/group__cuda.html
+- Szeliski R. *Computer Vision: Algorithms and Applications*, 2nd ed. Free PDF: https://szeliski.org/Book/
+
+### Courses and teaching material
+
+- NVIDIA DLI Teaching Kit — Accelerated Computing. https://developer.nvidia.com/teaching-kits
+- NVIDIA / OLCF CUDA Training Series — https://www.olcf.ornl.gov/cuda-training-series/
+- Oxford CUDA course, Mike Giles — https://people.maths.ox.ac.uk/~gilesm/cuda/
+- GPU MODE lecture series — https://github.com/gpu-mode/lectures
 
 ---
 
