@@ -123,8 +123,8 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 
 ## Bonus: Image Processing with OpenCV / GpuMat
 76. Implement a Gaussian blur kernel and compare it to `cv::cuda::GaussianFilter`.
-77. Implement histogram equalization on the GPU.
-78. Implement a Canny edge detector from scratch (gradient → non-max suppression → hysteresis).
+77. Implement histogram equalization on the GPU. (The histogram itself is exam task [E2](#e2--histogram-of-a-grayscale-image); equalization adds the scan and the lookup on top.)
+78. Implement a Canny edge detector from scratch (gradient → non-max suppression → hysteresis). Full specification as exam task [E3](#e3--canny-edge-detection).
 79. Implement bilateral filtering (edge-preserving blur).
 80. Implement a median filter using a small sorting network in shared memory.
 81. Implement image thresholding — both fixed and adaptive — as a kernel.
@@ -133,6 +133,7 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 84. Implement an RGB-to-HSV color-space conversion kernel.
 85. Implement a perspective warp (homography) kernel using textures.
 86. Implement non-maximum suppression for corner detection.
+86b. Implement connected components labeling of a binary mask. Full specification as exam task [E1](#e1--connected-components-labeling-of-a-binary-mask).
 87. Build a real-time webcam filter pipeline: `cv::VideoCapture` → GPU kernel → `cv::imshow`.
 88. Implement a full Laplacian pyramid blend of two images.
 89. Implement a separable box filter (horizontal pass, then vertical) and compare it to a single 2D tiled pass.
@@ -149,3 +150,59 @@ Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfa
 98. Implement one kernel in half precision (FP16) and compare accuracy and speed against FP32.
 99. Build a small CUDA unit-test harness that compares kernel output against a CPU reference for randomized inputs.
 100. Write a one-page performance report for any kernel from this course: measured throughput, theoretical peak from `report_device_capabilities()`, and the percentage of peak achieved.
+
+---
+
+# Final Exam
+
+Three practical tasks. Each one is a real computer-vision algorithm, each draws on a different part of the course, and all three operate on a real image through `cv::cuda::GpuMat` the way every day from Day 5 onward has.
+
+**What is assessed, for all three:**
+
+1. **Correctness** — output matches an OpenCV reference on the same input. Not "looks about right": compare arrays and report how many pixels differ.
+2. **Error handling** — every CUDA call through `CUDA_CHECK`, every launch followed by `CUDA_CHECK_LAST_ERROR()`, and the program runs clean under `compute-sanitizer` (Day 1).
+3. **Measurement** — `cudaEvent` timing averaged over many runs ([`common/timer.h`](common/timer.h)), not a single `<chrono>` reading, and the result expressed as a percentage of your GPU's theoretical peak (Day 13, [PERFORMANCE.md](PERFORMANCE.md)).
+4. **Explanation** — say *why* your kernel performs as it does, in the vocabulary of the course: coalescing, occupancy, bank conflicts, atomic contention, memory- vs compute-bound.
+
+A correct kernel with no measurement is an incomplete answer. So is a fast kernel you cannot explain.
+
+**Baselines must be honest.** Compare against OpenCV's GPU implementation (`cv::cuda::*`) where one exists, not against a naive single-threaded CPU loop. A "100× speedup" over unoptimized CPU code is not a result.
+
+---
+
+## E1 · Connected Components Labeling of a binary mask
+
+Assign every connected region of a binary mask a unique label, so that two pixels share a label exactly when a path of set pixels joins them.
+
+- **The question.** Where does the time actually go — the labeling passes, or the convergence checking? And how does the answer change as the number of components grows?
+- **Input.** Any binary mask: threshold a grayscale image (Day 5), or generate synthetic blobs. Test both few-large-components and many-small-components cases, because they stress different things.
+- **Minimum to pass.** A working label-propagation implementation (iterate: each pixel takes the minimum label of its 4- or 8-neighbourhood, repeat until nothing changes), correctness checked against `cv::connectedComponents`, and timing as a function of component count.
+- **To go further.** Implement union-find with path compression as a second version and find the crossover. Do the convergence test on the device with a single `__device__` flag instead of copying a flag back every iteration.
+- **Draws on.** Day 2 (2D indexing), Day 5 (shared-memory tiles with a halo — neighbours cross tile edges), Day 9 (atomics), Day 13 (coalescing).
+- **Typical mistakes.** Copying a "did anything change?" flag to the host every iteration, so the measurement is dominated by round trips rather than by the algorithm. Forgetting that neighbour reads cross tile boundaries and need a halo. Treating an iteration count that varies with the image as if it were fixed.
+
+## E2 · Histogram of a grayscale image
+
+Count how many pixels fall in each of 256 intensity bins.
+
+- **The question.** How much does atomic contention actually cost, and how much of it does privatization remove?
+- **Input.** Any grayscale image. Test a normal photograph **and** a near-uniform one (mostly a single shade), because the second is where contention becomes visible.
+- **Minimum to pass.** Two implementations — one global `atomicAdd` per pixel, one privatized into a shared-memory histogram and merged once per block (Day 9) — identical output, verified against `cv::calcHist`, with the speedup measured on both images and the difference explained.
+- **To go further.** Add warp-aggregated atomics using `__ballot_sync` + `__popc` (Day 8). Count the global atomics each version issues and check that the measured speedup tracks that number.
+- **Draws on.** Day 5 (shared memory), Day 8 (warp aggregation), Day 9 (atomics, privatization), Day 13 (% of peak — a histogram is memory-bound, so know what it is *allowed* to achieve).
+- **Typical mistakes.** Timing the first launch, so the measurement includes context setup. Forgetting to zero the shared histogram, or to `__syncthreads()` after zeroing and again before merging. Reporting a speedup from only the easy image, where contention is low and privatization barely helps.
+
+## E3 · Canny edge detection
+
+The full pipeline: Gaussian blur → gradient magnitude and direction (Sobel) → non-maximum suppression → double threshold → hysteresis.
+
+- **The question.** Which stage dominates, and is the whole pipeline limited by arithmetic or by the number of times you cross global memory?
+- **Input.** Any grayscale image; a video stream via `cv::VideoCapture` for the stretch version.
+- **Minimum to pass.** All five stages as CUDA kernels, output compared against `cv::Canny` with the same parameters (report the percentage of differing pixels — exact equality is not expected, since tie-breaking in suppression differs), and **per-stage timing** showing which stage costs what.
+- **To go further.** Fuse adjacent stages to cut global-memory round trips and measure what fusing buys ([PERFORMANCE.md §7](PERFORMANCE.md)). Use a separable Gaussian instead of a 2D one. Capture the whole pipeline into a CUDA graph (Day 12) and compare per-frame launch overhead. Run it on video with the stages overlapped across streams (Day 7).
+- **Draws on.** Day 5 (tiling with halo), Day 6 (events, per-stage timing), Day 7 (stream overlap for video), Day 9 (hysteresis propagation needs atomics or an iteration like E1), Day 12 (graphs), Day 13 (fusion, % of peak).
+- **Typical mistakes.** Doing hysteresis on the host because the propagation is awkward, then reporting a GPU timing that hides a device-to-host round trip per frame. Timing only the kernels and not the transfers. Comparing a tuned GPU pipeline against a debug-build CPU baseline.
+
+---
+
+**Suggested deliverable for each task:** the source, a correctness report (how it was verified and how many pixels differed), a timing table, and half a page explaining the performance. Task 100 above is the template for that last part.

@@ -203,4 +203,16 @@ The final exam covers both theory and practical knowledge. Key areas include:
 - **Texture Memory** — filtering, binding, addressing  
 - **Bank Conflicts & Cache** — tuning L1/L2, avoiding conflicts
 
+### Practical tasks
+
+The practical half of the exam is three computer-vision algorithms, specified in full in [TASKS.md § Final Exam](TASKS.md#final-exam):
+
+| | Task | What it tests |
+|---|---|---|
+| **E1** | Connected components labeling of a binary mask | Iterative kernels, atomics, halo handling, convergence on the device |
+| **E2** | Histogram of a grayscale image | Atomic contention and privatization, warp aggregation |
+| **E3** | Canny edge detection | A multi-stage pipeline: tiling, per-stage timing, fusion, streams |
+
+All three are marked on four things: correctness against an OpenCV reference, error handling (`CUDA_CHECK` throughout and clean under `compute-sanitizer`), measurement (`cudaEvent` timing as a percentage of theoretical peak), and an explanation of the performance in the course's own vocabulary. A correct kernel with no measurement is an incomplete answer; so is a fast one you cannot explain.
+
 🧠 Tip: Practice writing and debugging CUDA kernels. Focus on memory strategies and performance tuning.
