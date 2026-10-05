@@ -2,6 +2,7 @@
 
 ## Objectives
 - Understand shared memory banking and how bank conflicts happen
+- Remove conflicts two ways — padding and XOR swizzling — and say which costs what
 - Correctly synchronize reads/writes to shared memory (`__syncthreads()`)
 - Distinguish global, shared, constant, and pitched memory and when to use each
 - Implement a shared-memory tiled filter
@@ -9,6 +10,7 @@
 
 ## Key Concepts
 - Bank conflicts
+- Conflict avoidance: padding vs. `tile[row][col ^ row]` XOR swizzling
 - Sync read/write in kernel
 - Global memory
 - Shared memory
@@ -32,6 +34,79 @@ The rule behind it: lane `t` reads word `t × stride`, which lives in bank `(t �
 - *From a stride, the degree is always a power of two.* `gcd(s, 32)` divides 32, so 1, 2, 4, 8, 16, 32 are the only possibilities — there is no such thing as a 3-way conflict from a constant stride. Odd degrees are real, but they need an **irregular** pattern: an indirect gather `s[idx[t]]`, a lookup table, a compaction. That's the fifth phase in the diagram, and the practical difference is how you diagnose them: for a regular tiled kernel, checking `gcd(row_stride, 32)` on paper tells you everything; for a gather, only the profiler can (`ncu --metrics l1tex__data_bank_conflicts_pipe_lsu_mem_shared`).
 
 For a configurable version — set any stride 1–33 or dial in any gather degree, hover a lane to trace its wire, and step through the transpose read/write phases under all three layouts (plain, padded, swizzled) — see [`bank_conflict_animations.html`](bank_conflict_animations.html), open locally in a browser since GitHub's file viewer only shows HTML as source rather than running it. The transpose tab is the concrete setup for Day 12's `transpose_shared` kernel.
+
+## Avoiding Conflicts: Padding vs. XOR Swizzling
+
+Both fixes do the same thing — break the alignment between a logical column and a physical bank — and the quickest way to see how is to print the bank each element lands in.
+
+Take a `__shared__ float tile[32][32]`. Element `(r, c)` sits at word index `32r + c`, so its bank is `(32r + c) mod 32` = **`c`**. The row drops out of the arithmetic entirely, which is the whole problem: *every* row puts logical column `c` in bank `c`.
+
+**No fix — `tile[r][c]`, bank = `c`**
+
+| | c0 | c1 | c2 | c3 | c4 | c5 | c6 | c7 |
+|---|---|---|---|---|---|---|---|---|
+| **r0** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r1** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r2** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r3** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r4** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r5** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r6** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r7** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+
+Read **across** a row and you sweep banks 0…31 — perfect. Read **down** a column and every one of the 32 lanes hits the same bank: a **32-way conflict**, the worst case shared memory has.
+
+**Padding — `tile[32][33]`, bank = `(r + c) mod 32`**
+
+| | c0 | c1 | c2 | c3 | c4 | c5 | c6 | c7 |
+|---|---|---|---|---|---|---|---|---|
+| **r0** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r1** | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| **r2** | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+| **r3** | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| **r4** | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| **r5** | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+| **r6** | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
+| **r7** | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 |
+
+One wasted column makes the row stride 33 words instead of 32, so each row's banks shift by one. A column now walks diagonally through all 32 banks. You change nothing in the kernel body — only the declaration.
+
+**XOR swizzling — `tile[r][c ^ r]`, bank = `c ^ r`**
+
+| | c0 | c1 | c2 | c3 | c4 | c5 | c6 | c7 |
+|---|---|---|---|---|---|---|---|---|
+| **r0** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| **r1** | 1 | 0 | 3 | 2 | 5 | 4 | 7 | 6 |
+| **r2** | 2 | 3 | 0 | 1 | 6 | 7 | 4 | 5 |
+| **r3** | 3 | 2 | 1 | 0 | 7 | 6 | 5 | 4 |
+| **r4** | 4 | 5 | 6 | 7 | 0 | 1 | 2 | 3 |
+| **r5** | 5 | 4 | 7 | 6 | 1 | 0 | 3 | 2 |
+| **r6** | 6 | 7 | 4 | 5 | 2 | 3 | 0 | 1 |
+| **r7** | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+
+No padding, no extra memory. Every column is conflict-free, and every row is still a permutation of banks 0…31 — so the row access stays perfect too.
+
+Two properties make this safe to do:
+
+- **XOR is its own inverse.** `(c ^ r) ^ r == c`, so applying the same formula on the write and on the read lands you back on the element you meant. There is no "unswizzle" step.
+- **It only permutes, never collides.** For a fixed row, `c ^ r` is a bijection on `0…31` — the row still holds all 32 columns, just reordered. Nothing is lost or overwritten.
+
+### Which to use
+
+| | **Padding** `[32][33]` | **Swizzling** `[r][c ^ r]` |
+|---|---|---|
+| Extra shared memory | One column per row (128 B for a 32×32 float tile) | **None** |
+| Kernel changes | Declaration only — body untouched | Every access, read **and** write |
+| Easy to get wrong | Hard | Easy: miss one access and you read the wrong element, silently |
+| Needs a power-of-two row width | No | **Yes** — see below |
+| Survives vectorized (`float4`) access | No | Yes |
+| Occupancy impact | Slightly worse (more shared memory per block) | None |
+
+**Start with padding.** It is one character, it cannot be half-applied, and for most tiled kernels the wasted column is irrelevant. Reach for swizzling when shared memory is the resource limiting your occupancy, or when you are loading `float4` and padding has stopped working.
+
+The power-of-two caveat is the one that bites: `c ^ r` is a clean permutation only when the row width is a power of two. A `[18][18]` tile — which is what `TILE_DIM + 2*RADIUS` gives you at `TILE_DIM = 16, RADIUS = 1` — does **not** satisfy that, and the XOR will alias. Either swizzle only the inner power-of-two region, or round the row width up to 32 and mask the index. Day 13 works through exactly this on `tiled_filter_swizzled`.
+
+The **Transpose** tab of [`bank_conflict_animations.html`](bank_conflict_animations.html) lets you flip between all three layouts above and watch the transaction count change from 32 to 1.
 
 ## OpenCV Basics
 Starting today, day templates load real images/video through OpenCV instead of filling synthetic buffers by hand. Four things to know:
@@ -59,6 +134,7 @@ Use shared memory for a 2D filter, loaded from a real image via `cv::imread`. Fi
 ## Self-Learning
 1. Implement a shared-memory tile-based 2D convolution filter (start with a simple box blur) operating on a `cv::cuda::GpuMat` loaded from a real image.
 2. Deliberately create a shared-memory access pattern with bank conflicts, measure the perf hit, then fix it with padding.
+2b. Fix the same kernel a second way, with `tile[row][col ^ row]` on both the write and the read. Confirm it gives identical output to the padded version, then compare shared-memory usage with `nvcc -Xptxas -v` and conflict counts with `ncu --metrics l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum`.
 3. Implement a 2D Sobel filter using shared memory.
 4. Extend the Sobel filter to process a video stream frame by frame using `cv::VideoCapture`, displaying the result with `cv::imshow` each frame.
 
@@ -67,6 +143,8 @@ No answers given — these are for you to reason through, or discuss with a clas
 
 1. Why do 32 threads reading `tile[threadIdx.x][k]` for a fixed `k` all collide on the same shared-memory bank?
 1b. A warp accesses shared memory with stride 3. How many transactions does it cost, and why isn't the answer 3? (Then check yourself against the stride explorer in [`bank_conflict_animations.html`](bank_conflict_animations.html).)
+1c. For a `tile[32][32]` of floats, element `(r, c)` lands in bank `c` — the row cancels out. Show the arithmetic, then redo it for `tile[32][33]` and explain where the `r` reappears.
+1d. Why does swizzling need no "unswizzle" pass on the way out, while almost any other index remapping would?
 2. Why does `GpuMat::step` differ from `cols * elemSize()`, and what breaks in a kernel that ignores that and assumes rows are contiguous?
 3. What does `__syncthreads()` actually guarantee, and what does it explicitly *not* guarantee?
 

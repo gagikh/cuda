@@ -74,6 +74,7 @@ Local builds are still preferred where you have the hardware — profiling with 
 - Global memory usage  
 - Streams and concurrent execution  
 - Events and synchronization  
+- Host functions in a stream (`cudaLaunchHostFunc`)  
 - Streamed read/write patterns
 
 ### [Day 7: Asynchronous Execution Techniques](day07/README.md)

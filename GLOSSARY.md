@@ -92,6 +92,8 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **Host** — The CPU, as opposed to the **device** (GPU). *(Day 1)*
 
+**Host function (`cudaLaunchHostFunc`)** — CPU code enqueued *into a stream*, run on a driver thread once all preceding work in that stream completes, and blocking anything enqueued after it. It must not call any CUDA API — attempting one is undefined behavior, not a reliable error. It can be captured into a CUDA graph as a host node (Day 12), and does not run if the context has errored. *(Day 6)*
+
 **Inclusive and exclusive scan** — Prefix sums. Element i of an inclusive scan is the combination of elements 0 to i; of an exclusive scan, elements 0 to i−1. *(Day 8)*
 
 **Instantiation** — Turning a captured graph into an executable graph with `cudaGraphInstantiate`. Done once; the work of validating and preparing the launches is paid here instead of at every launch. *(Day 12)*
