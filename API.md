@@ -15,7 +15,7 @@ Signatures verified against the **CUDA Toolkit 13.3** [Runtime API reference](ht
 | [3](day03/README.md#functions--ֆունկցիաներ) | `__syncwarp` |
 | [4](day04/README.md#functions--ֆունկցիաներ) | `cudaHostAlloc` · `cudaFreeHost` · `cudaHostRegister` · `cudaHostUnregister` · `cudaHostGetDevicePointer` · `cudaMallocManaged` · `cudaMemPrefetchAsync` · `cudaMemAdvise` · `cudaMemcpyAsync` |
 | [5](day05/README.md#functions--ֆունկցիաներ) | `cudaMallocPitch` · `cudaMemcpy2D` · `__syncthreads` · `__syncwarp` |
-| [6](day06/README.md#functions--ֆունկցիաներ) | `cudaStreamCreate` · `cudaEventCreate` / `Record` / `Synchronize` / `ElapsedTime` · `cudaStreamWaitEvent` · `cudaLaunchHostFunc` |
+| [6](day06/README.md#functions--ֆունկցիաներ) | `cudaStreamCreate` · `cudaEventCreate` / `Record` / `Synchronize` / `ElapsedTime` · `cudaStreamWaitEvent` · `cudaLaunchHostFunc` · `cudaSetDeviceFlags` / `cudaGetDeviceFlags` |
 | [7](day07/README.md#functions--ֆունկցիաներ) | `cudaHostAlloc` · `cudaMemcpy` · `cudaMemcpyAsync` |
 | [8](day08/README.md#functions--ֆունկցիաներ) | `__shfl_sync` · `__shfl_up_sync` · `__shfl_down_sync` · `__shfl_xor_sync` · `__ballot_sync` · `__popc` |
 | [9](day09/README.md#functions--ֆունկցիաներ) | `__ballot_sync` · `__activemask` · `atomicAdd` (+`_block`) · `atomicCAS` · `atomicMax` · `cudaMemset` |
@@ -41,6 +41,7 @@ Signatures verified against the **CUDA Toolkit 13.3** [Runtime API reference](ht
 | Streams | [6](day06/README.md#functions--ֆունկցիաներ) |
 | Events and device-side timing | [6](day06/README.md#functions--ֆունկցիաներ) |
 | Host functions in a stream | [6](day06/README.md#functions--ֆունկցիաներ) |
+| Host-side wait policy (spin / yield / blocking) | [6](day06/README.md#functions--ֆունկցիաներ) |
 | Occupancy | [2](day02/README.md#functions--ֆունկցիաներ) |
 | Barriers | [2](day02/README.md#functions--ֆունկցիաներ), [3](day03/README.md#functions--ֆունկցիաներ), [5](day05/README.md#functions--ֆունկցիաներ) |
 | Warp shuffle | [8](day08/README.md#functions--ֆունկցիաներ) |
@@ -82,6 +83,7 @@ int stride = gridDim.x * blockDim.x;                  // grid-stride loop step
 | `cudaMemoryAdvise` | `cudaMemAdviseSetReadMostly`, `…SetPreferredLocation`, `…SetAccessedBy` (+ `Unset…` for each) |
 | `cudaStreamCaptureMode` | `cudaStreamCaptureModeGlobal`, `…ThreadLocal`, `…Relaxed` |
 | `cudaEvent` flags | `cudaEventDefault`, `cudaEventBlockingSync`, `cudaEventDisableTiming`, `cudaEventInterprocess` |
+| `cudaSetDeviceFlags` | `cudaDeviceScheduleAuto`, `cudaDeviceScheduleSpin`, `cudaDeviceScheduleYield`, `cudaDeviceScheduleBlockingSync`, `cudaDeviceMapHost`, `cudaDeviceLmemResizeToMax` |
 | `cudaMemPoolAttr` | `cudaMemPoolAttrReleaseThreshold`, `…ReservedMemCurrent`/`High`, `…UsedMemCurrent`/`High` — and the reuse policies **without** the `Attr` infix: `cudaMemPoolReuseFollowEventDependencies`, `cudaMemPoolReuseAllowOpportunistic`, `cudaMemPoolReuseAllowInternalDependencies` |
 | `cudaFilterMode` | `cudaFilterModePoint`, `cudaFilterModeLinear` |
 | `cudaTextureAddressMode` | `cudaAddressModeWrap`, `…Clamp`, `…Mirror`, `…Border` |

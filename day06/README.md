@@ -4,6 +4,7 @@
 - Consolidate the first five days: threads/blocks/grids, memory types, bank conflicts
 - Introduce CUDA streams and events
 - Use `cudaEvent`s for precise device-side timing (first formal use — earlier days used host-side `<chrono>` on purpose)
+- Choose how the host thread waits for the GPU with `cudaSetDeviceFlags`, and know why it must be the first CUDA call
 - Enqueue host code into a stream with `cudaLaunchHostFunc`, and explain why it must not call any CUDA API
 - Implement image derivative, shared-memory convolution, and transform kernels on a real image loaded via OpenCV
 
@@ -17,6 +18,7 @@
 - Bank conflicts in shared memory
 - Streams/events
 - Host functions in a stream (`cudaLaunchHostFunc`)
+- Host-side wait policy: spin, yield, blocking sync (`cudaSetDeviceFlags`)
 
 ## Definitions · Սահմանումներ
 
@@ -55,12 +57,69 @@ cudaError_t cudaLaunchHostFunc(cudaStream_t stream, cudaHostFn_t fn, void *userD
 
 // Սպասում է device-ի ամբողջ աշխատանքի ավարտին
 cudaError_t cudaDeviceSynchronize(void);
+
+// Որոշում է, թե ինչպես է host-ի թելը սպասում device-ին։ Պետք է կանչել
+// մինչև device-ի նախաստորագրումը, այլապես վերադարձնում է cudaErrorSetOnActiveProcess
+cudaError_t cudaSetDeviceFlags(unsigned int flags);
+cudaError_t cudaGetDeviceFlags(unsigned int *flags);
 ```
 
 ## Visual
 ![Single default stream running H2D copy, kernel, D2H copy back to back, versus two streams where one stream's copy overlaps another stream's kernel](streams_timeline.svg)
 
 The default stream runs everything strictly in order — the GPU sits idle during both copies. Once you use two (or more) streams, the copy engine and the compute engine can work at the same time, so one stream's transfer overlaps another stream's kernel. `cudaEvent`s are how you measure exactly how much time that overlap actually saves.
+
+## How the Host Thread Waits: `cudaSetDeviceFlags`
+
+Every `cudaDeviceSynchronize`, `cudaStreamSynchronize` and `cudaEventSynchronize` in this day's lab makes the **host** thread wait for the GPU. How it waits is a choice, and by default the runtime makes it for you:
+
+```c++
+cudaError_t err = cudaSetDeviceFlags(cudaDeviceScheduleSpin);
+```
+
+| Flag | How the host thread waits | Cost |
+|---|---|---|
+| `cudaDeviceScheduleAuto` | **Default.** Compares active CUDA contexts (C) against logical processors (P): spins if `C ≤ P`, yields if `C > P` | Usually right, but it *is* a heuristic — on a machine with spare cores you silently get spinning |
+| `cudaDeviceScheduleSpin` | Busy-waits on the CPU | Notices completion soonest; holds a core at 100% and can slow other host threads |
+| `cudaDeviceScheduleYield` | Yields its timeslice back to the OS | Higher latency to notice completion; leaves the core available |
+| `cudaDeviceScheduleBlockingSync` | Blocks on a synchronization primitive until the device signals | Lowest CPU use, highest wake-up latency |
+
+Two other flags live in the same call: `cudaDeviceMapHost`, which you need for zero-copy (Day 4), and `cudaDeviceLmemResizeToMax`.
+
+### The ordering trap
+
+The flags apply to a device **before it is initialized**. Call this after the device is already up — after any allocation, launch, or even `cudaSetDevice` in most cases — and you get `cudaErrorSetOnActiveProcess`, with no effect. Recovering from that means `cudaDeviceReset()` first.
+
+So this belongs at the very top of `main`, before anything else touches CUDA. And since it returns a real error that beginners routinely ignore, it is worth checking:
+
+```c++
+int main()
+{
+    CUDA_CHECK(cudaSetDeviceFlags(cudaDeviceScheduleSpin));   // first CUDA call
+    ...
+}
+```
+
+Query what you actually got with `cudaGetDeviceFlags(&flags)` rather than assuming.
+
+### Why this matters on the timing day
+
+The choice does not change how fast the GPU runs. It changes two things that matter here:
+
+- **Measurement noise.** A spinning thread notices completion within nanoseconds; a blocking one can take a scheduler timeslice to wake. For the short kernels you are timing today that wake-up latency is visible, which is one reason `cudaEventElapsedTime` (measured on the device) is more trustworthy than wrapping the launch in a host clock.
+- **What else the machine is doing.** Spinning holds a full core. On your own desktop timing one kernel, that is free. On a shared cluster node, or when the host has real work to do in parallel with the GPU — decoding the next video frame, for instance, which is exactly the Day 7 pipeline — spinning steals the core you wanted that work to run on.
+
+Sensible default: leave it on `Auto` and only set it explicitly when you have measured a reason. Reach for `Spin` when latency to notice completion genuinely matters and the host has nothing else to do; reach for `BlockingSync` when the host is busy or the GPU work is long.
+
+### The per-event equivalent
+
+There is a finer-grained version of the same idea. An event created with `cudaEventBlockingSync` makes `cudaEventSynchronize` on *that event* block, regardless of the device-wide flag:
+
+```c++
+cudaEventCreateWithFlags(&evt, cudaEventBlockingSync);
+```
+
+Useful when most of your waits should spin but one long-running stage should not burn a core. Note that `cudaEventDisableTiming` is a separate flag on the same call — an event created with it cannot be used with `cudaEventElapsedTime`, which is a confusing failure if you set it by habit.
 
 ## Host Functions: running CPU code *inside* a stream
 
@@ -115,6 +174,8 @@ https://on-demand.gputechconf.com/gtc/2014/presentations/S4158-cuda-streams-best
 3. Implement a simple image transform (e.g. rotate or scale) kernel.
 4. Time each kernel precisely with `cudaEvent`s (`cudaEventCreate` / `cudaEventRecord` / `cudaEventElapsedTime`) and compare against your earlier `<chrono>` measurements.
 5. (Stretch) Split the derivative + transform work across two CUDA streams and check whether they overlap.
+5b. Time the same kernel under `cudaDeviceScheduleSpin` and `cudaDeviceScheduleBlockingSync`, watching host CPU usage (`top` / Task Manager) in each case. Compare the `cudaEvent` time against a `<chrono>` time around the same launch, and say which of the two numbers the flag actually moved.
+5c. Call `cudaSetDeviceFlags` *after* your first allocation instead of before it. Confirm you get `cudaErrorSetOnActiveProcess`, and that without `CUDA_CHECK` you would never have noticed.
 6. Enqueue a `cudaLaunchHostFunc` after the copy-out that prints a message, and confirm from the ordering of your `printf`s that it runs *after* the GPU work rather than at the point you called it.
 7. Put a `sleep` of a few hundred milliseconds inside that host function and time the stream again. Explain the slowdown in terms of "the host function blocks work added after it".
 8. Call `cudaMalloc` (or any CUDA API) from inside the host function. Does it return `cudaErrorNotPermitted`, hang, or appear to work? Note what you observed — the documentation permits all three.
@@ -128,6 +189,8 @@ No answers given — these are for you to reason through, or discuss with a clas
 4. `cudaLaunchHostFunc` returns immediately, but the function it enqueues runs much later. What decides *when*?
 5. Why is a host function forbidden from calling into the CUDA API at all? Think about which thread it runs on and what it would be asking the driver to do.
 6. A host function does not run if the context has errored. What does that tell you about where error handling belongs in a streamed pipeline?
+7. `cudaSetDeviceFlags` changes nothing about how fast the GPU executes. What does it change, and why is that still worth caring about on Day 7's video pipeline?
+8. On a machine with 16 cores running one CUDA context, which behaviour does `cudaDeviceScheduleAuto` pick — and is that what you want on a shared cluster node?
 
 ## Code Template
 See [`template.cu`](template.cu) for a skeleton to start from.
