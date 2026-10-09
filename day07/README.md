@@ -12,6 +12,29 @@
 - Stream dependencies
 - Event-based timing
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**`cudaMemcpyAsync`** — Պատճենում, որն ուղարկվում է stream և վերադառնում է անմիջապես։ Այն իրոք ասինխրոն է միայն այն դեպքում, երբ host-ի հիշողությունը page-locked է։ Pageable հիշողության դեպքում runtime-ը կատարում է սինխրոն պատճենում և այդ մասին չի հայտնում։
+
+**Double buffering** — Մուտքը բաժանել մասերի և օգտագործել բուֆերների և stream-երի երկու կամ ավելի հավաքածու, որպեսզի n-րդ մասի հաշվարկի ընթացքում n+1-րդ մասը պատճենվի device, իսկ n-1-րդը՝ host։ Արդյունքում ընդհանուր ժամանակը մոտենում է փոխանցման և հաշվարկի ժամանակներից մեծագույնին, ոչ թե դրանց գումարին։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Pinned հիշողություն։ Առանց դրա cudaMemcpyAsync-ը սինխրոն է
+cudaError_t cudaHostAlloc(void **pHost, size_t size, unsigned int flags);
+cudaError_t cudaFreeHost(void *ptr);
+
+// Սինխրոն և ասինխրոն պատճենում
+cudaError_t cudaMemcpy(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind);
+cudaError_t cudaMemcpyAsync(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind,
+                            cudaStream_t stream = 0);
+```
+
 ## Visual
 ![Four streams pipelined: each chunk's H2D copy, kernel, and D2H copy staggered so a later chunk's copy overlaps an earlier chunk's compute](async_pipeline.svg)
 

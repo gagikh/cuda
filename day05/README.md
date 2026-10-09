@@ -18,6 +18,49 @@
 - Pitched memory
 - `cv::cuda::GpuMat`, `cv::imread`, `cv::VideoCapture`, `cv::imshow`
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Shared memory** — Չիպի վրա գտնվող հիշողություն, որը հատկացվում է ամեն block-ի համար և հասանելի է block-ի բոլոր thread-երին։ Դրա latency-ն շատ ավելի փոքր է, քան global memory-ինը, իսկ կյանքի տևողությունը համընկնում է block-ի կյանքի տևողությանը։ Հայտարարվում է `__shared__`-ով՝ ստատիկ, կամ չափը տրվում է launch-ի երրորդ արգումենտով՝ դինամիկ։
+
+**Bank** — Shared memory-ի 32 հավասար մասերից մեկը։ Հաջորդական 32-բիթանոց բառերը գտնվում են հաջորդական bank-երում, և ամեն bank մեկ ցիկլում սպասարկում է մեկ բառ։
+
+**Bank conflict** — Իրավիճակ, երբ warp-ի մի քանի thread մեկ դիմումում կարդում կամ գրում են նույն bank-ի տարբեր բառեր։ Այդ դիմումները սպասարկվում են հերթով, ոչ թե զուգահեռ։ Լուծվում է padding-ով (այս օրը) կամ ինդեքսների swizzling-ով (Օր 6)։
+
+**Broadcast** — Երբ warp-ի մի քանի կամ բոլոր lane-երը կարդում են shared memory-ի նույն բառը, hardware-ն այն տալիս է բոլորին մեկ transaction-ով։ Սա conflict չէ։
+
+**N-way conflict** — Երբ warp-ի N lane դիմում են նույն bank-ի N տարբեր բառի, դիմումը բաժանվում է N transaction-ի։
+
+**`__syncthreads()`** — Block-ի barrier։ Ոչ մի thread չի անցնում այս կետը, քանի դեռ block-ի բոլոր thread-երը չեն հասել դրան։ Մինչև barrier-ը կատարված shared և global memory-ի գրառումները barrier-ից հետո տեսանելի են block-ի բոլոր thread-երին։ Քանի որ block-ի ամեն thread պետք է հասնի barrier-ին, այն divergent control flow-ի ներսում դնելը undefined behaviour է։
+
+**Barrier** — Ծրագրի կետ, որին պետք է հասնեն բոլոր մասնակից thread-երը, մինչև դրանցից որևէ մեկը շարունակի։ `__syncthreads()`-ը block-ի barrier-ն է, `__syncwarp`-ը՝ warp-ի barrier-ը։
+
+**Constant memory** — 64 ԿԲ ծավալով տիրույթ, որը նախատեսված է միայն կարդալու համար։ Հայտարարվում է `__constant__`-ով և cache է արվում ամեն SM-ում։ Երբ warp-ի բոլոր lane-երը կարդում են նույն հասցեն, դիմումը սպասարկվում է մեկ broadcast-ով, իսկ տարբեր հասցեները սպասարկվում են հերթով։
+
+**Tiling** — Տվյալների մի հատվածը մեկ անգամ բեռնել shared memory և այնտեղից կարդալ շատ անգամ։ Global memory-ի տրաֆիկը նվազում է մոտավորապես այնքան անգամ, քանի անգամ կրկին օգտագործվում է ամեն տարրը։ Այս տեխնիկան ընկած է tiled matrix multiply-ի և այս դասընթացի բոլոր stencil և ֆիլտր kernel-ների հիմքում։
+
+**Halo** — Եզրային տարրեր, որոնք անհրաժեշտ են tile-ը մշակելու համար, բայց պատկանում են հարևան tile-երին։ R շառավղով ֆիլտրի դեպքում դրանք tile-ի ամեն կողմից R տող կամ սյուն են։ Halo-ն պետք է բեռնվի shared memory tile-ի հետ միասին։
+
+**Pitch** — 2D հատկացման երկու հարևան տողերի սկզբների միջև հեռավորությունը բայթերով (`cudaMallocPitch`)։ Սովորաբար այն մեծ է `width * elementSize`-ից, քանի որ տողերը լրացվում են հավասարեցման (alignment) համար։ Pitched հիշողության հետ աշխատող kernel-ը տողի հասցեն պետք է հաշվի pitch-ով, ոչ թե width-ով։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Հատկացնում է height տող՝ ամեն մեկը width բայթ։ Տողերի իրական քայլը գրվում է *pitch-ում
+cudaError_t cudaMallocPitch(void **devPtr, size_t *pitch, size_t width, size_t height);
+
+// Պատճենում է height տող՝ ամեն տողից width բայթ։ dpitch-ը և spitch-ը dst-ի և src-ի տողերի քայլերն են
+cudaError_t cudaMemcpy2D(void *dst, size_t dpitch, const void *src, size_t spitch,
+                         size_t width, size_t height, enum cudaMemcpyKind kind);
+
+// Block-ի և warp-ի barrier-ներ
+void __syncthreads(void);
+void __syncwarp(unsigned mask = 0xFFFFFFFF);
+```
+
 ## Visual
 ![Conflict-free shared memory access where each thread hits a different bank, versus a bank conflict where multiple threads hit bank 0 due to stride-32 access](bank_conflicts.svg)
 

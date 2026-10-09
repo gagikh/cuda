@@ -14,6 +14,39 @@
 - Loop unrolling
 - Divergence impact and avoidance
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Warp** — Block-ի 32 thread-ից բաղկացած խումբ, որը hardware-ը պլանավորում և կատարում է որպես մեկ միավոր։ Warp-ի հրամանը միաժամանակ ուղարկվում է նրա բոլոր 32 thread-երին։ Warp մակարդակի intrinsic-ներն աշխատում են հենց այս միավորի վրա։
+
+**SIMT (Single Instruction, Multiple Threads)** — NVIDIA-ի կատարման մոդելը. հրամանը մեկ անգամ է կարդացվում և վերծանվում, ապա միաժամանակ ուղարկվում warp-ի բոլոր 32 thread-երին։
+
+**Հրամանների pipeline** — Փուլերը, որոնցով անցնում է հրամանը՝ fetch, decode, register read, execute, memory, writeback։ Ամեն պահի pipeline-ում կա մի քանի հրաման, ամեն փուլում՝ մեկը։
+
+**Register file** — SM-ի ռեգիստրների ընդհանուր պահոցը, որից ռեգիստրներ են ստանում SM-ի բոլոր thread-երը։ Դրա չափը ֆիքսված է։ Որքան շատ ռեգիստր է օգտագործում մեկ thread-ը, այնքան քիչ warp կարող է resident լինել։
+
+**Active, eligible և stalled warp** — Warp-ը active է (resident), երբ զբաղեցնում է SM-ի warp slot-երից մեկը։ Active warp-ը **eligible** է (պատրաստ է), երբ կարող է ուղարկել իր հաջորդ հրամանը։ Դրա համար պետք է երեք պայման. հրամանն արդեն վերծանված է, բոլոր արժեքները, որոնք հրամանը կարդում է, հասանելի են (օրինակ՝ այն load-ը, որից հրամանը կախված է, ավարտվել է), և հրամանը կատարող միավորը (FP32 pipe, load/store unit կամ tensor core) այդ ցիկլում ազատ է։ Եթե պայմաններից որևէ մեկը չի բավարարվում, warp-ը stalled է։ Ամեն ցիկլ scheduler-ն ընտրում է պատրաստ warp-երից մեկը և ուղարկում նրա հրամանը։
+
+**Stall reason** — Profiler-ի դասակարգումը, որը ցույց է տալիս, թե ինչու warp-ը պատրաստ չէր։ NVIDIA-ն առանձնացնում է չորս խումբ. warp-ը սպասում է հրամանի կարդացմանը (instruction fetch), հիշողության գործողության ավարտին (memory dependency), նախորդ հրամանի արդյունքին (execution dependency) կամ սինխրոնացման barrier-ին։ Stall reason-ը ցույց է տալիս, թե կոդում ինչ պետք է ուղղել։
+
+**Latency hiding** — GPU-ի արագագործության հիմնական միջոցը. երբ warp-ը կանգ է առնում, warp scheduler-ը նույն ցիկլում ուղարկում է մեկ այլ պատրաստ warp-ի հրամանը, և pipeline-ը պարապ չի մնում։ Այդ պատճառով GPU-ին պետք են շատ thread-եր, ոչ թե քիչ, բայց արագ thread-եր։
+
+**Divergence (warp divergence)** — Իրավիճակ, երբ մեկ warp-ի thread-երը branch-ում տարբեր ճյուղեր են ընտրում։ Քանի որ warp-ի 32 thread-երն ունեն հրամանների մեկ հոսք, hardware-ը ճյուղերը կատարում է հերթով։ Ամեն ճյուղի ընթացքում մյուս ճյուղի lane-երն անջատված են։
+
+**Reconvergence** — Divergent branch-ից հետո այն կետը, որտեղ warp-ի բոլոր lane-երը նորից կատարում են նույն հրամանը։ Volta-ից սկսած ամեն lane ունի իր program counter-ը, և branch-ի վերջում reconvergence-ն երաշխավորված չէ։ `__syncwarp`-ն այն ապահովում է բացահայտ։
+
+**Loop unrolling** — Ցիկլի մարմինը կոդում կրկնվում է մի քանի անգամ, և ցիկլի կրկնությունների թիվը նվազում է։ Դա հեռացնում է ցիկլի պայմանի և ինդեքսի հրամանները և scheduler-ին տալիս է իրարից անկախ հրամաններ։ Կառավարվում է `#pragma unroll`-ով։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Warp-ի barrier՝ mask-ում նշված lane-երը սպասում են միմյանց
+void __syncwarp(unsigned mask = 0xFFFFFFFF);
+```
+
 ## Visual
 ![SIMT instruction pipeline: fetch, decode, warp scheduler, then the same instruction issued in lockstep to all 32 lanes of a warp](pipeline.svg)
 

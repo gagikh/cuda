@@ -16,6 +16,54 @@
 - Occupancy and block-size choice
 - Grid-stride loops
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Thread** — Կատարման ամենափոքր միավորը։ Block-ի ներսում thread-ի դիրքը տալիս է `threadIdx`-ը, grid-ի ներսում՝ `threadIdx`-ի, `blockIdx`-ի և `blockDim`-ի համակցությունը։
+
+**Block** — Thread-երի խումբ (առավելագույնը `maxThreadsPerBlock` thread), որոնք կատարվում են նույն SM-ի վրա և կարող են համագործակցել shared memory-ի ու `__syncthreads()`-ի միջոցով։ Kernel-ի launch-ը ստեղծում է block-երի grid։
+
+**Grid** — Մեկ kernel-ի կանչով գործարկված block-երի ամբողջությունը՝ `<<<grid, block>>>`։
+
+**Launch configuration** — Kernel-ի կանչի արգումենտները՝ grid-ի չափերը block-երով և block-ի չափերը thread-երով, երկուսն էլ՝ մինչև երեք չափողականությամբ, ինչպես նաև ոչ պարտադիր dynamic shared memory-ի չափը և stream-ը։
+
+**`blockIdx`, `threadIdx`, `blockDim`, `gridDim`** — Ներկառուցված (built-in) փոփոխականներ, որոնք հասանելի են device-ի կոդում առանց հայտարարելու կամ փոխանցելու՝ block-ի ինդեքսը grid-ում, thread-ի ինդեքսը block-ում, block-ի չափերը, grid-ի չափերը։ Դրանք միայն կարդալու համար են և ունեն `uint3` տիպ (չափերը՝ `dim3`)։
+
+**Resident block-եր** — Մեկ SM-ին միաժամանակ վերագրված block-երը։ Դրանց քանակը չորս մեծություններից ամենափոքրն է՝ մեկ SM-ում block-երի hardware-ային սահմանը, մեկ SM-ում thread-երի առավելագույն քանակը՝ բաժանած block size-ի, մեկ SM-ի ռեգիստրների քանակը՝ բաժանած մեկ block-ի պահանջած ռեգիստրների քանակի, և մեկ SM-ի shared memory-ն՝ բաժանած մեկ block-ի պահանջած shared memory-ի։
+
+**Occupancy** — Մեկ SM-ում resident warp-երի քանակի հարաբերությունն այն առավելագույն քանակին, որը SM-ը կարող է ունենալ։ Այն սահմանափակվում է այն ռեսուրսով, որն առաջինն է սպառվում՝ մեկ thread-ի ռեգիստրներ, մեկ block-ի shared memory կամ thread-երի քանակի սահման։ Occupancy-ն **latency hiding**-ի միջոց է, ոչ թե նպատակ։ Մոտավորապես 50 տոկոսից հետո դրա աճը հաճախ գրեթե չի արագացնում կատարումը։ Thread coarsening-ը (Օր 6) նույնիսկ դիտմամբ իջեցնում է occupancy-ն՝ ամեն thread-ին ավելի շատ աշխատանք տալով։
+
+**`cudaOccupancyMaxActiveBlocksPerMultiprocessor`** — Runtime-ի կանչ, որը հաշվում է, թե տվյալ kernel-ի և block size-ի դեպքում քանի block կլինի resident մեկ SM-ում՝ առանց kernel-ը գործարկելու։
+
+**Coalescing (memory coalescing)** — Երբ warp-ի 32 lane-երը դիմում են հաջորդական հասցեների, hardware-ը դրանք սպասարկում է մեկ 128-բայթանոց transaction-ով (4-բայթանոց տարրերի դեպքում)՝ մինչև 32 առանձին transaction-ի փոխարեն։ Coalescing-ը warp-ի հատկություն է, ոչ թե thread-ի։ Կարևորն այն է, թե մեկ հրամանի ընթացքում 32 lane-երը միասին ինչ հասցեների են դիմում, և ոչ թե այն, թե մեկ thread-ը ժամանակի ընթացքում որ հասցեներով է անցնում։
+
+**Grid-stride loop** — Kernel գրելու եղանակ, որի դեպքում grid-ի չափը կախված չէ տվյալների չափից։ Ֆիքսված քանակով thread-երից ամեն մեկը ցիկլով մշակում է մի քանի տարր, և ամեն կրկնությունում ինդեքսը մեծանում է thread-երի ընդհանուր քանակով։ Ճիշտ է աշխատում մուտքի ցանկացած չափի դեպքում՝ առանց launch-ի չափերը վերահաշվելու։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Block-ի barrier՝ ոչ մի thread չի անցնում այն, քանի դեռ block-ի բոլոր thread-երը չեն հասել
+void __syncthreads(void);
+
+// *numBlocks-ում գրում է, թե տվյալ block size-ի և dynamic shared memory-ի դեպքում
+// func kernel-ից քանի block կլինի resident մեկ SM-ում
+cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int *numBlocks, const void *func,
+                                                          int blockSize, size_t dynamicSMemSize);
+
+// Նույնը՝ flags պարամետրով (cudaOccupancyDefault կամ cudaOccupancyDisableCachingOverride)
+cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int *numBlocks, const void *func,
+                                                                   int blockSize, size_t dynamicSMemSize,
+                                                                   unsigned int flags);
+
+// Առաջարկում է ամենաբարձր occupancy տվող block size-ը և դրա համար անհրաժեշտ ամենափոքր grid-ը
+template <class T>
+cudaError_t cudaOccupancyMaxPotentialBlockSize(int *minGridSize, int *blockSize, T func,
+                                               size_t dynamicSMemSize = 0, int blockSizeLimit = 0);
+```
+
 ## Visual
 ![Grid made up of blocks, each block made up of a 2D array of threads, with the global-index formula shown](thread_hierarchy.svg)
 

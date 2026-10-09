@@ -9,6 +9,37 @@
 - Descriptor matching based on Hamming distance
 - Matrix multiplication
 
+## Functions
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+> Comments here are still in English — this day has no counterpart in the 10-day lecturer course, so there was no Armenian text to copy.
+
+```c
+// Hamming distance: popcount of the XOR of two words
+int __popc(unsigned int x);
+int __popcll(unsigned long long x);
+
+// Device memory and host<->device copy, as on day 1
+cudaError_t cudaMalloc(void **devPtr, size_t size);
+cudaError_t cudaFree(void *devPtr);
+cudaError_t cudaMemcpy(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind);
+
+// Block barrier, for the tiled matmul
+void __syncthreads(void);
+
+// OpenCV: ORB descriptors on the device
+cv::Ptr<cv::cuda::ORB> cv::cuda::ORB::create(int nfeatures = 500, float scaleFactor = 1.2f,
+                                             int nlevels = 8, int edgeThreshold = 31,
+                                             int firstLevel = 0, int WTA_K = 2,
+                                             int scoreType = cv::cuda::ORB::HARRIS_SCORE,
+                                             int patchSize = 31, int fastThreshold = 20,
+                                             bool blurForDescriptor = false);
+void detectAndCompute(cv::InputArray image, cv::InputArray mask,
+                      std::vector<cv::KeyPoint> &keypoints, cv::OutputArray descriptors,
+                      bool useProvidedKeypoints = false);
+```
+
 ## Visual
 ![Tiled matrix multiplication: a row tile of A and a column tile of B are loaded into shared memory once and reused by the whole block to compute one output tile of C](tiled_matmul.svg)
 

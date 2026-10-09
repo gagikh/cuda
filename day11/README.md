@@ -11,6 +11,37 @@
 - Filtering & addressing
 - Zoom/image processing
 
+## Functions
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+> Comments here are still in English — this day has no counterpart in the 10-day lecturer course, so there was no Armenian text to copy.
+
+```c
+// Create and destroy a texture object. pResViewDesc is normally nullptr
+cudaError_t cudaCreateTextureObject(cudaTextureObject_t *pTexObject,
+                                    const struct cudaResourceDesc *pResDesc,
+                                    const struct cudaTextureDesc *pTexDesc,
+                                    const struct cudaResourceViewDesc *pResViewDesc);
+cudaError_t cudaDestroyTextureObject(cudaTextureObject_t texObject);
+
+// Channel description for the element type the texture holds
+template <class T> cudaChannelFormatDesc cudaCreateChannelDesc(void);
+
+// Sample the texture. With cudaFilterModeLinear the sample point is the texel
+// centre, so add 0.5f to integer coordinates
+template <class T> T tex2D(cudaTextureObject_t texObj, float x, float y);
+template <class T> T tex1D(cudaTextureObject_t texObj, float x);
+template <class T> T tex3D(cudaTextureObject_t texObj, float x, float y, float z);
+
+// Surfaces are the writable counterpart. x is a BYTE offset
+cudaError_t cudaCreateSurfaceObject(cudaSurfaceObject_t *pSurfObject,
+                                    const struct cudaResourceDesc *pResDesc);
+cudaError_t cudaDestroySurfaceObject(cudaSurfaceObject_t surfObject);
+template <class T> void surf2Dread(T *data, cudaSurfaceObject_t surfObj, int x, int y);
+template <class T> void surf2Dwrite(T data, cudaSurfaceObject_t surfObj, int x, int y);
+```
+
 ## Visual
 ![Bilinear sampling: tex2D(tex, fx, fy) blends the 4 nearest texels, weighted by distance, to produce the sampled value](bilinear_sampling.svg)
 

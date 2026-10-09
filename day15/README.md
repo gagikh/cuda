@@ -14,6 +14,39 @@
 - Pool attributes: `cudaMemPoolAttrReleaseThreshold`, reserved/used counters, `cudaMemPoolTrimTo`
 - Why classic `cudaMalloc` can't be captured into a graph
 
+## Functions
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+> Comments here are still in English — this day has no counterpart in the 10-day lecturer course, so there was no Armenian text to copy.
+
+```c
+// Stream-ordered allocation. Ordered WITHIN one stream only: using the pointer
+// from another stream needs an explicit event
+cudaError_t cudaMallocAsync(void **devPtr, size_t size, cudaStream_t hStream);
+cudaError_t cudaFreeAsync(void *devPtr, cudaStream_t hStream);
+
+// The device's default pool, and allocating from a specific pool
+cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t *memPool, int device);
+cudaError_t cudaDeviceSetMemPool(int device, cudaMemPool_t memPool);
+cudaError_t cudaMallocFromPoolAsync(void **ptr, size_t size, cudaMemPool_t memPool,
+                                    cudaStream_t stream);
+
+// Explicit pools
+cudaError_t cudaMemPoolCreate(cudaMemPool_t *memPool, const struct cudaMemPoolProps *poolProps);
+cudaError_t cudaMemPoolDestroy(cudaMemPool_t memPool);
+
+// Attributes. All values are cuuint64_t. Release threshold is the one that matters:
+// by default the pool returns memory to the OS at every sync
+cudaError_t cudaMemPoolSetAttribute(cudaMemPool_t memPool, enum cudaMemPoolAttr attr, void *value);
+cudaError_t cudaMemPoolGetAttribute(cudaMemPool_t memPool, enum cudaMemPoolAttr attr, void *value);
+cudaError_t cudaMemPoolTrimTo(cudaMemPool_t memPool, size_t minBytesToKeep);
+
+// Multi-GPU access to a pool does NOT follow cudaDeviceEnablePeerAccess
+cudaError_t cudaMemPoolSetAccess(cudaMemPool_t memPool,
+                                 const struct cudaMemAccessDesc *descList, size_t count);
+```
+
 ## Visual
 ![Classic cudaMalloc/cudaFree act as implicit device-wide sync points breaking stream concurrency, while cudaMallocAsync/cudaFreeAsync are ordered within a stream and reuse memory from a pool without a device-wide sync](stream_ordered_alloc.svg)
 

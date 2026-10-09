@@ -10,6 +10,61 @@
 Warp level programming and `__syncwarp`, `__activemask`, `__ballot_sync`.
 Atomics, contention, and privatization.
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**`__ballot_sync`** — Վերադարձնում է 32-բիթանոց mask, որում N-րդ բիթը 1 է, եթե N-րդ lane-ի պայմանը ճիշտ է։ Արդյունքը ստանում են բոլոր մասնակից lane-երը։
+
+**`__activemask`** — Վերադարձնում է այն lane-երի mask-ը, որոնք միասին են հասել այս հրամանին։ Այն ցույց է տալիս միայն տվյալ պահի վիճակը, որը կարող է պատահական լինել, և չի փոխարինում այն mask-ին, որը պետք է որոշի կոդը։
+
+**`__syncwarp`** — Warp-ի մակարդակի barrier, որը ստիպում է mask-ում նշված lane-երին նորից միավորվել։ Այն անհրաժեշտ է այնտեղ, որտեղ կոդն ենթադրում է, որ lane-երը միասին են, իսկ կոմպիլյատորը չի կարող դա ապացուցել։
+
+**Atomic գործողություն** — Մեկ հասցեի վրա կարդալ-փոխել-գրել գործողություն, որին ոչ մի այլ thread չի կարող միջամտել. `atomicAdd`, `atomicCAS`, `atomicMax` և այլն։
+
+**Atomic-ների մրցակցություն (contention)** — Իրավիճակ, երբ մի քանի thread atomic գործողություն է կատարում նույն հասցեի վրա։ Global memory-ի դեպքում թարմացումները L2-ում կատարվում են հերթով, ուստի գինն աճում է նույն հասցեին դիմող thread-երի քանակի հետ, ոչ թե atomic հրամանների ընդհանուր քանակի։
+
+**Privatisation** — Ամեն block-ին կամ warp-ին տալ ընդհանուր կուտակիչի (օրինակ՝ histogram-ի) սեփական պատճենը, թարմացնել այդ պատճենը և վերջում մեկ անգամ ավելացնել ընդհանուր արդյունքին։ Ամեն մուտքային տարրի համար մեկ global atomic-ի փոխարեն ամբողջ block-ը կատարում է համեմատաբար քիչ global atomic։ Սա atomic-ների մրցակցության ստանդարտ լուծումն է։
+
+**Warp-aggregated atomic-ներ** — Warp-ի բոլոր lane-երի ներդրումը նախ հաշվվում է ballot-ով կամ warp reduction-ով, ապա մեկ lane-ը կատարում է մեկ atomic ամբողջ warp-ի համար։ Atomic-ների քանակը նվազում է մինչև 32 անգամ։ Սա privatisation-ն է warp-ի մակարդակում։
+
+**Cooperative groups** — API, որը բացահայտ է դարձնում, թե thread-երի որ խմբի վրա է կոդը սինխրոնացվում. block, տվյալ պահին միասին գտնվող lane-եր կամ ամբողջ grid։ `__syncthreads()`-ի դեպքում այդ խումբը բացահայտ նշված չէ։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// N-րդ բիթը 1 է, եթե N-րդ lane-ի pred-ը զրո չէ
+unsigned __ballot_sync(unsigned mask, int pred);
+
+// Այս հրամանին միասին հասած lane-երի mask-ը
+unsigned __activemask();
+
+// Warp-ի և block-ի barrier-ներ
+void __syncwarp(unsigned mask = 0xFFFFFFFF);
+void __syncthreads(void);
+
+// *address += val atomic ձևով։ Վերադարձնում է նախկին արժեքը
+int                    atomicAdd(int *address, int val);
+unsigned int           atomicAdd(unsigned int *address, unsigned int val);
+unsigned long long int atomicAdd(unsigned long long int *address, unsigned long long int val);
+float                  atomicAdd(float *address, float val);
+
+// Նույնը, բայց atomic է միայն block-ի ներսում
+int          atomicAdd_block(int *address, int val);
+unsigned int atomicAdd_block(unsigned int *address, unsigned int val);
+
+// Եթե *address == compare, գրում է val։ Վերադարձնում է նախկին արժեքը
+int atomicCAS(int *address, int compare, int val);
+
+// *address = max(*address, val) atomic ձևով։ Վերադարձնում է նախկին արժեքը
+int atomicMax(int *address, int val);
+
+// Host-ի ֆունկցիա՝ device-ի հիշողության count բայթը լրացնում է value-ով
+cudaError_t cudaMemset(void *devPtr, int value, size_t count);
+```
+
 ## Visual
 ![__ballot_sync collecting each of the warp's 32 boolean predicates into a single 32-bit mask, one bit per lane](warp_ballot.svg)
 

@@ -5,6 +5,7 @@
 **Instructor**: Gagik Hakobyan
 
 📖 [Glossary](GLOSSARY.md) — the terms this course uses, alphabetical, tagged with the day it's introduced.  
+📐 [API Index](API.md) — every function interface the course uses, mapped to the day that introduces it; each day's `Functions` section has the signatures.  
 ⚡ [Intrinsics Cheat Sheet](INTRINSICS.md) — warp shuffle/vote, bit ops, math, cache hints, atomics and barriers in one table, tagged by day.  
 📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.  
 🖥️ [Architecture Deep Dive](ARCHITECTURE.md) — what's actually inside an SM: registers, ALUs, FPUs, tensor cores, and how shared/constant/L2/global memory are organized.  

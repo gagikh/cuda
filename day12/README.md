@@ -11,6 +11,33 @@
 - Kernel + memory op capture
 - Graph launch
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**CUDA graph** — Գործողությունների (kernel-ներ, պատճենումներ, host callback-ներ) և դրանց միջև կախվածությունների գրանցված ուղղորդված ացիկլիկ գրաֆ, որը գործարկվում է որպես մեկ ամբողջություն։
+
+**Graph capture** — Stream-ի գործողությունները կատարելու փոխարեն դրանք գրանցել graph-ում։ Գրանցվում են `cudaStreamBeginCapture`-ի և `cudaStreamEndCapture`-ի միջև ուղարկված գործողությունները։
+
+**Instantiation** — Գրանցված graph-ից գործարկման պատրաստ graph ստեղծել `cudaGraphInstantiate`-ով։ Սա արվում է մեկ անգամ. launch-երի ստուգման և նախապատրաստման ծախսը կատարվում է այստեղ, ոչ թե ամեն գործարկման ժամանակ։
+
+**Launch overhead** — Host-ի կողմից մեկ kernel-ի launch ուղարկելու ծախսը։ Graph-ը նվազեցնում է հենց այս ծախսը, ինչը կարևոր է, երբ կարճ kernel-ների ֆիքսված հաջորդականությունը կատարվում է շատ անգամ։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Graph-ի capture, instantiation և launch
+cudaError_t cudaStreamBeginCapture(cudaStream_t stream, enum cudaStreamCaptureMode mode);
+cudaError_t cudaStreamEndCapture(cudaStream_t stream, cudaGraph_t *pGraph);
+cudaError_t cudaGraphInstantiate(cudaGraphExec_t *pGraphExec, cudaGraph_t graph, unsigned long long flags = 0);
+cudaError_t cudaGraphLaunch(cudaGraphExec_t graphExec, cudaStream_t stream);
+
+// Սպասում է device-ի ամբողջ աշխատանքի ավարտին
+cudaError_t cudaDeviceSynchronize(void);
+```
+
 ## Visual
 ![Without a graph, each iteration re-pays CPU launch overhead for launch+kernel; with a captured graph, the sequence is captured and instantiated once, then replayed with a single cudaGraphLaunch call per iteration](cuda_graph.svg)
 

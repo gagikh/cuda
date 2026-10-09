@@ -15,6 +15,69 @@
 - CUDA recursive kernel launch (dynamic parallelism)
 - Cooperative groups: `tiled_partition`, group-typed shuffles, grid-wide sync
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Tensor Core** — SM-ի մասնագիտացված hardware միավոր խառը ճշգրտությամբ matrix multiply-accumulate-ի արագ կատարման համար։ Առկա է compute capability 7.0-ից սկսած։ Այն օգտագործում են cuBLAS-ը և cuDNN-ը, իսկ ուղիղ հասանելի է warp matrix ֆունկցիաներով։
+
+**MMA (matrix multiply-accumulate)** — Tensor core-ի գործողությունը՝ `D = A * B + C` փոքր մատրիցային հատվածների վրա, որը warp-ը կատարում է մեկ հրամանով։ Հատվածների չափերը և հավասարեցումը ֆիքսված են hardware-ում, ուստի մատրիցների չափերը պետք է լինեն հատվածի չափի բազմապատիկ։
+
+**fp64, fp32, tf32, bf16, fp16** — Լողացող կետով թվերի ձևաչափեր, որոնք տարբերվում են էքսպոնենտի և մանտիսի բիթերի քանակով. fp64՝ 11 և 52, fp32՝ 8 և 23, tf32՝ 8 և 10 (միայն tensor core-ի մուտքային ձևաչափ), bf16՝ 8 և 7 (նույն տիրույթը, ինչ fp32-ը, բայց ավելի ցածր ճշգրտությամբ), fp16՝ 5 և 10 (ավելի նեղ տիրույթ և ավելի ցածր ճշգրտություն, քան fp32-ը)։
+
+**Խառը ճշգրտություն (mixed precision)** — Հաշվարկը կատարել նեղ ձևաչափով, իսկ կուտակումը՝ ավելի լայնով։ Սովորաբար մուտքերը fp16 կամ bf16 են, իսկ կուտակումը՝ fp32։ Tensor core-երն աշխատում են հենց այդպես։
+
+**FMA (fused multiply-add)** — `a * b + c`-ի հաշվարկ մեկ կլորացմամբ՝ երկուսի փոխարեն։ Սա այն պատճառներից մեկն է, որոնց հետևանքով նույն մուտքերի և գործողությունների նույն հերթականության դեպքում GPU-ի և CPU-ի արդյունքները կարող են տարբերվել վերջին բիթերում։
+
+**Atomic-ներով կուտակման ոչ դետերմինիզմ** — Atomic-ները չեն ամրագրում արժեքների գումարման հերթականությունը, իսկ լողացող կետով գումարումն ասոցիատիվ չէ։ Ուստի `atomicAdd`-ով float-եր կուտակող kernel-ը տարբեր գործարկումներում կարող է տարբեր արդյունք տալ։ Վերարտադրելի արդյունքի համար reduction-ի հերթականությունը պետք է ֆիքսված լինի։
+
+**Ամբողջ grid-ի սինխրոնացում** — Barrier grid-ի բոլոր block-երի համար։ Այն հասանելի է cooperative groups-ով և միայն այն kernel-ների համար, որոնք գործարկված են `cudaLaunchCooperativeKernel`-ով, և որոնց բոլոր block-երը կարող են միաժամանակ resident լինել։
+
+**cuBLAS, cuFFT, cuRAND, cuDNN, NPP, nvJPEG, CUB, Thrust** — NVIDIA-ի գրադարաններ՝ համապատասխանաբար խիտ գծային հանրահաշվի, Ֆուրիեի արագ ձևափոխության, պատահական թվերի ստեղծման, deep learning-ի հիմնական գործողությունների, պատկերների և ազդանշանների մշակման, JPEG-ի վերծանման և կոդավորման, block-ի և device-ի մակարդակի զուգահեռ ալգորիթմների համար։ Thrust-ը STL-ի նման ալգորիթմների շերտ է CUB-ի վրա։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// cuBLAS։ cublas_v2.h-ը այս անունները փոխարինում է _v2 տարբերակներով (cublasCreate_v2 և այլն)։ Նախատիպերը նույնն են
+cublasStatus_t cublasCreate(cublasHandle_t *handle);
+cublasStatus_t cublasDestroy(cublasHandle_t handle);
+
+// CUBLAS_TF32_TENSOR_OP_MATH ռեժիմը թույլ է տալիս fp32 հաշվարկները կատարել tf32 tensor core-երով
+cublasStatus_t cublasSetMathMode(cublasHandle_t handle, cublasMath_t mode);
+
+// C = alpha * op(A) * op(B) + beta * C։ Մատրիցները column-major են
+cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb,
+                           int m, int n, int k,
+                           const float *alpha, const float *A, int lda,
+                           const float *B, int ldb,
+                           const float *beta, float *C, int ldc);
+cublasStatus_t cublasDgemm(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb,
+                           int m, int n, int k,
+                           const double *alpha, const double *A, int lda,
+                           const double *B, int ldb,
+                           const double *beta, double *C, int ldc);
+
+// NPP։ Box ֆիլտր 8-բիթանոց մեկ ալիքով պատկերի համար՝ եզրերի մշակմամբ
+NppStatus nppiFilterBoxBorder_8u_C1R(const Npp8u *pSrc, Npp32s nSrcStep, NppiSize oSrcSize,
+                                     NppiPoint oSrcOffset, Npp8u *pDst, Npp32s nDstStep,
+                                     NppiSize oSizeROI, NppiSize oMaskSize, NppiPoint oAnchor,
+                                     NppiBorderType eBorderType);
+
+// Kernel-ի cooperative launch։ Առանց դրա ամբողջ grid-ի սինխրոնացումը հնարավոր չէ
+cudaError_t cudaLaunchCooperativeKernel(const void *func, dim3 gridDim, dim3 blockDim,
+                                        void **args, size_t sharedMem, cudaStream_t stream);
+
+// cooperative_groups։ g խումբը բաժանում է Size thread-անոց մասերի
+template <unsigned int Size, typename ParentT>
+thread_block_tile<Size, ParentT> tiled_partition(const ParentT &g);
+
+// Օր 7-ի ֆունկցիաներ
+int   __shfl_down_sync(unsigned mask, int var, unsigned int delta, int width = warpSize);
+float atomicAdd(float *address, float val);
+```
+
 ## Visual
 ![Monte Carlo pi estimation: random points scattered in a unit square, colored by whether they land inside or outside the inscribed quarter circle, with the pi ≈ 4 × inside/total formula](monte_carlo_pi.svg)
 

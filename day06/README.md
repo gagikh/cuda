@@ -18,6 +18,45 @@
 - Streams/events
 - Host functions in a stream (`cudaLaunchHostFunc`)
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Stream** — GPU-ի գործողությունների (kernel-ներ, պատճենումներ) կարգավորված հերթ։ Մեկ stream-ի ներսում գործողությունները կատարվում են այն հերթականությամբ, որով ուղարկվել են։ Տարբեր stream-երի գործողությունները կարող են կատարվել միաժամանակ։
+
+**Default stream (per-thread)** — Այն stream-ը, որն օգտագործվում է, երբ stream նշված չէ։ `--default-stream per-thread` flag-ով կոմպիլացնելիս host-ի ամեն thread ստանում է իր default stream-ը, որը չի սպասում մյուս stream-երի գործողությունների ավարտին։
+
+**Event** — Նշիչ, որը `cudaEventRecord`-ով դրվում է stream-ում։ Event-ը համարվում է ավարտված, երբ ավարտվում է այդ stream-ում դրանից առաջ ուղարկված ամբողջ աշխատանքը։ Օգտագործվում է սպասելու (`cudaEventSynchronize`) և ժամանակ չափելու (`cudaEventElapsedTime`) համար։
+
+**Stream-երի կախվածություն** — Տարբեր stream-երի գործողությունների միջև հերթականություն։ Այն սահմանվում է այսպես. մի stream-ում գրանցվում է event, իսկ մյուս stream-ը սպասում է դրան `cudaStreamWaitEvent`-ով։
+
+**Device-ի կողմից ժամանակաչափում** — Ժամանակի չափում event-ներով, ոչ թե host-ի ժամացույցով։ Այդպես չափվում է GPU-ի աշխատանքի ժամանակը, և արդյունքը չի ներառում host-ի կողմից launch-ի ուշացումը։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Ստեղծում է նոր stream
+cudaError_t cudaStreamCreate(cudaStream_t *pStream);
+
+// Event-ներ։ cudaEventElapsedTime-ը *ms-ում գրում է start-ի և end-ի միջև ժամանակը միլիվայրկյաններով
+cudaError_t cudaEventCreate(cudaEvent_t *event);
+cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream = 0);
+cudaError_t cudaEventSynchronize(cudaEvent_t event);
+cudaError_t cudaEventElapsedTime(float *ms, cudaEvent_t start, cudaEvent_t end);
+
+// stream-ի հետագա գործողությունները սպասում են event-ի ավարտին
+cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t event, unsigned int flags = 0);
+
+// Host-ի ֆունկցիա stream-ում։ Չի կարող կանչել CUDA API
+typedef void (CUDART_CB *cudaHostFn_t)(void *userData);
+cudaError_t cudaLaunchHostFunc(cudaStream_t stream, cudaHostFn_t fn, void *userData);
+
+// Սպասում է device-ի ամբողջ աշխատանքի ավարտին
+cudaError_t cudaDeviceSynchronize(void);
+```
+
 ## Visual
 ![Single default stream running H2D copy, kernel, D2H copy back to back, versus two streams where one stream's copy overlaps another stream's kernel](streams_timeline.svg)
 

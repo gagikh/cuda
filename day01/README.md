@@ -16,6 +16,72 @@
 - Error checking: `CUDA_CHECK`, `CUDA_CHECK_LAST_ERROR`, and why launches need the latter
 - Querying your GPU's real capabilities with `cudaGetDeviceProperties`
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Host** — CPU-ն՝ ի տարբերություն **device**-ի (GPU-ի)։
+
+**Device** — GPU-ն՝ ի տարբերություն **host**-ի (CPU-ի)։ Ունի սեփական հիշողություն՝ VRAM, որին host-ը դիմում է PCIe-ով կամ NVLink-ով։
+
+**Throughput մեքենա և latency մեքենա** — CPU-ն չիպի մակերեսը ծախսում է cache-երի, branch prediction-ի և out-of-order կատարման վրա, որպեսզի հրամանների մեկ հոսքն արագ կատարվի, այսինքն՝ latency-ն փոքր լինի։ GPU-ն նույն մակերեսը ծախսում է execution unit-ների և register file-ի վրա, որպեսզի միաժամանակ կատարվեն շատ warp-եր։ Latency-ն վերացնելու փոխարեն GPU-ն այն հանդուրժում է։
+
+**Kernel** — `__global__`-ով նշված ֆունկցիա, որը գործարկվում է host-ի կոդից `<<<grid, block>>>` գրելաձևով և device-ի վրա կատարվում է զուգահեռ՝ շատ thread-երով։
+
+**SM (Streaming Multiprocessor)** — GPU-ի հիմնական հաշվողական միավորը։ Ժամանակակից GPU-ում դրանք տասնյակներով են, երբեմն՝ հարյուրից ավելի։ Ամեն block ամբողջությամբ կատարվում է մեկ SM-ի վրա։ Ձեր GPU-ի SM-ների իրական քանակը և սահմանները տպում է `report_device_capabilities()`-ը։
+
+**Warp scheduler** — SM-ի միավոր, որն ամեն ցիկլ ընտրում է մեկ պատրաստ (eligible) warp և նրա հաջորդ հրամանն ուղարկում execution unit-ներին։ Մեկ SM-ում դրանք մի քանիսն են։
+
+**SFU (Special Function Unit)** — SM-ի միավորներ, որոնք հաշվում են տրանսցենդենտ ֆունկցիաներ՝ սինուս, կոսինուս, էքսպոնենտ, հակադարձ արժեք, քառակուսի արմատի հակադարձ։ Դրանց throughput-ը ցածր է FP32 միավորների throughput-ից։
+
+**Load/store unit** — SM-ի միավորներ, որոնք ուղարկում են հիշողության հրամանները և հաշվում հասցեները global, local և shared memory-ի համար։
+
+**nvcc** — CUDA-ի կոմպիլյատորը (compiler driver)։ `.cu` ֆայլից առանձնացնում է host-ի և device-ի կոդը, device-ի մասն ինքն է կոմպիլացնում, host-ի մասը փոխանցում է համակարգի կոմպիլյատորին, ապա երկուսը միավորում է մեկ binary-ում։
+
+**PTX** — NVIDIA-ի virtual GPU assembly-ն, որը համատեղելի է հետագա architecture-ների հետ։ nvcc-ն device-ի կոդը նախ դարձնում է PTX, ապա `ptxas`-ը PTX-ից հավաքում է կոնկրետ architecture-ի իրական մեքենայական կոդը՝ **SASS**։
+
+**SASS** — Մեկ կոնկրետ GPU architecture-ի իրական մեքենայական կոդը (cubin), որը `ptxas`-ը հավաքում է PTX-ից։
+
+**Virtual և real architecture** — `-arch=compute_XX`-ը նշում է virtual architecture-ը, որի համար ստեղծվում է PTX-ը, իսկ `-code=sm_XX`-ը՝ real architecture-ը, որի համար ստեղծվում է SASS-ը։ `-arch=sm_XX`-ը սահմանում է երկուսն էլ։
+
+**Fat binary** — Գործարկվող ֆայլը, որը ստեղծում է nvcc-ն։ Host-ի մեքենայական կոդի կողքին այն պարունակում է device-ի կոդի մեկ կամ մի քանի տարբերակ՝ PTX, SASS կամ երկուսը։ Գործարկման պահին driver-ը վերցնում է համապատասխան SASS-ը, իսկ եթե այդպիսին չկա, JIT-ով կոմպիլացնում է ներդրված PTX-ը։
+
+**Compute capability** — Տարբերակի համար, օրինակ՝ `8.6`, որը նշում է GPU-ի architecture-ի սերունդը և հնարավորությունների հավաքածուն։ nvcc-ի flag-երում գրվում է `sm_XX` և `compute_XX` ձևով։
+
+**`cudaGetDeviceProperties`** — API-ի կանչ, որը լրացնում է `cudaDeviceProp` կառուցվածքը device-ի պարամետրերով՝ SM-ների քանակ, warp size, մեկ SM-ի ռեգիստրների և shared memory-ի սահմաններ, clock-եր, հիշողության bus width, compute capability։ `common/device_info.h`-ի `report_device_capabilities()`-ը տպում է այս կառուցվածքը։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Հատկացնում է size բայթ device-ի հիշողության մեջ և հասցեն գրում *devPtr-ում
+cudaError_t cudaMalloc(void **devPtr, size_t size);
+
+// Ազատում է cudaMalloc-ով հատկացված հիշողությունը
+cudaError_t cudaFree(void *devPtr);
+
+// Պատճենում է count բայթ src-ից dst-ի մեջ։ Ուղղությունը տալիս է kind-ը, օրինակ՝
+// cudaMemcpyHostToDevice։ Վերադառնում է պատճենումն ավարտվելուց հետո
+cudaError_t cudaMemcpy(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind);
+
+// Սպասում է, մինչև device-ի ամբողջ աշխատանքն ավարտվի
+cudaError_t cudaDeviceSynchronize(void);
+
+// Վերադարձնում է վերջին սխալը և զրոյացնում այն։ Կանչվում է kernel-ի launch-ից հետո
+cudaError_t cudaGetLastError(void);
+
+// Լրացնում է *prop-ը device համարով GPU-ի պարամետրերով
+cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp *prop, int device);
+
+// Device-ի կոդից տպում է ծրագրի stdout-ում։ Տեքստը երևում է սինխրոնացումից հետո,
+// օրինակ՝ cudaDeviceSynchronize()-ից
+int printf(const char *format, ...);
+
+// common/device_info.h։ Տպում է device 0-ի պարամետրերը stderr-ում և վերադարձնում նրա անունը
+std::string report_device_capabilities();
+```
+
 ## Visual
 ![Host (CPU, few fast cores, system RAM) connected via PCIe/NVLink to Device (GPU, thousands of small cores, VRAM)](host_device.svg)
 

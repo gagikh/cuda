@@ -16,6 +16,62 @@
 - Warp-aggregated atomics: one `atomicAdd` per warp instead of one per element
 - Performance tuning: shuffles vs. shared memory
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Lane** — Thread-ի համարն իր warp-ում՝ 0-ից 31։
+
+**Warp shuffle** — `__shfl_sync`, `__shfl_up_sync`, `__shfl_down_sync`, `__shfl_xor_sync` հրամանների ընտանիքը։ Դրանք lane-ին թույլ են տալիս կարդալ նույն warp-ի մեկ այլ lane-ի ռեգիստրը՝ առանց հիշողության դիմումի և առանց barrier-ի։
+
+**Lane mask** — Ամեն `_sync` intrinsic-ի առաջին արգումենտը՝ 32-բիթանոց թիվ, որում ամեն lane-ին համապատասխանում է մեկ բիթ։ Այն նշում է այն lane-երը, որոնք պետք է մասնակցեն։ `0xffffffff`-ը նշանակում է ամբողջ warp-ը։
+
+**`_sync` վերջածանց** — Այս վերջածանցն ունեն այն intrinsic-ները, որոնք պահանջում են, որ mask-ում նշված lane-երը միասին հասնեն հրամանին։ Եթե նշված lane-երից որևէ մեկը չի հասնում, արդյունքը undefined է, և խնդիրը միայն դանդաղությունը չէ։ Առանց վերջածանցի տարբերակները Volta-ից սկսած architecture-ների համար հասանելի չեն։
+
+**XOR (butterfly) փոխանակում** — `__shfl_xor_sync(mask, v, k)`. lane `i`-ն արժեքներ է փոխանակում lane `i ^ k`-ի հետ։ Մեկ հրամանով ամեն lane և՛ ուղարկում է, և՛ ստանում, ուստի այս ձևն օգտագործվում է, երբ արդյունքը պետք է ունենան բոլոր lane-երը։
+
+**Reduction** — N արժեքի միավորումը մեկ արժեքի մեջ ասոցիատիվ գործողությամբ (օրինակ՝ գումարում կամ max)։ GPU-ի վրա այն կատարվում է ծառի տեսքով. warp-ի ներսում՝ shuffle-ներով, warp-երի միջև՝ shared memory-ով, ապա վերջնականապես՝ մեկ warp-ով։
+
+**Inclusive և exclusive scan** — Նախածանցային գումարներ (prefix sums)։ Inclusive scan-ի i-րդ տարրը 0-ից i համարի տարրերի գումարն է (կամ այլ ասոցիատիվ գործողության արդյունքը), exclusive scan-ինը՝ 0-ից i-1 համարի տարրերինը։
+
+**Kogge-Stone** — Warp-ի ներսում scan կատարելու եղանակ. ամեն քայլում lane-ն իր արժեքին գումարում է իրենից `d` դիրքով ցածր lane-ի արժեքը, և `d`-ն ամեն քայլում կրկնապատկվում է (1, 2, 4, 8, 16)։ 32 lane-անոց warp-ի համար պահանջվում է հինգ քայլ։
+
+**Stream compaction** — Պայմանին չբավարարող տարրերը հեռացնել, իսկ մնացածը դասավորել իրար հետևից՝ առանց բացերի։ Պայմանի արժեքների (0 կամ 1) վրա կատարված scan-ն ամեն մնացող տարրին տալիս է նրա ինդեքսն ելքում։
+
+**`__popc`** — Հաշվում է 32-բիթանոց թվի 1 արժեք ունեցող բիթերը։ Ballot-ի արդյունքի վրա կիրառելիս տալիս է պայմանին բավարարող lane-երի քանակը։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Կարդում է srcLane համարով lane-ի var-ը
+int   __shfl_sync(unsigned mask, int var, int srcLane, int width = warpSize);
+float __shfl_sync(unsigned mask, float var, int srcLane, int width = warpSize);
+
+// Կարդում է իրենից delta դիրքով ցածր lane-ի var-ը
+int   __shfl_up_sync(unsigned mask, int var, unsigned int delta, int width = warpSize);
+float __shfl_up_sync(unsigned mask, float var, unsigned int delta, int width = warpSize);
+
+// Կարդում է իրենից delta դիրքով բարձր lane-ի var-ը
+int   __shfl_down_sync(unsigned mask, int var, unsigned int delta, int width = warpSize);
+float __shfl_down_sync(unsigned mask, float var, unsigned int delta, int width = warpSize);
+
+// Կարդում է lane ^ laneMask համարով lane-ի var-ը
+int   __shfl_xor_sync(unsigned mask, int var, int laneMask, int width = warpSize);
+float __shfl_xor_sync(unsigned mask, float var, int laneMask, int width = warpSize);
+
+// N-րդ բիթը 1 է, եթե N-րդ lane-ի pred-ը զրո չէ
+unsigned __ballot_sync(unsigned mask, int pred);
+
+// 1 արժեք ունեցող բիթերի քանակը
+int __popc(unsigned int x);
+
+// Warp-ի և block-ի barrier-ներ
+void __syncwarp(unsigned mask = 0xFFFFFFFF);
+void __syncthreads(void);
+```
+
 ## Visual
 
 ### The full warp: 32 lanes, 5 steps

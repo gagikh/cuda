@@ -21,6 +21,67 @@ Memory management system:
 - mapped memory (zero-copy memory) — `cudaHostAlloc` with `cudaHostAllocMapped` flag set, pros, cons
 - unified memory — `cudaMallocManaged`, pros, cons, `__managed__`
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Pageable հիշողություն** — Սովորական host հիշողություն, որը հատկացվում է `malloc`-ով կամ `new`-ով։ Օպերացիոն համակարգը կարող է դրա էջերը տեղափոխել կամ swap անել, ուստի GPU-ն չի կարող ուղիղ դիմել դրանց։ Փոխանցման ժամանակ տվյալները նախ պատճենվում են driver-ի page-locked միջանկյալ բուֆեր։
+
+**Page-locked հիշողություն** — Host-ի հիշողություն, որի էջերն օպերացիոն համակարգը չի կարող տեղափոխել կամ swap անել։
+
+**Pinned հիշողություն** — `cudaHostAlloc`-ով (`cudaHostAllocDefault` flag-ով) հատկացված page-locked host հիշողություն։ GPU-ն այն փոխանցում է DMA-ով՝ առանց միջանկյալ պատճենի։ Անհրաժեշտ է, որպեսզի `cudaMemcpyAsync`-ն իրոք ասինխրոն լինի։
+
+**`cudaHostRegister`** — Արդեն հատկացված սովորական հիշողությունը դարձնում է page-locked՝ առանց վերահատկացման։ Դրանից հետո այն փոխանցվում է այնպես, ինչպես pinned հիշողությունը։ `cudaHostUnregister`-ը չեղարկում է այս գործողությունը։
+
+**Mapped (zero-copy) հիշողություն** — Page-locked host հիշողություն, որն ունի նաև device-ի հասցե։ Հատկացվում է `cudaHostAlloc`-ով՝ `cudaHostAllocMapped` flag-ով։ Kernel-ն այն կարդում և գրում է ուղիղ host-device կապով, առանց բացահայտ պատճենի, բայց ամեն դիմում կրում է կապի latency-ն։
+
+**Unified հիշողություն** — Մեկ հատկացում (`cudaMallocManaged`), որը հասցեագրելի է և՛ host-ից, և՛ device-ից։ Driver-ն էջերը տեղափոխում է նրանց միջև, երբ դրանք պահանջվում են։
+
+**Page migration** — Unified հիշողության էջի տեղափոխումն այն պրոցեսորի հիշողություն, որը դիմել է էջին և ստացել page fault։ Էջերի կրկնվող տեղափոխումն երկու ուղղությամբ unified հիշողության դանդաղության սովորական պատճառն է։ Տեղափոխումը կառավարվում է `cudaMemPrefetchAsync`-ով և `cudaMemAdvise`-ով։
+
+**DMA (Direct Memory Access)** — Փոխանցում, որը կատարում է copy engine-ը, և CPU-ն չի մասնակցում տվյալների տեղափոխմանը։ DMA-ն պահանջում է, որ host-ի էջերը page-locked լինեն։ Հենց դրա համար են pinned հիշողությունից փոխանցումներն ավելի արագ։
+
+**PCIe** — Bus, որը համակարգերի մեծ մասում միացնում է host-ը և device-ը։ Դրա bandwidth-ն առնվազն մեկ կարգով ցածր է device-ի հիշողության bandwidth-ից։
+
+**NVLink** — NVIDIA-ի ուղիղ կապը GPU-ների միջև, որոշ համակարգերում նաև CPU-ի և GPU-ի միջև։ Դրա bandwidth-ը մի քանի անգամ մեծ է PCIe-ի bandwidth-ից։
+
+**Հիշողության bandwidth** — SM-ների և device-ի հիշողության միջև վայրկյանում փոխանցվող բայթերի քանակը։ Տեսական peak-ը հավասար է bus width-ի, հիշողության clock-ի և մեկ clock-ում փոխանցումների քանակի արտադրյալին։ Հասած bandwidth-ն այն արժեքն է, որին kernel-ն իրականում հասնում է։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Pinned հիշողություն flags-ով և ազատում host-ում։ cudaHostAllocDefault՝ սովորական pinned,
+// cudaHostAllocMapped՝ mapped (zero-copy) հիշողություն
+cudaError_t cudaHostAlloc(void **pHost, size_t size, unsigned int flags);
+cudaError_t cudaFreeHost(void *ptr);
+
+// Արդեն հատկացված հիշողությունը դարձնում է page-locked և չեղարկում դա
+cudaError_t cudaHostRegister(void *ptr, size_t size, unsigned int flags);
+cudaError_t cudaHostUnregister(void *ptr);
+
+// Mapped հիշողության device-ի հասցեն
+cudaError_t cudaHostGetDevicePointer(void **pDevice, void *pHost, unsigned int flags);
+
+// Unified հիշողության հատկացում
+cudaError_t cudaMallocManaged(void **devPtr, size_t size, unsigned int flags = cudaMemAttachGlobal);
+
+// Unified հիշողության էջերը նախապես տեղափոխում է location-ի հիշողություն
+struct cudaMemLocation { enum cudaMemLocationType type; int id; };
+cudaError_t cudaMemPrefetchAsync(const void *devPtr, size_t count, struct cudaMemLocation location,
+                                 unsigned int flags, cudaStream_t stream = 0);
+
+// Driver-ին հայտնում է, թե ինչպես են օգտագործվելու unified հիշողության էջերը
+cudaError_t cudaMemAdvise(const void *devPtr, size_t count, enum cudaMemoryAdvise advice,
+                          struct cudaMemLocation location);
+
+// Սինխրոն և ասինխրոն պատճենում
+cudaError_t cudaMemcpy(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind);
+cudaError_t cudaMemcpyAsync(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind,
+                            cudaStream_t stream = 0);
+```
+
 ## Visual
 ![Four host-to-device transfer paths: pageable (double-copy, slowest), pinned (direct DMA), mapped/zero-copy (GPU reads host memory directly), unified (runtime migrates both ways)](memory_types.svg)
 
@@ -149,12 +210,18 @@ Two situations flip the trade:
 The fix is to stop letting the driver guess:
 
 ```c++
-cudaMemPrefetchAsync(p, bytes, deviceId, stream);   // move it before the kernel needs it
-cudaMemAdvise(p, bytes, cudaMemAdviseSetReadMostly, deviceId);
-cudaMemAdvise(p, bytes, cudaMemAdviseSetPreferredLocation, deviceId);
+cudaMemLocation dev{};
+dev.type = cudaMemLocationTypeDevice;
+dev.id   = 0;                                         // device ordinal
+
+cudaMemPrefetchAsync(p, bytes, dev, /*flags=*/0, stream);   // move it before the kernel needs it
+cudaMemAdvise(p, bytes, cudaMemAdviseSetReadMostly, dev);
+cudaMemAdvise(p, bytes, cudaMemAdviseSetPreferredLocation, dev);
 ```
 
 Prefetching turns a storm of individual faults into one bulk transfer — usually the single biggest win available to managed-memory code.
+
+Note the `cudaMemLocation` argument. Both calls used to take a plain `int device`; current CUDA takes a location struct instead, so host memory and specific NUMA nodes can be named as targets too. Older tutorials show the `int` form — it is the `_v1` API. Both signatures are in this day's [Functions](#functions--ֆունկցիաներ) section.
 
 > **Worth being precise about:** dirty-page tracking and migration are *unified memory* mechanisms. Mapped memory has no page to mark dirty, because the page never left the host. Both can generate heavy bidirectional traffic, but for different reasons — zero-copy charges you **per access**, unified charges you **per migration**.
 

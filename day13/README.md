@@ -18,6 +18,64 @@
 - Thread coarsening
 - Memory-bound vs. compute-bound; achieved bandwidth as a fraction of peak
 
+## Definitions · Սահմանումներ
+
+*Terms introduced today. Same text as the matching entries in [GLOSSARY.md](../GLOSSARY.md).*
+
+**Cache line** — L1-ում տեղ հատկացնելու 128-բայթանոց միավորը։
+
+**Sector** — 32-բայթանոց միավոր, որով հիշողությունից տվյալներն իրականում կարդացվում և տեղափոխվում են։ Warp-ի դիմումը հաշվվում է sector-ներով, և չորս sector-ը կազմում են մեկ cache line։ Coalescing-ը մեկ request-ի sector-ների քանակի նվազեցումն է։
+
+**L1** — Ամեն SM-ի cache-ը։ Ֆիզիկապես այն նույն SRAM-ն է, ինչ shared memory-ն։
+
+**L2** — Ամբողջ չիպի cache-ը, որը գտնվում է device-ի հիշողության առջև և ընդհանուր է բոլոր SM-ների համար։ Global memory-ի atomic-ները կատարվում են այստեղ։
+
+**Cache operator** — Հրամանի մակարդակի ցուցում այն մասին, թե load-ը կամ store-ն ինչպես օգտագործի cache-երը։ `__ldg`՝ load միայն կարդալու համար նախատեսված cache-ի ճանապարհով, `__ldcs`՝ streaming load, որի տողը cache-ից դուրս է մղվում առաջինը, `__stcs`՝ streaming store, `__ldlu`՝ վերջին օգտագործման load, որից հետո տողը հեռացվում է cache-ից։
+
+**LRU** — Least recently used. Դուրս մղման կանոն, որով cache-ից հեռացվում է ամենավաղուց չօգտագործված տողը։ Իրական cache-երն այս կանոնին հետևում են մոտավորապես։
+
+**Thread coarsening** — Ամեն thread մշակում է մեկի փոխարեն մի քանի ելքային տարր։ Արդյունքում մեկ thread-ի հաստատուն ծախսերը (ինդեքսի հաշվարկ, սահմանների ստուգում, shared memory-ի tile-ի բեռնում) կատարվում են մեկ անգամ և բաշխվում են մի քանի տարրի վրա։ Grid-stride loop-ը coarsening-ը գրելու այն ձևն է, որը չի խախտում coalescing-ը։ Coarsening-ը նվազեցնում է occupancy-ն, ուստի արդյունքը պետք է չափել։
+
+**Swizzling** — Shared memory-ի ինդեքսի վերադասավորում, օրինակ՝ `tile[row][col ^ row]`, որպեսզի միևնույն տրամաբանական սյունն ամեն տողում ընկնի այլ ֆիզիկական bank-ում։ Այն հեռացնում է bank conflict-ները՝ առանց լրացուցիչ սյան։
+
+**Տեսական peak bandwidth** — Bus width-ի, հիշողության clock-ի և մեկ clock-ում փոխանցումների քանակի արտադրյալը՝ հաշված Օր 1-ում ստացած թվերով։ Սա այն վերին սահմանն է, որի հետ համեմատվում է kernel-ը։
+
+**Հասած bandwidth** — Kernel-ի իրականում տեղափոխած բայթերը՝ բաժանած նրա կատարման ժամանակին։ Սովորաբար արտահայտվում է տեսական peak-ի տոկոսով։
+
+**Arithmetic intensity** — Կատարված FLOP-երի քանակը հիշողության տրաֆիկի մեկ բայթի հաշվով։ Այն որոշում է, թե roofline-ի որ մասում է kernel-ը։ Ցածր intensity-ն նշանակում է memory-bound (kernel-ների մեծ մասն այդպիսին է), բարձրը՝ compute-bound։ Tiling-ը բարձրացնում է intensity-ն՝ առանց թվաբանական գործողությունները փոխելու։
+
+**Compute-bound և memory-bound** — Ցույց է տալիս, թե ինչն է սահմանափակում kernel-ի արագությունը՝ հրամանների throughput-ը, թե հիշողության bandwidth-ը։ Դրանից է կախված, թե որ օպտիմալացումները կարող են օգնել։
+
+**Roofline** — Հասանելի առավելագույն արագագործության գրաֆիկը՝ կախված arithmetic intensity-ից։ Այն բաղկացած է bandwidth-ի թեք սահմանից և compute-ի հորիզոնական սահմանից։ Kernel-ի դիրքը գրաֆիկի վրա ցույց է տալիս, թե որ օպտիմալացումը կարող է օգնել՝ հիշողության, թե հրամանների։
+
+## Functions · Ֆունկցիաներ
+
+*Interfaces introduced today. Full consolidated list in [API.md](../API.md); concepts in [GLOSSARY.md](../GLOSSARY.md).*
+
+```c
+// Կարդում է միայն կարդալու համար նախատեսված cache-ի ճանապարհով
+unsigned char __ldg(const unsigned char *ptr);
+float         __ldg(const float *ptr);
+
+// Streaming load՝ տողը cache-ից դուրս է մղվում առաջինը
+unsigned char __ldcs(const unsigned char *ptr);
+float         __ldcs(const float *ptr);
+
+// Վերջին օգտագործման load՝ դրանից հետո տողը հեռացվում է cache-ից
+unsigned char __ldlu(const unsigned char *ptr);
+float         __ldlu(const float *ptr);
+
+// Streaming store
+void __stcs(unsigned char *ptr, unsigned char value);
+void __stcs(float *ptr, float value);
+
+// Նույն ֆունկցիաները կան նաև int-ի, double-ի և վեկտորային տիպերի համար
+
+// Օր 2-ի ֆունկցիան՝ template-ի TODO 3-ի համար
+cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int *numBlocks, const void *func,
+                                                          int blockSize, size_t dynamicSMemSize);
+```
+
 ## Visual
 ![Memory hierarchy pyramid: registers (fastest, smallest) at top, then shared memory / L1, then L2, then global memory / VRAM (slowest, largest) at bottom](cache_hierarchy.svg)
 
