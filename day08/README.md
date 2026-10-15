@@ -84,11 +84,42 @@ The whole reduction at real warp width. Every lane starts with `1`; after five h
 - **Data only ever moves down in lane id.** That is the whole reason lane 0 is the one holding the answer, and why lane 16 ends up with a 16-element partial rather than the total.
 - **Five steps, not 31.** log₂(32) = 5. A sequential sum of 32 values takes 31 additions; this takes 5 instructions.
 
-### All four shuffles
+### Չորս shuffle-ները՝ առանձին-առանձին
+
+Ամեն նկարում վերին տողը 32 lane-երի **ռեգիստրներն** են, ստորինը՝ **արդյունքը**։ Ամեն գիծ գնում է այն lane-ից, որտեղից արժեքը կարդացվում է, դեպի այն lane-ը, որն ստանում է այն։ Չորս intrinsic-ները տարբերվում են միայն նրանով, թե ինչպես է հաշվարկվում աղբյուր lane-ը։
+
+**`__shfl_sync` — broadcast**
+
+![Երկու տող՝ 32-ական lane։ Բոլոր 32 գծերը դուրս են գալիս lane 5-ից և գնում ներքևի բոլոր lane-երին](shfl_sync_32lane.svg)
+
+Մեկ աղբյուր, 32 ստացող։ Սա ընդհանուր ձևն է. մյուս երեքը նույնն են, բայց `srcLane`-ը հաշվարկվում է `lane`-ից։
+
+**`__shfl_up_sync` — տեղաշարժ դեպի բարձր lane-եր**
+
+![Երկու տող՝ 32-ական lane։ Զուգահեռ գծեր՝ lane i-ից դեպի lane i+4, իսկ lane 0–3-ի գծերը կտրտած են](shfl_up_sync_32lane.svg)
+
+Զուգահեռ գծեր, առանց հատումների։ lane 0–3-ի համար իրենցից ցածր աղբյուր չկա, ուստի նրանք ստանում են իրենց սեփական արժեքը (կտրտած գծեր)։ Սա prefix sum-ի (scan) ուղղությունն է։
+
+**`__shfl_down_sync` — տեղաշարժ դեպի ցածր lane-եր**
+
+![Երկու տող՝ 32-ական lane։ Զուգահեռ գծեր՝ lane i+4-ից դեպի lane i, իսկ lane 28–31-ի գծերը կտրտած են](shfl_down_sync_32lane.svg)
+
+`_up`-ի հայելային տարբերակը։ offset-ը կիսելով՝ 16→8→4→2→1, ստացվում է վերևի reduction-ը, և հենց դրա համար է lane 0-ն ի վերջո պահում ամբողջ գումարը։
+
+**`__shfl_xor_sync` — butterfly**
+
+![Երկու տող՝ 32-ական lane։ Գծերը հատվում են զույգերով՝ lane i-ն և lane i^4-ը փոխանակվում են](shfl_xor_sync_32lane.svg)
+
+Փոխանակումը սիմետրիկ է. ամեն lane միևնույն հրամանով և՛ ուղարկում է, և՛ ստանում։ Այս ձևով reduction անելիս բոլոր 32 lane-երն ավարտում են գումարը ձեռքին՝ նույն հինգ քայլով, առանց broadcast-ի։
+
+<details>
+<summary>Չորսն էլ մեկ նկարում</summary>
 
 ![Two rows of 32 lanes, source above and destination below, with one line per lane. The lines re-route through four patterns: all converging on lane 5 for shfl_sync, shifted left by four for shfl_up, shifted right by four for shfl_down, and crossing in groups of eight for shfl_xor](warp_shuffle_32lane.svg)
 
-Each line runs from the lane a value is **read from** down to the lane that receives it. The four intrinsics differ only in how that source is computed:
+</details>
+
+Նույնը՝ աղյուսակով:
 
 | Intrinsic | lane `i` reads from | shape |
 |---|---|---|
