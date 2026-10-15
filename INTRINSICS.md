@@ -19,6 +19,8 @@ An **intrinsic** is a function the compiler turns into one specific machine inst
 
 Lanes reading from an inactive or out-of-range lane get their own value back, not garbage — which is why the classic `for (offset = 16; offset > 0; offset /= 2) val += __shfl_down_sync(...)` is correct without any bounds checking.
 
+All four take a fourth, defaulted argument — `int width = warpSize` — which splits the warp into independent `width`-lane segments that the exchange never crosses. The default (32, the whole warp) is what every example here uses, so it is left off; pass a smaller power of two only to run several independent reductions or scans inside one warp. It does not shrink `mask`. See [Day 8](day08/README.md#definitions--սահմանումներ).
+
 ## Warp vote & mask — ask a question of all 32 lanes at once
 
 | Intrinsic | What it does |
