@@ -7,6 +7,7 @@
 📖 [Glossary](GLOSSARY.md) — the terms this course uses, alphabetical, tagged with the day it's introduced.  
 📐 [API Index](API.md) — every function interface the course uses, mapped to the day that introduces it; each day's `Functions` section has the signatures.  
 ⚡ [Intrinsics Cheat Sheet](INTRINSICS.md) — warp shuffle/vote, bit ops, math, cache hints, atomics and barriers in one table, tagged by day.  
+📝 [Միջանկյալ քննություն](MIDTERM.md) — Օր 8–15. 100 տեսական հարց և 30 տոմս (2 տեսական + 1 գործնական), 4 միավոր։  
 📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.  
 🖥️ [Architecture Deep Dive](ARCHITECTURE.md) — what's actually inside an SM: registers, ALUs, FPUs, tensor cores, and how shared/constant/L2/global memory are organized.  
 🚀 [Performance Checklist](PERFORMANCE.md) — coalescing, occupancy, roofline, privatization, coarsening: which optimization to try, in what order, and how to know when to stop.  
