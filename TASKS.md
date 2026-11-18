@@ -1,208 +1,208 @@
-# 100 CUDA Practice Tasks
+# 100 գործնական առաջադրանք CUDA-ից
 
-A consolidated problem bank: roughly 5 tasks per day, drawn from each day's Self-Learning section, plus 25 bonus tasks (76–100) that go beyond the 15-day structure. Lettered entries (`10a`, `45b`, ...) are later additions kept in place so the original numbering doesn't shift. Each task is tagged with the day whose material it depends on, or `(Bonus)` if no specific day covers it.
+Առաջադրանքների ընդհանուր ժողովածու՝ օրական մոտավորապես 5 առաջադրանք, վերցված ամեն օրվա Self-Learning բաժնից, գումարած 25 բոնուսային առաջադրանք (76–100), որոնք դուրս են 15-օրյա կառուցվածքից։ Տառով նշված կետերը (`10a`, `45b` և այլն) հետո են ավելացվել և թողնված են իրենց տեղում, որպեսզի սկզբնական համարակալումը չշեղվի։ Ամեն առաջադրանք նշված է այն օրով, որի նյութից է կախված, կամ `(Բոնուս)`-ով, եթե կոնկրետ օր չի համապատասխանում։
 
-Nothing here has an answer key. See [GLOSSARY.md](GLOSSARY.md) if a term is unfamiliar, [PERFORMANCE.md](PERFORMANCE.md) for the optimization tasks, [INTRINSICS.md](INTRINSICS.md) for the device functions, and the relevant `dayNN/README.md` for background before attempting that day's tasks.
+Պատասխանների բանալի այստեղ չկա։ Անծանոթ տերմինի համար տես [GLOSSARY.md](GLOSSARY.md)-ը, օպտիմիզացիայի առաջադրանքների համար՝ [PERFORMANCE.md](PERFORMANCE.md)-ը, device-ի ֆունկցիաների համար՝ [INTRINSICS.md](INTRINSICS.md)-ը, իսկ տվյալ օրվա առաջադրանքներին անցնելուց առաջ՝ համապատասխան `dayNN/README.md`-ը։
 
-## Day 1 — CUDA Basics and Programming Model
-1. Print block/thread identity from the device using `printf`, across several different launch configurations. *(Day 1)*
-2. Write raw `blockIdx`/`threadIdx` values from the device into host-verifiable arrays. *(Day 1)*
-3. Time a 1-thread launch vs. a many-thread launch with `<chrono>` and explain the difference. *(Day 1)*
-4. Compile with `--keep` and read the generated `.ptx` file. *(Day 1)*
-5. Run `report_device_capabilities()` and write down your GPU's warp size, max threads/block, and shared memory per SM. *(Day 1)*
+## Օր 1 — CUDA-ի հիմունքներ և ծրագրավորման մոդել
+1. Device-ից `printf`-ով տպել block-ի և thread-ի համարները՝ մի քանի տարբեր launch configuration-ներով։ *(Օր 1)*
+2. `blockIdx`/`threadIdx`-ի չմշակված արժեքները device-ից գրել զանգվածների մեջ, որոնք հետո կստուգվեն host-ի վրա։ *(Օր 1)*
+3. `<chrono>`-ով չափել մեկ thread-ով և շատ thread-երով launch-ի ժամանակը և բացատրել տարբերությունը։ *(Օր 1)*
+4. Կոմպիլյացիա անել `--keep` դրոշով և կարդալ ստացված `.ptx` ֆայլը։ *(Օր 1)*
+5. Գործարկել `report_device_capabilities()`-ը և դուրս գրել ձեր GPU-ի warp size-ը, մեկ block-ի առավելագույն thread-երի քանակը և մեկ SM-ին ընկնող shared memory-ն։ *(Օր 1)*
 
-## Day 2 — Thread Hierarchy & Execution Model
-6. Implement 1D vector addition for a few different array sizes. *(Day 2)*
-7. Extend to 2D thread indexing and add two grayscale images pixel-by-pixel. *(Day 2)*
-8. Compare timing across block sizes 32, 64, 128, and 256. *(Day 2)*
-9. Make a kernel correct for array sizes that aren't an exact multiple of the block size. *(Day 2)*
-10. Implement a grid-stride loop and verify it's still correct at 10x the original `n`, with the same launch configuration. *(Day 2)*
-10a. Write a copy kernel two ways — indexed `blockIdx.x * blockDim.x + threadIdx.x` vs. `threadIdx.x * gridDim.x + blockIdx.x` — and measure the ratio. Both are correct; predict the gap before running. *(Day 2)*
-10b. Swap the row/column roles of `threadIdx.x` and `threadIdx.y` in a 2D image kernel and measure the slowdown. *(Day 2)*
-10c. Call `cudaOccupancyMaxActiveBlocksPerMultiprocessor` for block sizes 32/64/128/256 and check where measured timing stops tracking occupancy. *(Day 2)*
+## Օր 2 — Thread-երի հիերարխիա և կատարման մոդել
+6. Իրականացնել 1D վեկտորների գումարում՝ մի քանի տարբեր չափսերի զանգվածների համար։ *(Օր 2)*
+7. Ընդլայնել 2D ինդեքսավորմամբ և գումարել երկու մոխրագույն պատկեր՝ pixel առ pixel։ *(Օր 2)*
+8. Համեմատել ժամանակը 32, 64, 128 և 256 block size-երի համար։ *(Օր 2)*
+9. Kernel-ը դարձնել ճիշտ նաև այն դեպքում, երբ զանգվածի չափսը block size-ի բազմապատիկը չէ։ *(Օր 2)*
+10. Իրականացնել grid-stride loop և ստուգել, որ այն ճիշտ է մնում սկզբնականից 10 անգամ մեծ `n`-ի դեպքում՝ նույն launch configuration-ով։ *(Օր 2)*
+10a. Պատճենման kernel գրել երկու ձևով՝ `blockIdx.x * blockDim.x + threadIdx.x` և `threadIdx.x * gridDim.x + blockIdx.x` ինդեքսավորմամբ, և չափել հարաբերակցությունը։ Երկուսն էլ ճիշտ են. մինչև գործարկելը փորձեք կանխատեսել տարբերությունը։ *(Օր 2)*
+10b. 2D պատկերի kernel-ում փոխել `threadIdx.x`-ի և `threadIdx.y`-ի՝ տողի և սյան դերերը և չափել դանդաղումը։ *(Օր 2)*
+10c. Կանչել `cudaOccupancyMaxActiveBlocksPerMultiprocessor`-ը 32/64/128/256 block size-երի համար և գտնել այն կետը, որտեղ չափված ժամանակն այլևս occupancy-ին չի հետևում։ *(Օր 2)*
 
-## Day 3 — Warp-Level Execution and Control Flow
-11. Implement large vector addition and time it against an equivalent CPU loop. *(Day 3)*
-12. Convert a BGR image to grayscale in a kernel. *(Day 3)*
-13. Deliberately introduce branch divergence and measure the performance hit. *(Day 3)*
-14. Apply `#pragma unroll` to a fixed-trip-count loop and compare generated performance. *(Day 3)*
-15. Sketch the fetch/decode/register-read/execute/memory/writeback pipeline for 4 instructions across 6 cycles, on paper. *(Day 3)*
+## Օր 3 — Warp-ի մակարդակի կատարում և կառավարման հոսք
+11. Իրականացնել մեծ վեկտորների գումարում և ժամանակով համեմատել համարժեք CPU ցիկլի հետ։ *(Օր 3)*
+12. Kernel-ում BGR պատկերը վերածել մոխրագույնի։ *(Օր 3)*
+13. Դիտավորյալ ստեղծել branch divergence և չափել կատարողականի կորուստը։ *(Օր 3)*
+14. Ֆիքսված քանակի կրկնություններով ցիկլի վրա կիրառել `#pragma unroll` և համեմատել արդյունքը։ *(Օր 3)*
+15. Թղթի վրա գծել fetch/decode/register-read/execute/memory/writeback pipeline-ը՝ 4 հրամանի համար, 6 ցիկլի ընթացքում։ *(Օր 3)*
 
-## Day 4 — CUDA Memory Types and Management
-16. Benchmark `cudaMemcpy` with pageable vs. pinned host memory for a large transfer. *(Day 4)*
-17. Page-lock an existing pageable buffer with `cudaHostRegister` instead of allocating pinned memory up front. *(Day 4)*
-18. Rewrite vector-add to use `cudaMallocManaged` (unified memory). *(Day 4)*
-19. Profile pageable/pinned/unified variants with Nsight Systems and compare the timelines. *(Day 4)*
-20. Try mapped (zero-copy) memory and compare its transfer behavior to pinned. *(Day 4)*
+## Օր 4 — Հիշողության տեսակները և կառավարումը
+16. Մեծ ծավալի փոխանցման համար չափել `cudaMemcpy`-ը pageable և pinned host հիշողությամբ։ *(Օր 4)*
+17. Արդեն գոյություն ունեցող pageable բուֆերը page-lock անել `cudaHostRegister`-ով՝ նախապես pinned հիշողություն հատկացնելու փոխարեն։ *(Օր 4)*
+18. Վեկտորների գումարումը վերագրել `cudaMallocManaged`-ով (unified memory)։ *(Օր 4)*
+19. Pageable/pinned/unified տարբերակները պրոֆիլավորել Nsight Systems-ով և համեմատել timeline-ները։ *(Օր 4)*
+20. Փորձել mapped (zero-copy) հիշողությունը և համեմատել փոխանցման վարքը pinned-ի հետ։ *(Օր 4)*
 
-## Day 5 — Memory Conflicts and Shared Memory
-21. Implement a shared-memory tile-based 2D box blur. *(Day 5)*
-22. Deliberately create a bank-conflicting access pattern, measure the hit, then fix it with padding. *(Day 5)*
-23. Implement a 2D Sobel filter using shared memory. *(Day 5)*
-24. Extend the Sobel filter to process a video stream frame by frame. *(Day 5)*
-25. Load and display a real image with `cv::imread`/`cv::imshow` before writing any kernel logic. *(Day 5)*
+## Օր 5 — Shared memory և bank conflict-ներ
+21. Իրականացնել shared memory-ի tile-երի վրա հիմնված 2D box blur։ *(Օր 5)*
+22. Դիտավորյալ ստեղծել bank conflict առաջացնող հասցեավորում, չափել կորուստը, ապա ուղղել padding-ով։ *(Օր 5)*
+23. Shared memory-ով իրականացնել 2D Sobel ֆիլտր։ *(Օր 5)*
+24. Sobel ֆիլտրն ընդլայնել՝ video հոսքը մշակելու կադր առ կադր։ *(Օր 5)*
+25. Մինչև kernel-ի որևէ տող գրելը՝ `cv::imread`/`cv::imshow`-ով բեռնել և ցուցադրել իրական պատկեր։ *(Օր 5)*
 
-## Day 6 — Streams and Events
-26. Implement an image derivative (gradient) kernel — compute dx/dy per pixel. *(Day 6)*
-27. Reuse the Day 5 tiling approach for a shared-memory convolution. *(Day 6)*
-28. Implement a simple image transform (rotate or scale) kernel. *(Day 6)*
-29. Time kernels precisely with `cudaEvent`s and compare against `<chrono>` measurements. *(Day 6)*
-30. Split independent work across two CUDA streams and check whether they overlap. *(Day 6)*
+## Օր 6 — Stream-եր և event-եր
+26. Իրականացնել պատկերի ածանցյալի (gradient) kernel՝ ամեն pixel-ի համար հաշվելով dx/dy։ *(Օր 6)*
+27. Օր 5-ի tiling-ի մոտեցումը կրկին օգտագործել shared memory-ով convolution-ի համար։ *(Օր 6)*
+28. Իրականացնել պատկերի պարզ ձևափոխության (պտույտ կամ մասշտաբավորում) kernel։ *(Օր 6)*
+29. `cudaEvent`-երով ճշգրիտ չափել kernel-ների ժամանակը և համեմատել `<chrono>`-ի ցուցումների հետ։ *(Օր 6)*
+30. Իրարից անկախ աշխատանքը բաժանել երկու CUDA stream-ի միջև և ստուգել՝ արդյոք դրանք իրոք համընկնում են ժամանակի մեջ։ *(Օր 6)*
 
-## Day 7 — Asynchronous Execution Techniques
-31. Overlap an async H2D copy with kernel execution using two streams and `cudaMemcpyAsync`. *(Day 7)*
-32. Compute vector mean and standard deviation on the GPU, compare against a CPU implementation. *(Day 7)*
-33. Implement image dilation and/or erosion filters. *(Day 7)*
-34. Implement a small (32x32) matrix multiplication kernel. *(Day 7)*
-35. Chunk a real image into horizontal bands and pipeline copy-in/compute/copy-out across streams. *(Day 7)*
+## Օր 7 — Ասինխրոն կատարման եղանակներ
+31. Երկու stream-ով և `cudaMemcpyAsync`-ով համընկնեցնել ասինխրոն H2D պատճենումը kernel-ի կատարման հետ։ *(Օր 7)*
+32. GPU-ի վրա հաշվել վեկտորի միջինը և ստանդարտ շեղումը, համեմատել CPU-ի տարբերակի հետ։ *(Օր 7)*
+33. Իրականացնել պատկերի dilation և/կամ erosion ֆիլտրերը։ *(Օր 7)*
+34. Իրականացնել փոքր (32x32) մատրիցների բազմապատկման kernel։ *(Օր 7)*
+35. Իրական պատկերը բաժանել հորիզոնական շերտերի և stream-երի միջև կազմակերպել copy-in/compute/copy-out pipeline։ *(Օր 7)*
 
-## Day 8 — Warp-Level Intrinsics: Reduction
-36. Implement warp-level sum reduction using `__shfl_down_sync`. *(Day 8)*
-37. Implement an inclusive prefix sum (scan) within a single warp. *(Day 8)*
-38. Use the scan result to compact indices of pixels above a threshold. *(Day 8)*
-39. Implement a 32-point FFT butterfly using warp shuffles. *(Day 8)*
-40. Compare warp-shuffle reduction against a shared-memory reduction for the same problem size. *(Bonus)*
-40a. Extend the warp reduction to a full `block_reduce_sum` (warp → shared → warp), then reduce a whole grid via one `atomicAdd` per block. Count the `__syncthreads()` calls against a classic tree reduction. *(Day 8)*
-40b. Rewrite the reduction with `__shfl_xor_sync` so every lane holds the total; confirm the cost is unchanged and say when you'd want it. *(Day 8)*
-40c. Redo the compaction with `__ballot_sync` + `__popc` and one warp-aggregated atomic. Time it against the scan version at 5% and 95% pass rates. *(Day 8)*
-40d. Write the divergence bug deliberately — `warp_reduce_sum` inside `if (id < n)` with `n` not a multiple of 32 — and run it under `compute-sanitizer --tool synccheck`. *(Day 8)*
+## Օր 8 — Warp-ի մակարդակի intrinsic-ներ. reduction
+36. `__shfl_down_sync`-ով իրականացնել warp-ի մակարդակի գումարի reduction։ *(Օր 8)*
+37. Մեկ warp-ի ներսում իրականացնել inclusive prefix sum (scan)։ *(Օր 8)*
+38. Scan-ի արդյունքով compact անել շեմից բարձր pixel-ների ինդեքսները։ *(Օր 8)*
+39. Warp shuffle-ներով իրականացնել 32 կետանոց FFT butterfly։ *(Օր 8)*
+40. Նույն չափսի խնդրի վրա համեմատել warp shuffle-ով և shared memory-ով reduction-ները։ *(Բոնուս)*
+40a. Warp-ի reduction-ն ընդլայնել մինչև ամբողջական `block_reduce_sum` (warp → shared → warp), ապա ամբողջ grid-ը հանրագումարել՝ ամեն block-ից մեկ `atomicAdd`-ով։ Հաշվել `__syncthreads()` կանչերի քանակը և համեմատել դասական ծառային reduction-ի հետ։ *(Օր 8)*
+40b. Reduction-ը վերագրել `__shfl_xor_sync`-ով այնպես, որ գումարը ստանան բոլոր lane-երը. համոզվել, որ արժեքը չի փոխվել, և ասել՝ երբ է այս տարբերակը պետք։ *(Օր 8)*
+40c. Compaction-ը նորից անել `__ballot_sync` + `__popc`-ով և մեկ warp-aggregated atomic-ով։ Ժամանակով համեմատել scan-ի տարբերակի հետ՝ 5% և 95% անցման դեպքերում։ *(Օր 8)*
+40d. Դիտավորյալ գրել divergence-ի սխալը՝ `warp_reduce_sum` `if (id < n)`-ի ներսում, որտեղ `n`-ը 32-ի բազմապատիկ չէ, և գործարկել `compute-sanitizer --tool synccheck`-ով։ *(Օր 8)*
 
-## Day 9 — Warp-Level Data Exchange
-41. Compute an image's mean pixel value using warp reduction + `atomicAdd`. *(Day 9)*
-42. Pack 32 binary pixel values into one 32-bit word using `__ballot_sync`. *(Day 9)*
-43. Write the inverse "unzip" operation. *(Day 9)*
-44. Implement `pyrDown` (blur + downsample by 2). *(Day 9)*
-45. Implement `pyrUp` (upsample by 2 + blur). *(Day 9)*
-45a. Build a 256-bin histogram twice — naive global `atomicAdd` per pixel vs. privatized into shared memory — and measure the ratio on a normal image and on a near-uniform one. *(Day 9)*
-45b. Replace the shared-memory `atomicAdd` in the privatized histogram with `atomicAdd_block` and measure the difference. *(Day 9)*
+## Օր 9 — Warp-ի մակարդակի տվյալների փոխանակում
+41. Warp reduction-ով և `atomicAdd`-ով հաշվել պատկերի pixel-ների միջին արժեքը։ *(Օր 9)*
+42. `__ballot_sync`-ով 32 բինար pixel փաթեթավորել մեկ 32-բիթանոց բառի մեջ։ *(Օր 9)*
+43. Գրել հակադարձ՝ «unzip» գործողությունը։ *(Օր 9)*
+44. Իրականացնել `pyrDown` (blur + 2 անգամ փոքրացում)։ *(Օր 9)*
+45. Իրականացնել `pyrUp` (2 անգամ մեծացում + blur)։ *(Օր 9)*
+45a. 256 bin-անոց histogram կառուցել երկու ձևով՝ ամեն pixel-ի համար գլոբալ `atomicAdd` և shared memory-ում privatization, ապա չափել հարաբերակցությունը՝ սովորական պատկերի և գրեթե միագույն պատկերի վրա։ *(Օր 9)*
+45b. Privatization-ով histogram-ում shared memory-ի `atomicAdd`-ը փոխարինել `atomicAdd_block`-ով և չափել տարբերությունը։ *(Օր 9)*
 
-## Day 10 — Practical Algorithms
-46. Implement naive GPU matrix multiplication. *(Day 10)*
-47. Optimize it with shared-memory tiling and compare timing against the naive version. *(Day 10)*
-48. Implement Hamming distance between binary descriptors using `__popc`. *(Day 10)*
-49. Batch-match a query descriptor set against a reference set, finding each nearest neighbor. *(Day 10)*
-50. Extract real ORB descriptors from an image and self-match them as a correctness sanity check. *(Day 10)*
+## Օր 10 — Գործնական ալգորիթմներ
+46. Իրականացնել մատրիցների պարզունակ (naive) բազմապատկում GPU-ի վրա։ *(Օր 10)*
+47. Օպտիմալացնել այն shared memory-ի tiling-ով և ժամանակով համեմատել naive տարբերակի հետ։ *(Օր 10)*
+48. `__popc`-ով իրականացնել Hamming distance-ը բինար descriptor-ների միջև։ *(Օր 10)*
+49. Հարցման descriptor-ների խումբը խմբաքանակով համեմատել հենքային խմբի հետ՝ գտնելով ամենամոտ հարևանը։ *(Օր 10)*
+50. Պատկերից հանել իրական ORB descriptor-ներ և դրանք համեմատել իրենց հետ՝ որպես ճշտության ստուգում։ *(Օր 10)*
 
-## Day 11 — Textures and Surfaces
-51. Build a CUDA texture object bound to a real image. *(Day 11)*
-52. Implement image zoom (upscale) using `tex2D` bilinear filtering. *(Day 11)*
-53. Implement image rotation via inverse-mapped texture sampling. *(Day 11)*
-54. Compare texture-based zoom against a manual shared-memory bilinear implementation. *(Day 11)*
-55. Explain, in your own words, why `cudaAddressModeClamp` changes the result specifically at image borders. *(Day 11)*
+## Օր 11 — Texture և surface
+51. Կառուցել CUDA texture object՝ կապված իրական պատկերի հետ։ *(Օր 11)*
+52. `tex2D`-ի bilinear ֆիլտրմամբ իրականացնել պատկերի խոշորացում։ *(Օր 11)*
+53. Իրականացնել պատկերի պտույտ՝ հակադարձ ձևափոխությամբ texture-ից ընթերցելով։ *(Օր 11)*
+54. Համեմատել texture-ի վրա հիմնված խոշորացումը shared memory-ով ձեռքով գրված bilinear տարբերակի հետ։ *(Օր 11)*
+55. Ձեր խոսքերով բացատրել, թե ինչու է `cudaAddressModeClamp`-ը արդյունքը փոխում հենց պատկերի եզրերին։ *(Օր 11)*
 
-## Day 12 — CUDA Graph API
-56. Implement matrix transpose using shared memory, padded to avoid bank conflicts. *(Day 12)*
-57. Implement the same transpose using texture binding and compare performance. *(Day 12)*
-58. Capture a multi-kernel pipeline into a CUDA graph via stream capture. *(Day 12)*
-59. Launch the captured graph 1000 times and compare total time against 1000 direct launches. *(Day 12)*
-60. Add a memory operation (not just a kernel) into the same captured graph. *(Bonus)*
+## Օր 12 — CUDA Graph API
+56. Shared memory-ով իրականացնել մատրիցի տրանսպոնացում՝ padding-ով խուսափելով bank conflict-ներից։ *(Օր 12)*
+57. Նույն տրանսպոնացումն իրականացնել texture-ով և համեմատել կատարողականը։ *(Օր 12)*
+58. Stream capture-ով մի քանի kernel-ից բաղկացած pipeline-ը ձայնագրել CUDA graph-ի մեջ։ *(Օր 12)*
+59. Ձայնագրված graph-ը գործարկել 1000 անգամ և ընդհանուր ժամանակը համեմատել 1000 ուղղակի launch-ի հետ։ *(Օր 12)*
+60. Նույն ձայնագրված graph-ի մեջ ավելացնել նաև հիշողության գործողություն՝ ոչ միայն kernel։ *(Բոնուս)*
 
-## Day 13 — Cache Behavior and Optimization
-61. Add `__ldg()` to a read-heavy kernel from an earlier day and measure the effect. *(Day 13)*
-62. Implement `col ^ row` swizzling to remove bank conflicts without a padding column. *(Day 13)*
-63. Experiment with L2 persistence hints (`cudaAccessPolicyWindow`) on a repeatedly-read buffer. *(Day 13)*
-64. Optimize the Day 6 image transform kernel using every technique from the week so far. *(Day 13)*
-65. Benchmark `__ldg`, swizzling, and padding on the same kernel and rank them for your GPU. *(Bonus)*
-65a. Add achieved-bandwidth and %-of-peak output to all three timings in `day13/template.cu`, and decide from the numbers whether the day's optimizations ever had room to help. *(Day 13)*
-65b. Coarsen `tiled_filter_baseline` to 2, 4 and 8 outputs per thread; plot time against elements-per-thread and correlate the drop-off with register spilling from `-Xptxas -v`. *(Day 13)*
-65c. Sweep the grid size of the Day 2 grid-stride vector add (64 → 4096 blocks) at fixed `n` and explain the curve as coarsening at one end, occupancy at the other. *(Day 13)*
+## Օր 13 — Cache-ի վարքը և օպտիմալացումը
+61. Նախորդ օրերի ընթերցումներով հագեցած որևէ kernel-ում ավելացնել `__ldg()` և չափել ազդեցությունը։ *(Օր 13)*
+62. Իրականացնել `col ^ row` swizzling՝ bank conflict-ները հեռացնելու համար առանց լրացուցիչ padding սյան։ *(Օր 13)*
+63. Բազմիցս ընթերցվող բուֆերի վրա փորձարկել L2 persistence-ի հուշումները (`cudaAccessPolicyWindow`)։ *(Օր 13)*
+64. Օր 6-ի պատկերի ձևափոխության kernel-ն օպտիմալացնել՝ կիրառելով շաբաթվա ընթացքում սովորած բոլոր եղանակները։ *(Օր 13)*
+65. Նույն kernel-ի վրա չափել `__ldg`-ն, swizzling-ը և padding-ը և դասակարգել դրանք ձեր GPU-ի համար։ *(Բոնուս)*
+65a. `day13/template.cu`-ի բոլոր երեք չափումներին ավելացնել achieved bandwidth-ի և պիկի տոկոսի արտածումը, ապա թվերից դատելով որոշել՝ արդյոք այդ օրվա օպտիմիզացիաներն ընդհանրապես տեղ ունեին օգնելու։ *(Օր 13)*
+65b. `tiled_filter_baseline`-ը coarsen անել՝ մեկ thread-ին 2, 4 և 8 արդյունք. գծել ժամանակը՝ thread-ի տարրերի քանակից կախված, և անկումը համեմատել `-Xptxas -v`-ի ցույց տված register spilling-ի հետ։ *(Օր 13)*
+65c. Ֆիքսված `n`-ի դեպքում փոփոխել Օր 2-ի grid-stride վեկտորների գումարման grid size-ը (64 → 4096 block) և կորագիծը բացատրել՝ մի ծայրում coarsening, մյուսում՝ occupancy։ *(Օր 13)*
 
-## Day 14 — CUDA Libraries
-66. Estimate π via Monte Carlo sampling with cuRAND. *(Day 14)*
-67. Use cuBLAS for a matrix-vector multiply and compare against your Day 10 kernel. *(Day 14)*
-68. Use cuFFT to compute an FFT and compare against your Day 8 32-point attempt. *(Day 14)*
-69. Fill a `GpuMat` with cuRAND-generated noise and display it. *(Day 14)*
-70. Try a recursive/dynamic-parallelism kernel launch — have a kernel launch a child kernel. *(Day 14)*
+## Օր 14 — CUDA-ի գրադարանները
+66. cuRAND-ով Monte Carlo եղանակով գնահատել π-ն։ *(Օր 14)*
+67. cuBLAS-ով կատարել մատրից-վեկտոր բազմապատկում և համեմատել ձեր Օր 10-ի kernel-ի հետ։ *(Օր 14)*
+68. cuFFT-ով հաշվել FFT և համեմատել Օր 8-ի 32 կետանոց փորձի հետ։ *(Օր 14)*
+69. `GpuMat`-ը լցնել cuRAND-ով գեներացված աղմուկով և ցուցադրել։ *(Օր 14)*
+70. Փորձել ռեկուրսիվ (dynamic parallelism) launch՝ kernel, որը գործարկում է child kernel։ *(Օր 14)*
 
-## Day 15 — Stream-Ordered Memory Allocation
-71. Replace a `cudaMalloc`/`cudaFree` pair with `cudaMallocAsync`/`cudaFreeAsync` on a stream. *(Day 15)*
-72. Benchmark allocation overhead: classic vs. stream-ordered, over many small allocations. *(Day 15)*
-73. Create an explicit `cudaMemPool_t` and drive allocations on it from two different streams. *(Day 15)*
-74. Combine stream-ordered allocation with a Day 12 CUDA graph capture. *(Day 15)*
-75. Apply `cudaMallocAsync` to a real image-processing kernel end to end. *(Day 15)*
+## Օր 15 — Stream-ordered հիշողության հատկացում
+71. Stream-ի վրա `cudaMalloc`/`cudaFree` զույգը փոխարինել `cudaMallocAsync`/`cudaFreeAsync`-ով։ *(Օր 15)*
+72. Շատ փոքր հատկացումների վրա չափել հատկացման ծախսը՝ դասական և stream-ordered եղանակների համար։ *(Օր 15)*
+73. Ստեղծել բացահայտ `cudaMemPool_t` և դրա վրայով հատկացումներ անել երկու տարբեր stream-երից։ *(Օր 15)*
+74. Stream-ordered հատկացումը միացնել Օր 12-ի CUDA graph-ի ձայնագրման հետ։ *(Օր 15)*
+75. `cudaMallocAsync`-ը սկզբից մինչև վերջ կիրառել պատկերների մշակման իրական kernel-ի վրա։ *(Օր 15)*
 
-## Bonus: Image Processing with OpenCV / GpuMat
-76. Implement a Gaussian blur kernel and compare it to `cv::cuda::GaussianFilter`.
-77. Implement histogram equalization on the GPU. (The histogram itself is exam task [E2](#e2--histogram-of-a-grayscale-image); equalization adds the scan and the lookup on top.)
-78. Implement a Canny edge detector from scratch (gradient → non-max suppression → hysteresis). Full specification as exam task [E3](#e3--canny-edge-detection).
-79. Implement bilateral filtering (edge-preserving blur).
-80. Implement a median filter using a small sorting network in shared memory.
-81. Implement image thresholding — both fixed and adaptive — as a kernel.
-82. Implement a simple optical flow estimator (Lucas-Kanade, small window).
-83. Implement alpha blending of two images on the GPU.
-84. Implement an RGB-to-HSV color-space conversion kernel.
-85. Implement a perspective warp (homography) kernel using textures.
-86. Implement non-maximum suppression for corner detection.
-86b. Implement connected components labeling of a binary mask. Full specification as exam task [E1](#e1--connected-components-labeling-of-a-binary-mask).
-87. Build a real-time webcam filter pipeline: `cv::VideoCapture` → GPU kernel → `cv::imshow`.
-88. Implement a full Laplacian pyramid blend of two images.
-89. Implement a separable box filter (horizontal pass, then vertical) and compare it to a single 2D tiled pass.
-90. Implement template matching (normalized cross-correlation) on the GPU.
+## Բոնուս. պատկերների մշակում OpenCV / GpuMat-ով
+76. Իրականացնել Gaussian blur-ի kernel և համեմատել `cv::cuda::GaussianFilter`-ի հետ։
+77. GPU-ի վրա իրականացնել histogram equalization։ (Ինքը՝ histogram-ը, քննական առաջադրանք [E2](#e2--մոխրագույն-պատկերի-histogram)-ն է. equalization-ը դրա վրա ավելացնում է scan-ը և lookup-ը։)
+78. Զրոյից իրականացնել Canny-ի եզրերի հայտնաբերումը (gradient → non-max suppression → hysteresis)։ Ամբողջական նկարագիրը՝ քննական առաջադրանք [E3](#e3--canny-եզրերի-հայտնաբերում)-ում։
+79. Իրականացնել bilateral ֆիլտրում (եզրերը պահպանող blur)։
+80. Իրականացնել median ֆիլտր՝ shared memory-ում փոքր sorting network-ով։
+81. Իրականացնել պատկերի շեմավորում՝ և՛ ֆիքսված, և՛ ադապտիվ, որպես kernel։
+82. Իրականացնել օպտիկական հոսքի պարզ գնահատիչ (Lucas-Kanade, փոքր պատուհան)։
+83. GPU-ի վրա իրականացնել երկու պատկերի alpha blending։
+84. Իրականացնել RGB-ից HSV գունային տարածության ձևափոխության kernel։
+85. Texture-ներով իրականացնել perspective warp-ի (homography) kernel։
+86. Իրականացնել non-maximum suppression՝ անկյունների հայտնաբերման համար։
+86b. Իրականացնել բինար mask-ի կապակցված բաղադրիչների պիտակավորում։ Ամբողջական նկարագիրը՝ քննական առաջադրանք [E1](#e1--բինար-mask-ի-կապակցված-բաղադրիչների-պիտակավորում)-ում։
+87. Կառուցել webcam-ի ռեալ ժամանակի ֆիլտրի pipeline՝ `cv::VideoCapture` → GPU kernel → `cv::imshow`։
+88. Իրականացնել երկու պատկերի ամբողջական Laplacian pyramid blend։
+89. Իրականացնել տրոհվող (separable) box ֆիլտր՝ սկզբում հորիզոնական, ապա ուղղահայաց անցումով, և համեմատել մեկ 2D tiled անցման հետ։
+90. GPU-ի վրա իրականացնել template matching (normalized cross-correlation)։
 
-## Bonus: Advanced / Beyond This Course
-91. Implement a grid-wide reduction using cooperative groups (no host round-trip between blocks).
-92. Split a vector-add workload across two GPUs with `cudaSetDevice(0)`/`cudaSetDevice(1)`.
-93. Enable peer-to-peer memory access between two GPUs with `cudaDeviceEnablePeerAccess`, if you have more than one.
-94. Profile a kernel with Nsight Compute and determine whether it's compute-bound or memory-bound.
-95. Implement dynamic parallelism: a kernel that launches a child kernel based on data computed at runtime.
-96. Implement a persistent-kernel pattern — a kernel that loops internally pulling work from a queue, instead of being relaunched per item.
-97. Port one of your Day 5-13 kernels to cooperative groups' `tiled_partition` instead of raw warp intrinsics.
-98. Implement one kernel in half precision (FP16) and compare accuracy and speed against FP32.
-99. Build a small CUDA unit-test harness that compares kernel output against a CPU reference for randomized inputs.
-100. Write a one-page performance report for any kernel from this course: measured throughput, theoretical peak from `report_device_capabilities()`, and the percentage of peak achieved.
-
----
-
-# Final Exam
-
-Three practical tasks. Each one is a real computer-vision algorithm, each draws on a different part of the course, and all three operate on a real image through `cv::cuda::GpuMat` the way every day from Day 5 onward has.
-
-**What is assessed, for all three:**
-
-1. **Correctness** — output matches an OpenCV reference on the same input. Not "looks about right": compare arrays and report how many pixels differ.
-2. **Error handling** — every CUDA call through `CUDA_CHECK`, every launch followed by `CUDA_CHECK_LAST_ERROR()`, and the program runs clean under `compute-sanitizer` (Day 1).
-3. **Measurement** — `cudaEvent` timing averaged over many runs ([`common/timer.h`](common/timer.h)), not a single `<chrono>` reading, and the result expressed as a percentage of your GPU's theoretical peak (Day 13, [PERFORMANCE.md](PERFORMANCE.md)).
-4. **Explanation** — say *why* your kernel performs as it does, in the vocabulary of the course: coalescing, occupancy, bank conflicts, atomic contention, memory- vs compute-bound.
-
-A correct kernel with no measurement is an incomplete answer. So is a fast kernel you cannot explain.
-
-**Baselines must be honest.** Compare against OpenCV's GPU implementation (`cv::cuda::*`) where one exists, not against a naive single-threaded CPU loop. A "100× speedup" over unoptimized CPU code is not a result.
+## Բոնուս. առաջադեմ թեմաներ՝ կուրսի շրջանակից դուրս
+91. Cooperative groups-ով իրականացնել ամբողջ grid-ի reduction՝ առանց block-երի միջև host-ի միջով անցնելու։
+92. Վեկտորների գումարման աշխատանքը բաժանել երկու GPU-ի միջև՝ `cudaSetDevice(0)`/`cudaSetDevice(1)`-ով։
+93. Եթե մեկից ավելի GPU ունեք, `cudaDeviceEnablePeerAccess`-ով միացնել դրանց միջև peer-to-peer հասանելիությունը։
+94. Kernel-ը պրոֆիլավորել Nsight Compute-ով և որոշել՝ այն compute-bound է, թե memory-bound։
+95. Իրականացնել dynamic parallelism՝ kernel, որը child kernel է գործարկում կատարման ընթացքում հաշված տվյալների հիման վրա։
+96. Իրականացնել persistent-kernel-ի ձևը՝ kernel, որն իր ներսում ցիկլով աշխատանք է վերցնում հերթից՝ ամեն տարրի համար նորից գործարկվելու փոխարեն։
+97. Օր 5–13-ի ձեր kernel-ներից մեկը տեղափոխել cooperative groups-ի `tiled_partition`-ի վրա՝ warp-ի intrinsic-ների փոխարեն։
+98. Որևէ kernel իրականացնել կիսակրճատ ճշտությամբ (FP16) և ճշտությամբ ու արագությամբ համեմատել FP32-ի հետ։
+99. Կառուցել CUDA-ի փոքր unit-test-երի համակարգ, որը պատահական մուտքերի վրա kernel-ի արդյունքը համեմատում է CPU-ի հենքային տարբերակի հետ։
+100. Կուրսի ցանկացած kernel-ի համար գրել մեկ էջանոց կատարողականի հաշվետվություն՝ չափված թողունակություն, `report_device_capabilities()`-ից վերցված տեսական պիկ և դրա ձեռք բերված տոկոսը։
 
 ---
 
-## E1 · Connected Components Labeling of a binary mask
+# Եզրափակիչ քննություն
 
-Assign every connected region of a binary mask a unique label, so that two pixels share a label exactly when a path of set pixels joins them.
+Երեք գործնական առաջադրանք։ Ամեն մեկը համակարգչային տեսողության իրական ալգորիթմ է, ամեն մեկը հենվում է կուրսի տարբեր մասերի վրա, և երեքն էլ աշխատում են իրական պատկերի վրա՝ `cv::cuda::GpuMat`-ի միջոցով, ինչպես Օր 5-ից սկսած ամեն օր։
 
-- **The question.** Where does the time actually go — the labeling passes, or the convergence checking? And how does the answer change as the number of components grows?
-- **Input.** Any binary mask: threshold a grayscale image (Day 5), or generate synthetic blobs. Test both few-large-components and many-small-components cases, because they stress different things.
-- **Minimum to pass.** A working label-propagation implementation (iterate: each pixel takes the minimum label of its 4- or 8-neighbourhood, repeat until nothing changes), correctness checked against `cv::connectedComponents`, and timing as a function of component count.
-- **To go further.** Implement union-find with path compression as a second version and find the crossover. Do the convergence test on the device with a single `__device__` flag instead of copying a flag back every iteration.
-- **Draws on.** Day 2 (2D indexing), Day 5 (shared-memory tiles with a halo — neighbours cross tile edges), Day 9 (atomics), Day 13 (coalescing).
-- **Typical mistakes.** Copying a "did anything change?" flag to the host every iteration, so the measurement is dominated by round trips rather than by the algorithm. Forgetting that neighbour reads cross tile boundaries and need a halo. Treating an iteration count that varies with the image as if it were fixed.
+**Ինչ է գնահատվում երեքի դեպքում էլ.**
 
-## E2 · Histogram of a grayscale image
+1. **Ճշտություն** — արդյունքը համընկնում է նույն մուտքի վրա OpenCV-ի հենքային տարբերակի հետ։ Ոչ թե «մոտավորապես ճիշտ տեսք ունի», այլ՝ համեմատել զանգվածները և նշել, թե քանի pixel է տարբերվում։
+2. **Սխալների մշակում** — CUDA-ի ամեն կանչ՝ `CUDA_CHECK`-ի միջով, ամեն launch-ից հետո՝ `CUDA_CHECK_LAST_ERROR()`, և ծրագիրը `compute-sanitizer`-ի տակ անցնում է առանց բողոքի (Օր 1)։
+3. **Չափում** — `cudaEvent`-ով ժամանակ՝ միջինացված շատ գործարկումների վրա ([`common/timer.h`](common/timer.h)), ոչ թե `<chrono>`-ի մեկ ցուցում, և արդյունքն արտահայտված ձեր GPU-ի տեսական պիկի տոկոսով (Օր 13, [PERFORMANCE.md](PERFORMANCE.md))։
+4. **Բացատրություն** — ասել, թե *ինչու* է ձեր kernel-ն աշխատում հենց այդպես՝ կուրսի բառապաշարով. coalescing, occupancy, bank conflict-ներ, atomic-ների մրցակցություն, memory- թե compute-bound։
 
-Count how many pixels fall in each of 256 intensity bins.
+Ճիշտ, բայց չչափված kernel-ը թերի պատասխան է։ Նույնքան թերի է արագ kernel-ը, որը չեք կարողանում բացատրել։
 
-- **The question.** How much does atomic contention actually cost, and how much of it does privatization remove?
-- **Input.** Any grayscale image. Test a normal photograph **and** a near-uniform one (mostly a single shade), because the second is where contention becomes visible.
-- **Minimum to pass.** Two implementations — one global `atomicAdd` per pixel, one privatized into a shared-memory histogram and merged once per block (Day 9) — identical output, verified against `cv::calcHist`, with the speedup measured on both images and the difference explained.
-- **To go further.** Add warp-aggregated atomics using `__ballot_sync` + `__popc` (Day 8). Count the global atomics each version issues and check that the measured speedup tracks that number.
-- **Draws on.** Day 5 (shared memory), Day 8 (warp aggregation), Day 9 (atomics, privatization), Day 13 (% of peak — a histogram is memory-bound, so know what it is *allowed* to achieve).
-- **Typical mistakes.** Timing the first launch, so the measurement includes context setup. Forgetting to zero the shared histogram, or to `__syncthreads()` after zeroing and again before merging. Reporting a speedup from only the easy image, where contention is low and privatization barely helps.
-
-## E3 · Canny edge detection
-
-The full pipeline: Gaussian blur → gradient magnitude and direction (Sobel) → non-maximum suppression → double threshold → hysteresis.
-
-- **The question.** Which stage dominates, and is the whole pipeline limited by arithmetic or by the number of times you cross global memory?
-- **Input.** Any grayscale image; a video stream via `cv::VideoCapture` for the stretch version.
-- **Minimum to pass.** All five stages as CUDA kernels, output compared against `cv::Canny` with the same parameters (report the percentage of differing pixels — exact equality is not expected, since tie-breaking in suppression differs), and **per-stage timing** showing which stage costs what.
-- **To go further.** Fuse adjacent stages to cut global-memory round trips and measure what fusing buys ([PERFORMANCE.md §7](PERFORMANCE.md)). Use a separable Gaussian instead of a 2D one. Capture the whole pipeline into a CUDA graph (Day 12) and compare per-frame launch overhead. Run it on video with the stages overlapped across streams (Day 7).
-- **Draws on.** Day 5 (tiling with halo), Day 6 (events, per-stage timing), Day 7 (stream overlap for video), Day 9 (hysteresis propagation needs atomics or an iteration like E1), Day 12 (graphs), Day 13 (fusion, % of peak).
-- **Typical mistakes.** Doing hysteresis on the host because the propagation is awkward, then reporting a GPU timing that hides a device-to-host round trip per frame. Timing only the kernels and not the transfers. Comparing a tuned GPU pipeline against a debug-build CPU baseline.
+**Հենքը պետք է ազնիվ լինի։** Համեմատեք OpenCV-ի GPU-ի իրականացման հետ (`cv::cuda::*`), եթե այդպիսին կա, և ոչ թե պարզունակ մեկ thread-անոց CPU ցիկլի։ Չօպտիմալացված CPU կոդի նկատմամբ «100× արագացումը» արդյունք չէ։
 
 ---
 
-**Suggested deliverable for each task:** the source, a correctness report (how it was verified and how many pixels differed), a timing table, and half a page explaining the performance. Task 100 above is the template for that last part.
+## E1 · Բինար mask-ի կապակցված բաղադրիչների պիտակավորում
+
+Բինար mask-ի ամեն կապակցված տիրույթի տալ ունիկալ պիտակ այնպես, որ երկու pixel ունենան նույն պիտակը հենց այն դեպքում, երբ դրանք միացված են միացված pixel-ների ճանապարհով։
+
+- **Հարցը.** Ժամանակն իրականում ո՞ւր է գնում՝ պիտակավորման անցումների՞ն, թե՞ զուգամիտության ստուգմանը։ Եվ ինչպե՞ս է պատասխանը փոխվում, երբ բաղադրիչների քանակն աճում է։
+- **Մուտք.** Ցանկացած բինար mask՝ շեմավորեք մոխրագույն պատկերը (Օր 5) կամ գեներացրեք սինթետիկ բծեր։ Փորձարկեք և՛ քիչ ու մեծ, և՛ շատ ու փոքր բաղադրիչների դեպքերը, որովհետև դրանք տարբեր բաներ են ծանրաբեռնում։
+- **Նվազագույնը՝ անցնելու համար.** Աշխատող label-propagation իրականացում (կրկնել՝ ամեն pixel վերցնում է իր 4- կամ 8-հարևանության նվազագույն պիտակը, մինչև ոչինչ այլևս չփոխվի), ճշտությունը ստուգված `cv::connectedComponents`-ի դիմաց, և ժամանակը՝ որպես բաղադրիչների քանակի ֆունկցիա։
+- **Ավելի հեռու գնալու համար.** Որպես երկրորդ տարբերակ իրականացրեք union-find՝ path compression-ով, և գտեք այն կետը, որտեղ դրանք տեղերով փոխվում են։ Զուգամիտության ստուգումն արեք device-ի վրա՝ մեկ `__device__` դրոշով, ամեն կրկնության դրոշը host բերելու փոխարեն։
+- **Հենվում է.** Օր 2 (2D ինդեքսավորում), Օր 5 (shared memory-ի tile-եր halo-ով, քանի որ հարևանները դուրս են գալիս tile-ի սահմաններից), Օր 9 (atomic-ներ), Օր 13 (coalescing)։
+- **Տիպիկ սխալներ.** «Ինչ-որ բան փոխվե՞ց» դրոշն ամեն կրկնության host պատճենելը, ինչի պատճառով չափումը որոշվում է ոչ թե ալգորիթմով, այլ host-device երթևեկով։ Մոռանալ, որ հարևանների ընթերցումը դուրս է գալիս tile-ի սահմաններից և halo է պահանջում։ Կրկնությունների քանակը, որը պատկերից պատկեր փոխվում է, համարել ֆիքսված։
+
+## E2 · Մոխրագույն պատկերի histogram
+
+Հաշվել, թե քանի pixel է ընկնում 256 պայծառության bin-երից ամեն մեկի մեջ։
+
+- **Հարցը.** Atomic-ների մրցակցությունն իրականում որքա՞ն է արժենում, և դրա ո՞ր մասն է հեռացնում privatization-ը։
+- **Մուտք.** Ցանկացած մոխրագույն պատկեր։ Փորձարկեք սովորական լուսանկար **և** գրեթե միագույն պատկեր (հիմնականում մեկ երանգ), որովհետև երկրորդի վրա է մրցակցությունը տեսանելի դառնում։
+- **Նվազագույնը՝ անցնելու համար.** Երկու իրականացում՝ մեկը ամեն pixel-ի համար գլոբալ `atomicAdd`-ով, մյուսը՝ shared memory-ում privatization-ով և ամեն block-ում մեկ անգամ միաձուլմամբ (Օր 9), նույնական արդյունքով, ստուգված `cv::calcHist`-ի դիմաց, արագացումը՝ չափված երկու պատկերի վրա, և տարբերությունը՝ բացատրված։
+- **Ավելի հեռու գնալու համար.** Ավելացրեք warp-aggregated atomic-ներ՝ `__ballot_sync` + `__popc`-ով (Օր 8)։ Հաշվեք, թե ամեն տարբերակը քանի գլոբալ atomic է թողարկում, և ստուգեք, որ չափված արագացումն այդ թվին է հետևում։
+- **Հենվում է.** Օր 5 (shared memory), Օր 8 (warp-ի մակարդակի ագրեգացում), Օր 9 (atomic-ներ, privatization), Օր 13 (պիկի տոկոս. histogram-ը memory-bound է, ուստի պետք է իմանալ, թե որքանի՞ն է այն ընդհանրապես *իրավունք ունի* հասնելու)։
+- **Տիպիկ սխալներ.** Չափել առաջին launch-ը, ինչի պատճառով չափման մեջ ներառվում է context-ի նախապատրաստումը։ Մոռանալ զրոյացնել shared histogram-ը, կամ զրոյացումից հետո և միաձուլումից առաջ `__syncthreads()` չդնել։ Արագացումը ներկայացնել միայն հեշտ պատկերի վրա, որտեղ մրցակցությունը ցածր է և privatization-ը գրեթե չի օգնում։
+
+## E3 · Canny եզրերի հայտնաբերում
+
+Ամբողջական pipeline-ը՝ Gaussian blur → gradient-ի մեծությունը և ուղղությունը (Sobel) → non-maximum suppression → կրկնակի շեմավորում → hysteresis։
+
+- **Հարցը.** Ո՞ր փուլն է գերակշռում, և ամբողջ pipeline-ը սահմանափակվում է թվաբանությա՞մբ, թե՞ գլոբալ հիշողություն դիմելու քանակով։
+- **Մուտք.** Ցանկացած մոխրագույն պատկեր, իսկ ընդլայնված տարբերակի համար՝ video հոսք `cv::VideoCapture`-ով։
+- **Նվազագույնը՝ անցնելու համար.** Հինգ փուլն էլ՝ որպես CUDA kernel-ներ, արդյունքը համեմատված նույն պարամետրերով `cv::Canny`-ի հետ (նշեք տարբերվող pixel-ների տոկոսը. ճշգրիտ համընկնում չի սպասվում, քանի որ suppression-ում հավասար դեպքերի լուծումը տարբեր է), և **ամեն փուլի ժամանակը** առանձին՝ ցույց տալով, թե որ փուլը որքան է արժենում։
+- **Ավելի հեռու գնալու համար.** Միաձուլեք հարևան փուլերը՝ գլոբալ հիշողության անցումները կրճատելու համար, և չափեք, թե դա ինչ է տալիս ([PERFORMANCE.md §7](PERFORMANCE.md))։ 2D Gaussian-ի փոխարեն օգտագործեք տրոհվող (separable) տարբերակը։ Ամբողջ pipeline-ը ձայնագրեք CUDA graph-ի մեջ (Օր 12) և համեմատեք մեկ կադրի launch-ի ծախսը։ Գործարկեք video-ի վրա՝ փուլերը stream-երի միջև համընկնեցնելով (Օր 7)։
+- **Հենվում է.** Օր 5 (tiling halo-ով), Օր 6 (event-եր, փուլերի ժամանակ), Օր 7 (stream-երի համընկնում video-ի համար), Օր 9 (hysteresis-ի տարածումը պահանջում է atomic-ներ կամ E1-ի նման կրկնություն), Օր 12 (graph-եր), Օր 13 (միաձուլում, պիկի տոկոս)։
+- **Տիպիկ սխալներ.** Hysteresis-ն անել host-ի վրա, որովհետև տարածումն անհարմար է, ապա ներկայացնել GPU-ի ժամանակ, որը թաքցնում է ամեն կադրի device-host երթևեկը։ Չափել միայն kernel-ները՝ առանց փոխանցումների։ Օպտիմալացված GPU pipeline-ը համեմատել debug ռեժիմով կառուցված CPU հենքի հետ։
+
+---
+
+**Առաջարկվող արդյունք ամեն առաջադրանքի համար.** ելակետային կոդը, ճշտության հաշվետվություն (ինչպես է ստուգվել և քանի pixel է տարբերվել), ժամանակների աղյուսակ և կես էջ՝ կատարողականի բացատրությամբ։ Վերևի 100-րդ առաջադրանքն այդ վերջին մասի ձևանմուշն է։

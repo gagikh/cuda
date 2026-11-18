@@ -206,7 +206,7 @@ The final exam covers both theory and practical knowledge. Key areas include:
 
 ### Practical tasks
 
-The practical half of the exam is three computer-vision algorithms, specified in full in [TASKS.md § Final Exam](TASKS.md#final-exam):
+The practical half of the exam is three computer-vision algorithms, specified in full in [TASKS.md § Final Exam](TASKS.md#եզրափակիչ-քննություն):
 
 | | Task | What it tests |
 |---|---|---|
