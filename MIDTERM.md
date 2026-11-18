@@ -80,17 +80,17 @@
 
 <a id="t22"></a>**T22.** Cache-ի հուշումները և L2 persistence. read-only ընթերցումները և `__ldg`, մեկանգամյա մեծ անցումները, LRU-ի շեղումը, երբ է դա վնասակար։
 
-<a id="t23"></a>**T23.** Bank conflict, broadcast, padding և XOR swizzling. conflict degree-ի հաշվարկը stride-ից, կենտ stride-ի հատկությունը, նույն հասցեից ընթերցումը, երկու լուծման համեմատությունը։
+<a id="t23"></a>**T23.** Bank conflict և broadcast. bank-երի կառուցվածքը, conflict degree-ի հաշվարկը stride-ից, կենտ stride-ի հատկությունը, նույն հասցեից ընթերցումը ամբողջ warp-ով։
 
-<a id="t24"></a>**T24.** Register spilling. ուր են տեղափոխվում ռեգիստրներում չտեղավորվող արժեքները, հետևանքը արագության վրա։
+<a id="t24"></a>**T24.** Padding և XOR swizzling. երկու եղանակի համեմատությունը, `[32][33]`-ի և `tile[r][c^r]`-ի տրամաբանությունը, XOR-ի բիեկտիվությունը, ծախսերը։
 
-<a id="t25"></a>**T25.** Տեսական peak bandwidth, arithmetic intensity և չափման կարգը. բանաձևը և 2 գործակիցը, պիկի տոկոսը որպես կանգ առնելու չափանիշ, warm-up և միջինացում `cudaEvent`-ով։
+<a id="t25"></a>**T25.** Register spilling. ուր են տեղափոխվում ռեգիստրներում չտեղավորվող արժեքները, հետևանքը արագության վրա։
 
-### Օր 14 — Ճշտություն և tensor core
+<a id="t26"></a>**T26.** Տեսական peak bandwidth և arithmetic intensity. բանաձևը և 2 գործակցի իմաստը, պարզ kernel-ի համար հաշվարկը, պիկի տոկոսը որպես կանգ առնելու չափանիշ։
 
-<a id="t26"></a>**T26.** FMA և ճշտության տիպերը. մեկ հրամանով բազմապատկում ու գումարում, fp64, fp32, tf32, bf16, fp16 — տիրույթը, mantissa-ն, fp64-ի դանդաղությունը։
+<a id="t27"></a>**T27.** Չափման ճիշտ կարգը. warm-up-ը, միջինացումը, `cudaEvent`-ը `<chrono>`-ի փոխարեն, ինչու չի կարելի հիմնվել առաջին launch-ի վրա։
 
-<a id="t27"></a>**T27.** Mixed precision և tensor core. ցածր ճշտությամբ բազմապատկումը և fp32 կուտակումը, փոքր արժեքների մասշտաբավորումը, MMA-ն, չափերի պահանջները, `2·M·N·K` և TFLOP/s։
+### Օր 14 — Dynamic parallelism
 
 <a id="t28"></a>**T28.** Dynamic parallelism. parent և child grid, ավարտի պահը, ազդեցությունը host-ի սինխրոնացման վրա, արժեքը։
 
@@ -149,5 +149,5 @@
 
 - Թեմաների նյութը՝ համապատասխան `dayNN/README.md`-ների **Սահմանումներ** և **Key Concepts** բաժիններում։
 - Տերմինները՝ [GLOSSARY.md](GLOSSARY.md)-ում, ֆունկցիաների ինտերֆեյսները՝ [API.md](API.md)-ում, device-ի intrinsic-ները՝ [INTRINSICS.md](INTRINSICS.md)-ում։
-- Կատարողականի թեմաները (T20–T25, T27) հենվում են [PERFORMANCE.md](PERFORMANCE.md)-ի վրա։
+- Կատարողականի թեմաները (T20–T27) հենվում են [PERFORMANCE.md](PERFORMANCE.md)-ի վրա։
 - CUDA-ով հագեցած համակարգիչ չունենալու դեպքում՝ [կուրսի Colab նոթբուքը](https://colab.research.google.com/drive/1zDtYkz8WwD7sOIucSyUoxm2n7RYWJxVZ?usp=sharing)։
