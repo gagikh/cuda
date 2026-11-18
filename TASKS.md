@@ -59,12 +59,12 @@
 ## Օր 8 — Warp-ի մակարդակի intrinsic-ներ. reduction
 36. <a id="task-36"></a>`__shfl_down_sync`-ով իրականացնել warp-ի մակարդակի գումարի reduction։ *(Օր 8)*
 37. <a id="task-37"></a>Մեկ warp-ի ներսում իրականացնել inclusive prefix sum (scan)։ *(Օր 8)*
-38. <a id="task-38"></a>Scan-ի արդյունքով compact անել շեմից բարձր pixel-ների ինդեքսները։ *(Օր 8)*
+38. <a id="task-38"></a>Scan-ի արդյունքով հավաքել շեմից բարձր pixel-ների ինդեքսները՝ իրար հետևից, առանց բացերի։ *(Օր 8)*
 39. <a id="task-39"></a>Warp shuffle-ներով իրականացնել 32 կետանոց FFT butterfly։ *(Օր 8)*
 40. <a id="task-40"></a>Նույն չափսի խնդրի վրա համեմատել warp shuffle-ով և shared memory-ով reduction-ները։ *(Բոնուս)*
 40a. <a id="task-40a"></a>Warp-ի reduction-ն ընդլայնել մինչև ամբողջական `block_reduce_sum` (warp → shared → warp), ապա ամբողջ grid-ը հանրագումարել՝ ամեն block-ից մեկ `atomicAdd`-ով։ Հաշվել `__syncthreads()` կանչերի քանակը և համեմատել դասական ծառային reduction-ի հետ։ *(Օր 8)*
 40b. <a id="task-40b"></a>Reduction-ը վերագրել `__shfl_xor_sync`-ով այնպես, որ գումարը ստանան բոլոր lane-երը. համոզվել, որ արժեքը չի փոխվել, և ասել՝ երբ է այս տարբերակը պետք։ *(Օր 8)*
-40c. <a id="task-40c"></a>Compaction-ը նորից անել `__ballot_sync` + `__popc`-ով և մեկ warp-aggregated atomic-ով։ Ժամանակով համեմատել scan-ի տարբերակի հետ՝ 5% և 95% անցման դեպքերում։ *(Օր 8)*
+40c. <a id="task-40c"></a>Նույն հավաքումը նորից անել `__ballot_sync` + `__popc`-ով և մեկ warp-aggregated atomic-ով։ Ժամանակով համեմատել scan-ի տարբերակի հետ՝ 5% և 95% անցման դեպքերում։ *(Օր 8)*
 40d. <a id="task-40d"></a>Դիտավորյալ գրել divergence-ի սխալը՝ `warp_reduce_sum` `if (id < n)`-ի ներսում, որտեղ `n`-ը 32-ի բազմապատիկ չէ, և գործարկել `compute-sanitizer --tool synccheck`-ով։ *(Օր 8)*
 
 ## Օր 9 — Warp-ի մակարդակի տվյալների փոխանակում
