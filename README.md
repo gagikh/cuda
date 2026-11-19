@@ -110,9 +110,10 @@ Local builds are still preferred where you have the hardware — profiling with 
 - Zoom/image processing
 
 ### [Day 12: CUDA Graph API](day12/README.md)
-- Graph recording  
+- Graph recording, instantiation and launch  
 - Kernel + memory op capture  
-- Graph launch
+- Multi-stream capture: fork/join events, the origin stream  
+- Launch overhead and repeated execution of a fixed pipeline
 
 ### [Day 13: Cache Behavior and Optimization](day13/README.md)
 - L1/L2 cache  

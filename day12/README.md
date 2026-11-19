@@ -1,15 +1,18 @@
 # Day 12: CUDA Graph API
 
-## Objectives
-- Capture a sequence of kernel/memory operations into a CUDA graph
-- Instantiate and launch a captured graph
-- Compare matrix transpose via shared memory vs. via texture binding
-- Understand when graph launch overhead pays off vs. regular sequential launches
+## Objectives · Նպատակներ
+- Ձայնագրել kernel-ների և հիշողության գործողությունների հաջորդականությունը CUDA graph-ում
+- Կառուցել իրական, երկու stream-ով pipeline և capture անել այն՝ fork և join event-երով ճյուղավորելով ու վերամիավորելով
+- Հասկանալ, թե ինչու են սինխրոն կանչերը արգելված capture-ի ընթացքում և ինչն է փոխարինում դրանց
+- Instantiate անել մեկ անգամ և graph-ը գործարկել շատ անգամ
+- Բացատրել, թե ինչից է բաղկացած launch overhead-ը, և չափել, թե երբ է graph-ն արդարացված
+- Իրականացնել մատրիցի տրանսպոնացումը shared memory-ով և texture-ով, համեմատել
 
 ## Key Concepts
-- Graph recording
-- Kernel + memory op capture
-- Graph launch
+- Graph-ի ձայնագրում, instantiation և գործարկում
+- Kernel-ների և հիշողության գործողությունների capture
+- Բազմա-stream capture. fork/join event-եր, origin stream
+- Launch overhead և ֆիքսված pipeline-ի կրկնվող գործարկում
 
 ## Definitions · Սահմանումներ
 
@@ -167,6 +170,8 @@ Transpose a real image (loaded via `cv::imread`, uploaded to `cv::cuda::GpuMat`)
 2. Implement matrix transpose using texture binding (reuse Day 11), compare performance.
 3. Fill in `graph_t`'s `start_capture` / `create_graph` / `launch` methods in [`template.cu`](template.cu) — same wrapper as the Code Walkthrough above, genericized to a raw `cudaStream_t` so the struct itself has no OpenCV dependency.
 4. Launch the captured graph many times in a loop and compare total time against launching the same kernels sequentially without a graph — measure where the launch-overhead savings start to matter.
+5. Կառուցել վերևի շարժման հայտնաբերման pipeline-ը երկու stream-ով և capture անել այն։ Նախ գործարկել **առանց** fork event-ի և տեսնել, որ stream2-ի հանգույցները graph-ում չկան, ապա՝ առանց join event-ի և տեսնել, թե ինչ է վերադարձնում `cudaStreamEndCapture`-ը։
+6. Նույն pipeline-ում `cudaDeviceSynchronize`-ը դնել capture-ի ներսում և ստուգել, թե որ կանչն է սխալ վերադարձնում և ինչ կոդով։
 
 ## Self-Check
 No answers given — these are for you to reason through, or discuss with a classmate/instructor.
