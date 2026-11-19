@@ -1,11 +1,12 @@
 # Day 8: Warp-Level Intrinsics – Reduction
 
-## Objectives
-- Understand warp shuffle functions and intra-warp communication
-- Explain what the lane mask asserts, and why calling a `_sync` intrinsic inside a divergent branch is undefined behaviour rather than merely slow
-- Implement warp-level parallel reduction, and extend it to a whole block via the hierarchical warp → shared → warp pattern
-- Implement an inclusive warp scan, and use `__ballot_sync` + `__popc` as the cheaper route for binary predicates
-- Explain why register shuffles beat a shared-memory reduction, and where that stops being true
+## Objectives · Նպատակներ
+- Հասկանալ warp shuffle-ները և warp-ի ներսում տվյալների փոխանակումն առանց հիշողության դիմումի
+- Բացատրել, թե ինչ է խոստանում lane mask-ը, և ինչու է `_sync` intrinsic-ի կանչը divergent branch-ում undefined behaviour, ոչ թե պարզապես դանդաղ
+- Օգտագործել `width` պարամետրը, երբ warp-ը պետք է բաժանվի իրարից անկախ հատվածների
+- Իրականացնել warp-ի reduction և ընդլայնել այն ամբողջ block-ի վրա՝ warp → shared → warp սխեմայով
+- Իրականացնել inclusive scan և տարրերի հավաքումն առանց բացերի, ապա նույնը՝ `__ballot_sync` + `__popc`-ով որպես ավելի էժան ուղի
+- Բացատրել, թե ինչու են ռեգիստրային shuffle-ները գերազանցում shared memory-ի reduction-ին, և որտեղ է դա դադարում ճիշտ լինել
 
 ## Key Concepts
 - Warp shuffle functions: `__shfl_down_sync`, `__shfl_up_sync`, `__shfl_xor_sync`, `__shfl_sync`

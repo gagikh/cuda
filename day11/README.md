@@ -1,9 +1,12 @@
 # Day 11: Textures and Surfaces
 
-## Objectives
-- Create and bind CUDA texture objects
-- Use `tex2D` fetches with filtering and addressing modes
-- Implement image zoom and rotation via texture sampling
+## Objectives · Նպատակներ
+- Ստեղծել և կարգավորել CUDA texture object-ներ, հասկանալ ինչու է վարքն ամրագրվում ստեղծման պահին
+- Օգտագործել `tex2D`-ը ֆիլտրման ռեժիմներով և բացատրել `0.5` շեղման պատճառը
+- Տարբերակել հասցեավորման ռեժիմները և դրանց վարքը պատկերի եզրերին
+- Իմանալ ապարատային bilinear ֆիլտրման ճշտության սահմանափակումը
+- Օգտագործել surface-ը որպես texture-ի՝ գրելու կարողությամբ զույգը
+- Իրականացնել պատկերի խոշորացում և պտույտ texture-ից ընթերցելով, և համեմատել ձեռքով գրված տարբերակի հետ
 
 ## Key Concepts
 - Texture memory

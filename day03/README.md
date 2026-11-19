@@ -1,11 +1,12 @@
 # Day 3: Warp-Level Execution and Control Flow
 
-## Objectives
-- Explain SIMD/SIMT execution and how the GPU instruction pipeline issues one instruction to a whole warp
-- Define what a warp is and how it executes instructions in lockstep
-- Reason about control flow (`if`/`else`, loops, `switch`) and its cost inside a warp
-- Recognize and avoid warp divergence
-- Apply loop unrolling where it helps
+## Objectives · Նպատակներ
+- Բացատրել SIMT կատարումը. ինչպես է մեկ հրամանը թողարկվում ամբողջ warp-ին
+- Նկարագրել հրամանների pipeline-ը և register file-ի դերը
+- Բացատրել, թե ինչ են active, eligible և stalled warp-երը, և ինչպես է latency hiding-ն աշխատում
+- Գնահատել կառավարման հոսքի (`if`/`else`, ցիկլեր, `switch`) արժեքը warp-ի ներսում
+- Ճանաչել և խուսափել divergence-ից, հասկանալ reconvergence-ը և `__syncwarp`-ի դերը
+- Կիրառել loop unrolling-ը այնտեղ, որտեղ այն իրոք օգնում է
 
 ## Key Concepts
 - SIMD architecture and the instruction pipeline (fetch → decode → warp scheduler → lockstep issue)

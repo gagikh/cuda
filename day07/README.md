@@ -1,10 +1,11 @@
 # Day 7: Asynchronous Execution Techniques
 
-## Objectives
-- Distinguish synchronous vs. asynchronous `cudaMemcpy`
-- Launch kernels asynchronously and reason about stream dependencies
-- Use events for cross-stream timing and synchronization
-- Practice on exam-scope problems (see below)
+## Objectives · Նպատակներ
+- Տարբերակել սինխրոն և ասինխրոն `cudaMemcpy`-ը, և բացատրել, թե ինչու է ասինխրոնի համար պարտադիր page-locked հիշողությունը
+- Գործարկել kernel-ներ ասինխրոն և կառուցել stream-երի միջև կախվածություններ
+- Օգտագործել event-եր stream-երի միջև սինխրոնացման և ժամանակի չափման համար
+- Կիրառել double buffering՝ պատճենումը և հաշվարկը ժամանակի մեջ համընկնեցնելու համար
+- Իրական պատկերը բաժանել շերտերի և կառուցել copy-in / compute / copy-out pipeline մի քանի stream-ով
 
 ## Key Concepts
 - `cudaMemcpy`: sync vs async

@@ -1,10 +1,13 @@
 # Day 9: Warp-Level Data Exchange
 
-## Objectives
-- Use `__syncwarp`, `__activemask`, and `__ballot_sync` correctly
-- Combine warp reduction with atomic operations
-- Explain why atomic contention serializes, and apply privatization to break it up
-- Implement warp-level bit packing/unpacking
+## Objectives · Նպատակներ
+- Ճիշտ օգտագործել `__syncwarp`, `__activemask` և `__ballot_sync`
+- Համատեղել warp-ի reduction-ը atomic գործողությունների հետ
+- Բացատրել, թե ինչու է atomic-ների մրցակցությունը սերիականացնում կատարումը, և կիրառել privatization
+- Կառուցել warp-aggregated atomic՝ ballot-ով և popc-ով, մեկ lane-ի կանչով
+- `atomicCAS`-ով կառուցել ապարատորեն բացակայող atomic գործողություն
+- Իրականացնել warp-ի մակարդակի բիթային փաթեթավորում և հակադարձ բացում
+- Չափել privatization-ի շահույթը տարբեր բնույթի պատկերների վրա և բացատրել տարբերությունը
 
 ## Key Concepts
 Warp level programming and `__syncwarp`, `__activemask`, `__ballot_sync`.

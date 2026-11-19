@@ -1,11 +1,13 @@
 # Day 14: CUDA Libraries
 
-## Objectives
-- Use cuRAND to generate random numbers on the device
-- Use cuBLAS for basic linear algebra
-- Use cuFFT for FFT computation
-- Understand recursive/dynamic-parallelism kernel launches at a high level
-- Rewrite a hand-written warp reduction using cooperative groups, and know when a grid-wide barrier is available
+## Objectives · Նպատակներ
+- Օգտագործել cuRAND, cuBLAS և cuFFT, և իմանալ, թե երբ է գրադարանը գերադասելի սեփական kernel-ից
+- Բացատրել FMA-ն և ինչու է մեկ հրամանով բազմապատկում-գումարումն ավելի ճշգրիտ
+- Տարբերակել fp64, fp32, tf32, bf16 և fp16-ը՝ տիրույթով և mantissa-ով, և հասկանալ mixed precision-ը
+- Բացատրել, թե ինչ է tensor core-ը և ինչ գործողություն է MMA-ն
+- Բացատրել atomic-ներով float-երի կուտակման ոչ դետերմինիզմը և երբ է այն կարևոր
+- Վերագրել warp-ի reduction-ը cooperative groups-ով և իմանալ, թե երբ է հասանելի ամբողջ grid-ի barrier-ը
+- Ընդհանուր գծերով հասկանալ ռեկուրսիվ (dynamic parallelism) launch-երը
 
 ## Key Concepts
 - cuRAND (random generation)

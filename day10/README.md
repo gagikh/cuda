@@ -1,13 +1,17 @@
 # Day 10: Practical Algorithms
 
-## Objectives
-- Implement matrix multiplication on the GPU, naive then tiled
-- Implement Hamming-distance descriptor matching
-- Compare naive vs. optimized implementations
+## Objectives · Նպատակներ
+- Իրականացնել մատրիցների բազմապատկումը GPU-ի վրա՝ նախ naive, ապա shared memory-ի tiling-ով
+- Բացատրել, թե ինչու է naive տարբերակը memory-bound և ինչ է փոխում tiling-ը գլոբալ երթևեկի առումով
+- Հաշվել ձեռք բերված TFLOP/s-ը և այն արտահայտել GPU-ի տեսական պիկի տոկոսով
+- Իրականացնել Hamming distance-ով descriptor-ների համեմատում՝ `__popc`-ով
+- Հասկանալ descriptor-ների դասավորության ազդեցությունը coalescing-ի վրա
+- Իմանալ, թե երբ է ժամանակը դադարել սեփական GEMM գրելուց և անցնել պատրաստի իրականացման
 
 ## Key Concepts
-- Descriptor matching based on Hamming distance
-- Matrix multiplication
+- Մատրիցների բազմապատկում՝ naive և tiled
+- TFLOP/s-ի չափումը և պիկի տոկոսը
+- Hamming distance-ով descriptor-ների համեմատում
 
 ## Functions
 
