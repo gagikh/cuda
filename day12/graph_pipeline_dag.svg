@@ -1,0 +1,45 @@
+<svg viewBox="-80 0 1080 450" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="ah-58a6ff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/></marker>
+<marker id="ah-3fb950" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3fb950"/></marker>
+<marker id="ah-a371f7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a371f7"/></marker>
+<marker id="ah-d29922" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d29922"/></marker>
+<marker id="ah-8b949e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/></marker>
+<marker id="ah-f0883e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f0883e"/></marker>
+</defs>
+<rect x="-80" y="0" width="1080" height="450" fill="#0d1117"/>
+<text x="400" y="30" text-anchor="middle" fill="#f0883e" font-size="16" font-weight="bold">Մեկ կադրի pipeline-ը՝ որպես ձայնագրված graph</text>
+<rect x="40" y="56" width="760" height="232" rx="10" fill="none" stroke="#f0883e" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="52" y="76" fill="#f0883e" font-size="10.5" font-family="Consolas, Menlo, monospace">cudaStreamBeginCapture(stream1, cudaStreamCaptureModeGlobal)  …  cudaStreamEndCapture(stream1, &amp;graph)</text>
+<text x="30" y="134.0" text-anchor="end" fill="#58a6ff" font-size="11" font-weight="bold">stream1</text>
+<text x="30" y="239.0" text-anchor="end" fill="#3fb950" font-size="11" font-weight="bold">stream2</text>
+<rect x="70" y="107" width="150" height="46" rx="6" fill="#1f6feb" fill-opacity="0.22" stroke="#58a6ff" stroke-width="1.6"/><text x="145.0" y="128.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">H2D frame_t</text><text x="145.0" y="144.0" text-anchor="middle" fill="#8b949e" font-size="10">page-locked</text>
+<rect x="250" y="107" width="150" height="46" rx="6" fill="#1f6feb" fill-opacity="0.22" stroke="#58a6ff" stroke-width="1.6"/><text x="325.0" y="134.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">to_gray</text>
+<rect x="430" y="107" width="150" height="46" rx="6" fill="#6e40c9" fill-opacity="0.22" stroke="#a371f7" stroke-width="1.6"/><text x="505.0" y="128.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">abs_diff_thr</text><text x="505.0" y="144.0" text-anchor="middle" fill="#8b949e" font-size="10">երկու մուտք</text>
+<rect x="610" y="107" width="150" height="46" rx="6" fill="#1f6feb" fill-opacity="0.22" stroke="#58a6ff" stroke-width="1.6"/><text x="685.0" y="134.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">D2H mask</text>
+<rect x="70" y="212" width="150" height="46" rx="6" fill="#238636" fill-opacity="0.22" stroke="#3fb950" stroke-width="1.6"/><text x="145.0" y="233.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">H2D frame_prev</text><text x="145.0" y="249.0" text-anchor="middle" fill="#8b949e" font-size="10">page-locked</text>
+<rect x="250" y="212" width="150" height="46" rx="6" fill="#238636" fill-opacity="0.22" stroke="#3fb950" stroke-width="1.6"/><text x="325.0" y="239.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">to_gray</text>
+<path d="M 220 130.0 L 250 130.0" fill="none" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#ah-58a6ff)"/>
+<path d="M 400 130.0 L 430 130.0" fill="none" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#ah-58a6ff)"/>
+<path d="M 580 130.0 L 610 130.0" fill="none" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#ah-58a6ff)"/>
+<path d="M 220 235.0 L 250 235.0" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#ah-3fb950)"/>
+<circle cx="58" cy="130" r="3.5" fill="#d29922"/>
+<path d="M 58 130.0 L 58 235.0 L 70 235.0" fill="none" stroke="#d29922" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ah-d29922)"/>
+<text x="63" y="169" fill="#d29922" font-size="10">fork</text>
+<text x="63" y="182" fill="#d29922" font-size="10">event</text>
+<path d="M 400 235.0 L 412 235.0 L 412 130.0 L 430 130.0" fill="none" stroke="#d29922" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ah-d29922)"/>
+<text x="418" y="169" fill="#d29922" font-size="10">join</text>
+<text x="418" y="182" fill="#d29922" font-size="10">event</text>
+<text x="145.0" y="97" text-anchor="middle" fill="#8b949e" font-size="10">ընթացիկ կադր</text>
+<text x="145.0" y="274" text-anchor="middle" fill="#8b949e" font-size="10">նախորդ կադր</text>
+<path d="M 215 288 L 215 334" fill="none" stroke="#8b949e" stroke-width="1.6" marker-end="url(#ah-8b949e)"/>
+<rect x="140" y="334" width="150" height="42" rx="6" fill="#30363d" fill-opacity="0.22" stroke="#8b949e" stroke-width="1.6"/><text x="215.0" y="359.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">graph</text>
+<rect x="330" y="334" width="250" height="42" rx="6" fill="#30363d" fill-opacity="0.22" stroke="#8b949e" stroke-width="1.6"/><text x="455.0" y="353.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">cudaGraphInstantiate</text><text x="455.0" y="369.0" text-anchor="middle" fill="#8b949e" font-size="10">մեկ անգամ</text>
+<rect x="620" y="334" width="240" height="42" rx="6" fill="#30363d" fill-opacity="0.22" stroke="#8b949e" stroke-width="1.6"/><text x="740.0" y="353.0" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Consolas, Menlo, monospace">cudaGraphLaunch</text><text x="740.0" y="369.0" text-anchor="middle" fill="#8b949e" font-size="10">ամեն կադրին</text>
+<path d="M 290 355.0 L 330 355.0" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#ah-8b949e)"/>
+<path d="M 580 355.0 L 620 355.0" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#ah-8b949e)"/>
+<text x="450" y="406" text-anchor="middle" fill="#e6edf3" font-size="11">Երկու ճյուղը զուգահեռ են մինչև join event-ը. abs_diff-ը սպասում է երկու to_gray-ին էլ։</text>
+<text x="450" y="424" text-anchor="middle" fill="#8b949e" font-size="10">Graph-ը չի արագացնում հաշվարկը. այն հանում է host-ի կողմից ամեն կադրին վեց launch ուղարկելու ծախսը։</text>
+<path d="M 760 130.0 L 836 130.0" fill="none" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#ah-58a6ff)"/>
+<text x="842" y="134" fill="#8b949e" font-size="10">host</text>
+</svg>

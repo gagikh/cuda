@@ -21,7 +21,7 @@ Signatures verified against the **CUDA Toolkit 13.3** [Runtime API reference](ht
 | [9](day09/README.md#functions--ֆունկցիաներ) | `__ballot_sync` · `__activemask` · `atomicAdd` (+`_block`) · `atomicCAS` · `atomicMax` · `cudaMemset` |
 | [10](day10/README.md#functions) | `__popc` / `__popcll` · `cv::cuda::ORB::create` · `detectAndCompute` |
 | [11](day11/README.md#functions) | `cudaCreateTextureObject` · `cudaDestroyTextureObject` · `cudaCreateChannelDesc` · `tex1D` / `tex2D` / `tex3D` · `surf2Dread` / `surf2Dwrite` |
-| [12](day12/README.md#functions--ֆունկցիաներ) | `cudaStreamBeginCapture` · `cudaStreamEndCapture` · `cudaGraphInstantiate` · `cudaGraphLaunch` |
+| [12](day12/README.md#functions--ֆունկցիաներ) | `cudaStreamBeginCapture` · `cudaStreamEndCapture` · `cudaGraphInstantiate` · `cudaGraphLaunch` · `cudaGraphExecUpdate` · `cudaGraphDestroy` / `cudaGraphExecDestroy` |
 | [13](day13/README.md#functions--ֆունկցիաներ) | `__ldg` · `__ldcs` · `__ldlu` · `__stcs` |
 | [14](day14/README.md#functions--ֆունկցիաներ) | `cublasCreate` / `Destroy` / `SetMathMode` · `cublasSgemm` / `Dgemm` · `nppiFilterBoxBorder_8u_C1R` · `cudaLaunchCooperativeKernel` · `cg::tiled_partition` |
 | [15](day15/README.md#functions) | `cudaMallocAsync` · `cudaFreeAsync` · `cudaDeviceGetDefaultMemPool` · `cudaMallocFromPoolAsync` · `cudaMemPoolCreate` / `Destroy` / `SetAttribute` / `GetAttribute` / `TrimTo` / `SetAccess` |
