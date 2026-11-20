@@ -48,6 +48,10 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **CUDA graph** — A recorded directed acyclic graph of operations — kernels, copies, host callbacks — together with their dependencies, launched as one unit. *(Day 12)*
 
+**Graph node** — One operation in a graph: what actually runs on the device. One kernel launch is one node; one async copy is one node. Node types are kernel, memcpy, memset, host (`cudaLaunchHostFunc`), memory alloc/free (`cudaMallocAsync`/`cudaFreeAsync`), child graph, and empty. Host-side calls such as `cudaMalloc`, `cudaHostAlloc` and the graph API itself are not nodes. *(Day 12)*
+
+**Graph edge** — A directed dependency between two nodes: `A → B` means `B` cannot start until `A` has fully completed. Edges come from stream order within one stream and from events across streams; nodes with no path between them are independent and may run concurrently. The graph is acyclic, so no node can depend on itself. *(Day 12)*
+
 **`cudaHostRegister`** — Page-locks memory that was allocated normally, giving it the transfer properties of pinned memory without reallocating it. `cudaHostUnregister` reverses this. *(Day 4)*
 
 **`cudaMemcpyAsync`** — A copy issued into a stream, returning immediately. It is genuinely asynchronous only when the host memory is page-locked; with pageable memory the runtime falls back to a synchronous copy and does not report it. *(Day 7)*
