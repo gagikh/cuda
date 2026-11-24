@@ -128,6 +128,8 @@ Terms used across this course, alphabetically. Each entry notes the day it is in
 
 **LRU** — Least recently used, the eviction order the caches approximate. *(Day 13)*
 
+**`__restrict__`** — A pointer qualifier promising the compiler that the memory addressed through this pointer is not addressed through any other pointer in the same scope. Combined with `const` (`const T *__restrict__`) it lets the compiler keep loaded values in registers across stores and issue read-only-cache (`LDG`) loads by itself, with no hand-written `__ldg()`. It is a promise, not a check: if the pointers really do overlap the behaviour is undefined. *(Day 13)*
+
 **Mapped (zero-copy) memory** — Page-locked host memory that also has a device address, from `cudaHostAlloc` with `cudaHostAllocMapped`. A kernel reads and writes it directly across the link with no explicit copy and no migration: the data never leaves host RAM, so there is no page to mark dirty. It isn't cached on the device either, so every repeated access is another bus round trip — read or write each byte once, and coalesce. *(Day 4)*
 
 **`__managed__`** — A file-scope declaration (`__device__ __managed__ int x;`) placing a variable in managed memory automatically, readable and writable by name from both host and device without `cudaMallocManaged` or passing a pointer. Same synchronization rules as any managed memory: synchronize before the host touches it after a launch. *(Day 4)*

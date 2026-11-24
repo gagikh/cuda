@@ -4,6 +4,7 @@
 - Deepen understanding of shared-memory bank conflicts and how to remove them
 - Understand L1/L2 cache behavior and persistence hints
 - Use `__ldg` to hint read-only global memory access
+- Promise non-aliasing with `const __restrict__`, and know why that is what lets the compiler emit read-only-cache loads on its own
 - Understand LRU cache eviction and how to bias it with per-instruction cache operators
 - Amortize per-thread fixed costs with thread coarsening, and see why it trades against occupancy
 - Express a kernel's speed as a percentage of theoretical peak bandwidth, and use it to decide when to stop
@@ -31,6 +32,8 @@
 **L2** — Ամբողջ չիպի cache-ը, որը գտնվում է device-ի հիշողության առջև և ընդհանուր է բոլոր SM-ների համար։ Global memory-ի atomic-ները կատարվում են այստեղ։
 
 **Cache operator** — Հրամանի մակարդակի ցուցում այն մասին, թե load-ը կամ store-ն ինչպես օգտագործի cache-երը։ `__ldg`՝ load միայն կարդալու համար նախատեսված cache-ի ճանապարհով, `__ldcs`՝ streaming load, որի տողը cache-ից դուրս է մղվում առաջինը, `__stcs`՝ streaming store, `__ldlu`՝ վերջին օգտագործման load, որից հետո տողը հեռացվում է cache-ից։
+
+**`__restrict__`** — Ցուցիչի որակիչ, որը կոմպիլյատորին խոստանում է, որ այդ ցուցիչով հասցեագրվող հիշողությունը նույն շրջանակում այլ ցուցիչով չի հասցեագրվում։ `const`-ի հետ միասին (`const T *__restrict__`) այն թույլ է տալիս կոմպիլյատորին արժեքները պահել ռեգիստրներում գրառումների միջև և ինքնուրույն թողարկել read-only cache-ի (`LDG`) load-եր՝ առանց ձեռքով գրված `__ldg()`-ի։ Սա խոստում է, ոչ թե ստուգում. եթե ցուցիչներն իրականում համընկնում են, վարքն undefined է։
 
 **LRU** — Least recently used. Դուրս մղման կանոն, որով cache-ից հեռացվում է ամենավաղուց չօգտագործված տողը։ Իրական cache-երն այս կանոնին հետևում են մոտավորապես։
 
@@ -96,6 +99,41 @@ Most traffic resolves fast, close to the SM (green, ~1s round trip); some reache
 
 For a fully interactive, playable version (fire requests on demand, step through) see [`memory_animations.html`](memory_animations.html) — open it locally in a browser, since GitHub's file viewer only shows HTML as source rather than running it.
 
+## `const __restrict__` · Խոստումը, որը բացում է read-only ճանապարհը
+
+`__restrict__`-ը ցուցիչի որակիչ է (C99-ի `restrict`-ը, CUDA-ում գրվում է `__restrict__`)։ Այն կոմպիլյատորին տրվող խոստում է. **այս ցուցիչով հասցեագրվող հիշողությունը նույն շրջանակում ոչ մի այլ ցուցիչով չի հասցեագրվում**։
+
+Տեսնենք, թե ինչու է դա կարևոր.
+
+```c++
+__global__ void blur3(const float *in, float *out, int n)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < 1 || i >= n - 1) return;
+    out[i] = (in[i - 1] + in[i] + in[i + 1]) / 3.0f;   // երեք load, մեկ store
+}
+```
+
+Կոմպիլյատորը չգիտի, որ `out`-ն ու `in`-ը տարբեր բուֆերներ են — դրանք կարող էին լինել նույն զանգվածի մասեր։ Ուստի ամեն գրառումից հետո նա պարտավոր է ենթադրել, որ `in`-ի բովանդակությունը կարող է փոխված լինել։ Հետևանքները.
+
+- ռեգիստրում արդեն կարդացած արժեքը չի կարող վերաօգտագործվել գրառումից հետո՝ պետք է նորից կարդալ
+- load-երը չեն կարող խմբավորվել կամ դուրս բերվել ցիկլից
+- read-only cache-ի ճանապարհը (`LDG`) չի կարող օգտագործվել
+
+Ավելացնենք երկու բառն էլ.
+
+```c++
+__global__ void blur3(const float *__restrict__ in, float *__restrict__ out, int n)
+```
+
+Այժմ կոմպիլյատորը գիտի երկու բան՝ `in`-ը kernel-ի ողջ կյանքի ընթացքում չի փոխվում (`const`), և ոչ ոք այլ ցուցիչով դրա մեջ չի գրում (`__restrict__`)։ Այդ պահից նա **ինքն է** թողարկում `LDG` հրաման, այսինքն՝ `__ldg()`-ն ձեռքով գրելու կարիք չկա։ Հենց դրա համար է, որ [`template.cu`](template.cu)-ի `tiled_filter_ldg`-ի պարամետրերը նշված են `const unsigned char *__restrict__`-ով։
+
+**Երկու կեսն էլ պարտադիր են։** Միայն `const`-ը բավարար չէ. այն ասում է, որ *դու* չես գրելու այդ ցուցիչով, բայց ոչ թե որ ուրիշը չի գրելու մեկ այլ ցուցիչով։ Միայն `__restrict__`-ը նույնպես բավարար չէ. կոմպիլյատորը չի իմանա, որ տվյալները kernel-ի համար միայն կարդալու են։
+
+**Սա խոստում է, ոչ թե ստուգում։** Եթե ցուցիչներն իրականում համընկնում են, վարքն undefined է, և ոչ մի տեղ սխալ չի ազդարարվի՝ պարզապես կստանաք սխալ արդյունք։ Այստեղ ստուգողը դուք եք, ոչ թե կոմպիլյատորը։
+
+**Գործնական կանոն.** kernel-ի բոլոր ցուցիչ-պարամետրերը նշեք `__restrict__`-ով, իսկ մուտքայինները՝ նաև `const`-ով։ Ազդեցությունն ամենամեծն է coarsening-ի հետ (ստորև). երբ մեկ thread հաշվում է մի քանի ելքային տարր, ամեն գրառումից հետո մուտքերը նորից կարդալն ուղղակի ավելորդ երթևեկ է ստեղծում, և հենց այն երթևեկը, որ coarsening-ը պետք է խնայեր։
+
 ## LRU and Per-Instruction Cache Hints
 L1 and L2 are both finite, so when full, something gets evicted to make room for a new line. The hardware's replacement policy is an approximation of **LRU (Least Recently Used)**: evict whichever line hasn't been touched in the longest time. `cudaAccessPolicyWindow` (below) biases that policy for a whole buffer at once; there's also a finer-grained tool — per-instruction cache operators — that biases it one load or store at a time:
 
@@ -103,6 +141,10 @@ L1 and L2 are both finite, so when full, something gets evicted to make room for
 float x = __ldcs(&input[i]);   // "streaming" read: touched once, evict-first hint
 __stcs(&output[i], result);    // "streaming" write: won't be re-read, don't linger in cache
 ```
+
+![Չորս տողանոց cache՝ MRU-ից LRU դասավորությամբ A, B, C, D։ X-ը կարդալիս երեք դեպքում էլ D-ն դուրս է մղվում, բայց լռելյայն load-ի դեպքում X-ը մտնում է MRU դիրքում, __ldcs-ի դեպքում՝ LRU դիրքում՝ դառնալով հաջորդ զոհը, իսկ __ldlu-ի դեպքում տողն ընթերցումից հետո անվավեր է դառնում և տեղն ազատ է մնում](lru_eviction.svg)
+
+Ուշադրություն երեք տողերի միջև եղած տարբերությանը. **զոհը բոլոր դեպքերում նույնն է** — տեղ բացելու համար դուրս է մղվում LRU դիրքի տողը, `D`-ն։ Cache operator-ը չի փոխում, թե ով է դուրս գալիս. այն փոխում է, թե **նոր տողը որտեղ է մտնում**, և հենց դրանով է որոշվում, թե ինչ կլինի հաջորդ բաց թողնումի ժամանակ։ `__ldcs`-ով բերված `X`-ն ինքն է դառնում հաջորդ զոհը, ուստի `A`, `B`, `C`-ն, որոնք իրոք վերաօգտագործվում են, մնում են cache-ում։
 
 `__ldcs`/`__stcs` are the two you'll reach for most: mark data you're touching exactly once so it doesn't crowd out data your kernel (or a neighboring warp) genuinely reuses. This is a *different* knob from `__ldg()` — `__ldg` changes *which cache* a read uses (the read-only/texture path, Day 11); `__ldcs`/`__stcs` stay on the normal L1/L2 path and change *how eagerly the replacement policy discards the line*. Full intrinsic list (`__ldca`, `__ldcg`, `__ldcs`, `__ldlu`, `__ldcv`, `__stwb`, `__stcg`, `__stcs`, `__stwt`) and PTX mnemonics in [ARCHITECTURE.md](../ARCHITECTURE.md#cache-eviction-hints-lru-and-loadstore-cache-operators).
 
