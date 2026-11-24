@@ -78,7 +78,7 @@ A correct kernel that has not been measured does not get full marks, and neither
 
 <a id="q30"></a>**Q30.** Correct measurement method: warm-up, averaging, CUDA events. *([Day 13](day13/README.md))*
 
-<a id="q31"></a>**Q31.** FMA, fp64/fp32/tf32/bf16/fp16, mixed precision, tensor cores. *([Day 14](day14/README.md))*
+<a id="q31"></a>**Q31.** Built-in vector types (`uchar4`, `float4`, `int4`): vectorized memory access and alignment; FMA. *([Day 13](day13/README.md))*
 
 <a id="q32"></a>**Q32.** Cooperative groups and dynamic parallelism. *([Day 14](day14/README.md))*
 
