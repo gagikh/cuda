@@ -1,8 +1,8 @@
 # Final Exam · Day 1 – Day 15
 
-The final exam covers the whole course, Day 1 through Day 15. The midterm ([MIDTERM.md](MIDTERM.md)) covers Day 8 – Day 15 only.
+The final exam covers the whole course, Day 1 through Day 15. The midterm at YSU, called the module test at RAU ([MIDTERM.md](MIDTERM.md)), covers Day 8 – Day 15 only.
 
-A ticket has **two theory questions and one practical task**. Both lists are published below in full, so students know in advance everything they can be asked.
+A ticket has **two theory questions**, and the practical part is the **defence of the student’s independent assignment** given during the semester. The question list and the assignment list are published below in full.
 
 **Marking (100 points).**
 
@@ -10,7 +10,7 @@ A ticket has **two theory questions and one practical task**. Both lists are pub
 |---|---|---|
 | Theory question 1 | 30 | Accurate definitions (15), explanation in your own words with an example or a calculation (10), answers to follow-up questions (5) |
 | Theory question 2 | 30 | Same |
-| Practical task (E1–E3) | 40 | Correctness against the OpenCV reference (20), error handling and a clean `compute-sanitizer` run (7), `cudaEvent` timing averaged over many runs and expressed as % of peak (8), explanation of the performance (5) |
+| Defence of the independent assignment | 40 | Correctness against the reference (20), error handling and a clean `compute-sanitizer` run (7), `cudaEvent` timing averaged over many runs and expressed as % of peak (8), explanation of the performance and answers on the code (5) |
 
 A correct kernel that has not been measured does not get full marks, and neither does a fast one you cannot explain.
 
@@ -24,7 +24,7 @@ A correct kernel that has not been measured does not get full marks, and neither
 
 <a id="q3"></a>**Q3.** Coalesced global-memory access; the number of transactions for sequential and strided access. *([Day 2](day02/README.md))*
 
-<a id="q4"></a>**Q4.** Occupancy and the choice of block size; grid-stride loops. *([Day 2](day02/README.md))*
+<a id="q4"></a>**Q4.** Occupancy and the choice of block size. *([Day 2](day02/README.md))*
 
 <a id="q5"></a>**Q5.** The SIMT model, the warp, the instruction pipeline, latency hiding. *([Day 3](day03/README.md))*
 
@@ -88,15 +88,29 @@ A correct kernel that has not been measured does not get full marks, and neither
 
 ---
 
-## Practical tasks
+## Practical part: defence of the independent assignment
 
-The practical part is one of three computer-vision algorithms, specified in full in [TASKS.md § Final Exam](TASKS.md#եզրափակիչ-քննություն). The variant is assigned in advance; the student solves it independently and defends it at the exam: running it, verifying it against the OpenCV reference, presenting the timing report and explaining the performance orally.
+During the semester every student is assigned one of the tasks below and solves it independently. The solution is emailed to the lecturer before the exam as source code and a short report: how the result was verified against the reference and how many elements differ, a table of `cudaEvent` times averaged over many runs, achieved throughput as a percentage of the GPU’s theoretical peak, and half a page explaining the performance. At the exam the program is run, verified and timed, and the student explains its performance and answers questions on the code.
 
-| | Task | What it tests |
-|---|---|---|
-| **E1** | Connected components labeling of a binary mask | Iterative kernels, atomics, halo handling, convergence on the device |
-| **E2** | Histogram of a grayscale image | Atomic contention and privatization, warp aggregation |
-| **E3** | Canny edge detection | A multi-stage pipeline: tiling, per-stage timing, fusion, streams |
+Three of the tasks – connected components (E1), histogram (E2) and Canny (E3) – are specified in full, with minimum and extended requirements and typical mistakes, in [TASKS.md § Final Exam](TASKS.md#եզրափակիչ-քննություն).
+
+1. Canny edge detector: Gaussian blur, Sobel gradient, non-maximum suppression, double threshold and hysteresis; comparison with `cv::Canny`.
+2. Connected-components extraction on binary images: label propagation and union-find; comparison with `cv::connectedComponents`.
+3. Separable filters (Gaussian, box): a horizontal and a vertical pass compared with a single tiled 2D pass.
+4. Dilation and erosion with a configurable structuring element; opening and closing.
+5. Matrix multiplication taking cache behaviour into account: tiling, coarsening, L2 reuse; percentage of peak and comparison with cuBLAS.
+6. Mean and standard deviation of very large vectors, including vectors larger than device memory (streamed chunks, numerically stable merging of partial results).
+7. Inclusive and exclusive scan (prefix sum) over a large vector and its use for removing elements that satisfy a predicate (stream compaction); comparison with a host version.
+8. Integral image (summed-area table): row and column scans, box-filter sums in constant time per pixel; comparison with `cv::integral`.
+9. DFT of a small fixed-size vector (e.g. 128 samples): direct computation and a radix-2 FFT with shared memory or warp shuffles; comparison with a host version.
+10. Image pyramid construction: a multi-level Gaussian pyramid (`pyrDown`) and Laplacian pyramid (`pyrUp` and difference) with reconstruction of the original image; comparison with `cv::cuda::pyrDown`/`pyrUp`.
+11. Histogram and histogram equalization (privatization, scan, look-up table).
+12. Median filter with a sorting network in shared memory.
+13. Bilateral (edge-preserving) filter.
+14. Fixed and adaptive thresholding.
+15. Perspective warp (homography) through textures.
+16. Harris corner detection with non-maximum suppression.
+17. Real-time motion detection on a camera or video stream (frame differencing, thresholding, morphological clean-up) with streams and a CUDA graph.
 
 ---
 

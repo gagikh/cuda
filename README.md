@@ -206,9 +206,9 @@ The final exam covers both theory and practical knowledge. Key areas include:
 - **Texture Memory** — filtering, binding, addressing  
 - **Bank Conflicts & Cache** — tuning L1/L2, avoiding conflicts
 
-### Practical tasks
+### Practical task examples
 
-The practical half of the exam is three computer-vision algorithms, specified in full in [TASKS.md § Final Exam](TASKS.md#եզրափակիչ-քննություն):
+Three examples of practical tasks — computer-vision algorithms, specified in full in [TASKS.md § Final Exam](TASKS.md#եզրափակիչ-քննություն):
 
 | | Task | What it tests |
 |---|---|---|
