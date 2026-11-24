@@ -7,7 +7,8 @@
 📖 [Glossary](GLOSSARY.md) — the terms this course uses, alphabetical, tagged with the day it's introduced.  
 📐 [API Index](API.md) — every function interface the course uses, mapped to the day that introduces it; each day's `Functions` section has the signatures.  
 ⚡ [Intrinsics Cheat Sheet](INTRINSICS.md) — warp shuffle/vote, bit ops, math, cache hints, atomics and barriers in one table, tagged by day.  
-📝 [Միջանկյալ քննություն](MIDTERM.md) — Օր 8–15. 30 տեսական թեմա, 30 գործնական առաջադրանք և 30 տոմս (2 թեմա + 1 առաջադրանք), 4 միավոր։  
+📝 [Միջանկյալ քննություն](MIDTERM.md) — Օր 8–15. 30 տեսական թեմա, 30 գործնական առաջադրանք և 30 տոմս (2 թեմա + 1 առաջադրանք)։ ԵՊՀ՝ 4 միավոր։  
+🎓 [Final Exam](FINAL.md) — Day 1–15: 40 theory questions, the independent-assignment list, and the marking scheme for both RAU and YSU.  
 📋 [100 Practice Tasks](TASKS.md) — every day's Self-Learning tasks in one list, plus 25 bonus tasks beyond the 15-day structure.  
 🖥️ [Architecture Deep Dive](ARCHITECTURE.md) — what's actually inside an SM: registers, ALUs, FPUs, tensor cores, and how shared/constant/L2/global memory are organized.  
 🚀 [Performance Checklist](PERFORMANCE.md) — coalescing, occupancy, roofline, privatization, coarsening: which optimization to try, in what order, and how to know when to stop.  
@@ -188,23 +189,14 @@ cuda device sm warp lane block thread
 
 ---
 
-## 📝 CUDA Exam Topics
+## 📝 Exams
 
-The final exam covers both theory and practical knowledge. Key areas include:
+| | Scope | Format | Marks |
+|---|---|---|---|
+| **[Midterm](MIDTERM.md)** (YSU) | Day 8 – Day 15 | 30 tickets: 2 theory topics + 1 practical task | 4 units |
+| **[Final](FINAL.md)** (RAU & YSU) | Day 1 – Day 15 | 2 theory questions + defence of the independent assignment | 100 points (RAU) · 9 units (YSU) |
 
-- **Kernels & Launch** — syntax, launch parameters, thread indexing  
-- **Coalescing & Occupancy** — warp-level access patterns, block-size choice, latency hiding  
-- **Performance Method** — memory-bound vs compute-bound, achieved vs. theoretical bandwidth  
-- **Warp & Operations** — warp execution, divergence, shuffle/vote intrinsics  
-- **Shared Memory** — access, `__syncthreads()`, optimization  
-- **Paged vs Pinned Memory** — allocation, performance  
-- **Atomic Ops & Global Memory** — preventing race conditions  
-- **Mapped Memory** — zero-copy, host/device mapping  
-- **Memory Transfers & Async Execution** — `cudaMemcpy`, stream overlap  
-- **Streams & Events** — concurrency, timing, dependencies  
-- **CUDA Graphs** — record, launch, optimize workflows  
-- **Texture Memory** — filtering, binding, addressing  
-- **Bank Conflicts & Cache** — tuning L1/L2, avoiding conflicts
+The full question lists, the independent-assignment list and the per-part marking are in those two files — they are the single source of truth, not this page.
 
 ### Practical task examples
 
