@@ -1,6 +1,6 @@
 # Final Exam · Day 1 – Day 15
 
-The final exam covers the whole course, Day 1 through Day 15. The midterm at YSU, called the module test at RAU ([MIDTERM.md](MIDTERM.md)), covers Day 8 – Day 15 only.
+The final exam covers the whole course, Day 1 through Day 15. The midterm ([MIDTERM.md](MIDTERM.md)) covers Day 8 – Day 15 only.
 
 A ticket has **two theory questions**, and the practical part is the **defence of the student’s independent assignment** given during the semester. The question list and the assignment list are published below in full.
 
@@ -10,7 +10,7 @@ A ticket has **two theory questions**, and the practical part is the **defence o
 |---|---|---|
 | Theory question 1 | 30 | Accurate definitions (15), explanation in your own words with an example or a calculation (10), answers to follow-up questions (5) |
 | Theory question 2 | 30 | Same |
-| Defence of the independent assignment | 40 | Correctness against the reference (20), error handling and a clean `compute-sanitizer` run (7), `cudaEvent` timing averaged over many runs and expressed as % of peak (8), explanation of the performance and answers on the code (5) |
+| Defence of the independent assignment | 40 | Correctness against the reference (20), error handling with `CUDA_CHECK` (7), `cudaEvent` timing averaged over many runs and expressed as % of peak (8), explanation of the performance and answers on the code (5) |
 
 A correct kernel that has not been measured does not get full marks, and neither does a fast one you cannot explain.
 
