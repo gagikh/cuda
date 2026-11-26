@@ -148,6 +148,37 @@ __stcs(&output[i], result);    // "streaming" write: won't be re-read, don't lin
 
 `__ldcs`/`__stcs` are the two you'll reach for most: mark data you're touching exactly once so it doesn't crowd out data your kernel (or a neighboring warp) genuinely reuses. This is a *different* knob from `__ldg()` — `__ldg` changes *which cache* a read uses (the read-only/texture path, Day 11); `__ldcs`/`__stcs` stay on the normal L1/L2 path and change *how eagerly the replacement policy discards the line*. Full intrinsic list (`__ldca`, `__ldcg`, `__ldcs`, `__ldlu`, `__ldcv`, `__stwb`, `__stcg`, `__stcs`, `__stwt`) and PTX mnemonics in [ARCHITECTURE.md](../ARCHITECTURE.md#cache-eviction-hints-lru-and-loadstore-cache-operators).
 
+### Առաջադրանք, որտեղ LRU-ն իրոք երևում է
+
+Վերևի նկարը բացատրում է, թե ինչ է անում operator-ը, բայց պնդումը պետք է չափել։ Խնդիրն այնպես է կառուցված, որ cache-ի վարքը դառնա միակ տարբերությունը երկու տարբերակի միջև։
+
+**Խնդիրը՝ batched dot product ֆիքսված հենքային վեկտորի հետ** (իրական գործողություն՝ matched filtering)։ Ունենք `ref[M]` հենքային վեկտորը և `data[B*M]` մեծ զանգվածը։ Ամեն block հաշվում է իր կտորի սկալյար արտադրյալը **նույն** `ref`-ի հետ.
+
+```c++
+// block b → out[b]
+out[b] = Σ(j = 0 … M-1)  data[b*M + j] * ref[j];
+```
+
+Երկու հոսքը սկզբունքորեն տարբեր են.
+
+- **`data`** — `B*M` տարր, ամեն մեկը կարդացվում է **ճիշտ մեկ անգամ**։ Cache-ում պահելն անիմաստ է։
+- **`ref`** — ընդամենը `M` տարր, բայց կարդացվում է **բոլոր `B` block-երի կողմից**։ Եթե այն մնում է L2-ում, DRAM-ից բերվում է մեկ անգամ՝ `M` տարր։ Եթե streaming `data`-ն այն դուրս է մղում, DRAM-ից բերվում է `M·B` տարր։
+
+Հենց սա է LRU-ի խնդիրը. լռելյայն load-ի դեպքում ամեն նոր `data` տող մտնում է MRU դիրքում և քայլ առ քայլ դուրս է հրում `ref`-ը, թեև հենց `ref`-ն է վերաօգտագործվողը։
+
+**Քայլերը.**
+
+1. **Չափել L2-ի չափը** — `cudaDeviceGetAttribute(&l2, cudaDevAttrL2CacheSize, dev)`։ Բոլոր հետագա չափսերը արտահայտել դրա մասերով, ոչ թե բացարձակ MB-երով, որպեսզի արդյունքը չկախվի կոնկրետ GPU-ից։
+2. **Տարբերակ A՝ լռելյայն** — և՛ `data`-ն, և՛ `ref`-ը սովորական load-երով։
+3. **Տարբերակ B՝ operator-ներով** — `data`-ն `__ldcs`-ով (մեկ անգամ է կարդացվում՝ թող առաջինը դուրս մղվի), `ref`-ը `const __restrict__`-ով, որ կոմպիլյատորն ինքը թողարկի read-only load։
+4. **Տարբերակ C՝ `cudaAccessPolicyWindow`** — `ref`-ը բացահայտ նշել որպես persisting, `data`-ն թողնել սովորական։ Սա նույն գաղափարն է, բայց ամբողջ բուֆերի մակարդակում։
+5. **Սահել `M`-ով** — `M·sizeof(float)` = L2-ի **0.25×, 0.5×, 1×, 2×, 4×**։ `B`-ն ընտրել այնպես, որ `B*M`-ը բոլոր կետերում նույնը մնա, այլապես կչափեք ուղղակի տվյալների ծավալը։
+6. **Հաշվել տեսական երթևեկը** — լավագույն դեպքում DRAM-ից բերվում է `B*M + M` տարր, վատագույնում՝ `B*M + B*M`։ Չափված ժամանակից ստացված hասած bandwidth-ը համեմատել այս երկու թվի հետ և ասել, թե որին է մոտ ամեն տարբերակը։
+
+**Ինչ պետք է ստացվի և ինչու։** `M ≈ 0.25×L2`-ի դեպքում երեք տարբերակն էլ գրեթե նույնն են՝ `ref`-ն այնքան փոքր է, որ ողջ է մնում առանց որևէ հուշման։ `M ≈ 1×L2`-ի շրջակայքում բացը ամենամեծն է՝ հենց այստեղ է որոշիչ, թե նոր տողը MRU դիրք է մտնում, թե LRU։ `M ≈ 4×L2`-ի դեպքում բացը նորից փակվում է՝ `ref`-ը ոչ մի կերպ չի տեղավորվում, և հուշումը ոչինչ չի փրկում։
+
+Այս երեք կետից ամենակարևորը վերջին երկուսն են. **cache-ի հուշումը ոչ թե ունիվերսալ արագացում է, այլ գործիք, որը աշխատում է միայն որոշակի տիրույթում**։ Եթե ձեր կորագիծը հարթ է բոլոր կետերում, դա նույնպես արդյունք է. նշանակում է ձեր GPU-ի վրա այդ տիրույթն այլ տեղ է, և պետք է գտնել այն։
+
 ## Thread Coarsening
 
 Every kernel so far launches one thread per output element. That's the natural default, and it's often too much parallelism.
@@ -233,6 +264,7 @@ Optimize transform (the Day 6 image transform kernel), on a real image loaded vi
 6. Add the achieved-bandwidth and %-of-peak calculation to all three `printf`s in [`template.cu`](template.cu). Which variant is closest to peak — and given that number, was there ever as much headroom as the relative timings suggested?
 7. Coarsen `tiled_filter_baseline` so each thread computes 2, then 4, then 8 output pixels from the same tile load. Plot time against elements-per-thread and find the peak. Then run `nvcc -Xptxas -v` at each setting and check whether the drop-off coincides with register spilling.
 8. Take the Day 2 grid-stride vector add and sweep the grid size (64, 256, 1024, 4096 blocks) with `n` fixed. Explain the shape of the curve in terms of coarsening at one end and occupancy at the other.
+9. Կառուցել վերևի batched dot product-ը և երեք տարբերակն էլ չափել՝ լռելյայն, `__ldcs` + `const __restrict__`, և `cudaAccessPolicyWindow`։ `M`-ը սահեցնել L2-ի 0.25×-ից մինչև 4×, `B*M`-ը պահել հաստատուն։ Կառուցել ժամանակի կորագիծը և ցույց տալ, որ հուշման շահույթը առավելագույնն է `M ≈ L2`-ի շրջակայքում և զրոյանում է երկու ծայրում։
 
 ## Self-Check
 No answers given — these are for you to reason through, or discuss with a classmate/instructor.
