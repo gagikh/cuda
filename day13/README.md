@@ -74,6 +74,15 @@ void __stcs(float *ptr, float value);
 
 // Նույն ֆունկցիաները կան նաև int-ի, double-ի և վեկտորային տիպերի համար
 
+// L2 persistence՝ stream-ի ատրիբուտով
+cudaError_t cudaStreamSetAttribute(cudaStream_t hStream, cudaStreamAttrID attr,
+                                   const cudaStreamAttrValue *value);
+cudaError_t cudaDeviceSetLimit(enum cudaLimit limit, size_t value);   // cudaLimitPersistingL2CacheSize
+cudaError_t cudaCtxResetPersistingL2Cache(void);
+
+// Պատուհանի դաշտերը. base_ptr, num_bytes, hitRatio, hitProp, missProp
+// Սահմանները՝ prop.persistingL2CacheMaxSize և prop.accessPolicyMaxWindowSize
+
 // Օր 2-ի ֆունկցիան՝ template-ի TODO 3-ի համար
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int *numBlocks, const void *func,
                                                           int blockSize, size_t dynamicSMemSize);
@@ -135,7 +144,7 @@ __global__ void blur3(const float *__restrict__ in, float *__restrict__ out, int
 **Գործնական կանոն.** kernel-ի բոլոր ցուցիչ-պարամետրերը նշեք `__restrict__`-ով, իսկ մուտքայինները՝ նաև `const`-ով։ Ազդեցությունն ամենամեծն է coarsening-ի հետ (ստորև). երբ մեկ thread հաշվում է մի քանի ելքային տարր, ամեն գրառումից հետո մուտքերը նորից կարդալն ուղղակի ավելորդ երթևեկ է ստեղծում, և հենց այն երթևեկը, որ coarsening-ը պետք է խնայեր։
 
 ## LRU and Per-Instruction Cache Hints
-L1 and L2 are both finite, so when full, something gets evicted to make room for a new line. The hardware's replacement policy is an approximation of **LRU (Least Recently Used)**: evict whichever line hasn't been touched in the longest time. `cudaAccessPolicyWindow` (below) biases that policy for a whole buffer at once; there's also a finer-grained tool — per-instruction cache operators — that biases it one load or store at a time:
+L1 and L2 are both finite, so when full, something gets evicted to make room for a new line. The hardware's replacement policy is an approximation of **LRU (Least Recently Used)**: evict whichever line hasn't been touched in the longest time. `cudaAccessPolicyWindow` (next section) biases that policy for a whole buffer at once; there's also a finer-grained tool — per-instruction cache operators — that biases it one load or store at a time:
 
 ```c++
 float x = __ldcs(&input[i]);   // "streaming" read: touched once, evict-first hint
@@ -147,6 +156,63 @@ __stcs(&output[i], result);    // "streaming" write: won't be re-read, don't lin
 Ուշադրություն երեք տողերի միջև եղած տարբերությանը. **զոհը բոլոր դեպքերում նույնն է** — տեղ բացելու համար դուրս է մղվում LRU դիրքի տողը, `D`-ն։ Cache operator-ը չի փոխում, թե ով է դուրս գալիս. այն փոխում է, թե **նոր տողը որտեղ է մտնում**, և հենց դրանով է որոշվում, թե ինչ կլինի հաջորդ բաց թողնումի ժամանակ։ `__ldcs`-ով բերված `X`-ն ինքն է դառնում հաջորդ զոհը, ուստի `A`, `B`, `C`-ն, որոնք իրոք վերաօգտագործվում են, մնում են cache-ում։
 
 `__ldcs`/`__stcs` are the two you'll reach for most: mark data you're touching exactly once so it doesn't crowd out data your kernel (or a neighboring warp) genuinely reuses. This is a *different* knob from `__ldg()` — `__ldg` changes *which cache* a read uses (the read-only/texture path, Day 11); `__ldcs`/`__stcs` stay on the normal L1/L2 path and change *how eagerly the replacement policy discards the line*. Full intrinsic list (`__ldca`, `__ldcg`, `__ldcs`, `__ldlu`, `__ldcv`, `__stwb`, `__stcg`, `__stcs`, `__stwt`) and PTX mnemonics in [ARCHITECTURE.md](../ARCHITECTURE.md#cache-eviction-hints-lru-and-loadstore-cache-operators).
+
+### L2 persistence՝ `cudaAccessPolicyWindow`
+
+Operator-ները մեկ հրամանի մակարդակի հուշումներ են։ Երբ ուզում ենք **ամբողջ բուֆեր** պահել L2-ում, օգտագործվում է access policy window-ը՝ stream-ի ատրիբուտ, որը գործում է այդ stream-ում գործարկվող բոլոր kernel-ների վրա։
+
+```c++
+__global__ void my_kernel(const float *__restrict__ hot,          // կարդացվում է բազմիցս
+                          float *__restrict__ streaming, int n)   // անցնում է մեկ անգամ
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) {
+        streaming[idx] += hot[idx % HOT_ELEMS];
+    }
+}
+```
+
+```c++
+cudaDeviceProp prop{};
+CUDA_CHECK(cudaGetDeviceProperties(&prop, dev));
+
+// 1. Առանձնացնել L2-ի persisting մասը։ Առանց սրա window-ը պահուստ չունի։
+const size_t set_aside = std::min(hot_bytes, (size_t)prop.persistingL2CacheMaxSize);
+CUDA_CHECK(cudaDeviceSetLimit(cudaLimitPersistingL2CacheSize, set_aside));
+
+cudaStream_t stream;
+CUDA_CHECK(cudaStreamCreate(&stream));
+
+// 2. Նկարագրել պատուհանը
+cudaStreamAttrValue attr{};
+attr.accessPolicyWindow.base_ptr  = reinterpret_cast<void *>(d_hot);
+attr.accessPolicyWindow.num_bytes = std::min(hot_bytes, (size_t)prop.accessPolicyMaxWindowSize);
+attr.accessPolicyWindow.hitRatio  = 1.0f;                           // պատուհանի ո՞ր մասն է persisting
+attr.accessPolicyWindow.hitProp   = cudaAccessPropertyPersisting;   // ներսում՝ պահել
+attr.accessPolicyWindow.missProp  = cudaAccessPropertyStreaming;    // դրսում՝ դուրս մղել առաջինը
+
+// 3. Կիրառել stream-ի վրա
+CUDA_CHECK(cudaStreamSetAttribute(stream, cudaStreamAttributeAccessPolicyWindow, &attr));
+
+for (int i = 0; i < iters; ++i)
+    my_kernel<<<blocks, threads, 0, stream>>>(d_hot, d_stream, n);
+CUDA_CHECK(cudaGetLastError());
+CUDA_CHECK(cudaStreamSynchronize(stream));
+
+// 4. Մաքրել. նախ անջատել պատուհանը, ապա ազատել L2-ի persisting տողերը
+attr.accessPolicyWindow.num_bytes = 0;
+CUDA_CHECK(cudaStreamSetAttribute(stream, cudaStreamAttributeAccessPolicyWindow, &attr));
+CUDA_CHECK(cudaCtxResetPersistingL2Cache());
+```
+
+Չորս բան, որոնք հեշտ է բաց թողնել.
+
+- **`cudaDeviceSetLimit(cudaLimitPersistingL2CacheSize, …)`-ը պարտադիր է։** Window-ը ցույց է տալիս, թե *որ* հասցեներն են persisting, իսկ այս limit-ը որոշում է, թե L2-ի *որքան* մասն է ընդհանրապես հատկացված persisting տողերին։ Առանց դրա հուշումը գրեթե ոչինչ չի տալիս։
+- **Երկու վերին սահման կա, և դրանք տարբեր են։** `prop.persistingL2CacheMaxSize`-ը առանձնացվող մասի առավելագույնն է, `prop.accessPolicyMaxWindowSize`-ը՝ հենց պատուհանի։ Երկուսն էլ պետք է հարցնել, ոչ թե ենթադրել։
+- **`hitRatio < 1.0f`-ը պատահականորեն է ընտրում։** Երբ պատուհանն ավելի մեծ է, քան առանձնացված L2-ը, `hitRatio = 0.5f` նշանակում է՝ տողերի մոտավորապես կեսը persisting։ Պատուհանը մեծացնելով և `hitRatio`-ն 1.0 թողնելով՝ ստացվում է thrashing. ավելի լավ է պատուհանը փոքրացնել։
+- **Մաքրումը մոռանալը ազդում է հաջորդ kernel-ների վրա։** Persisting տողերը մնում են L2-ում նաև այն բանից հետո, երբ ձեր kernel-ն ավարտվել է, և նեղացնում են մնացած ամեն ինչի համար հասանելի cache-ը։ Այդ պատճառով վերջում `num_bytes = 0` և `cudaCtxResetPersistingL2Cache()`։
+
+**Ուշադրություն վերևի օրինակի չափսին։** `HOT_ELEMS = 1024` նշանակում է 4 ԿԲ, որն առանց որևէ հուշման տեղավորվում է L1-ում — այդպիսի փորձից տարբերություն չեք տեսնի։ Որպեսզի հուշումն իմաստ ունենա, hot տիրույթը պետք է լինի **L1-ից զգալիորեն մեծ**, բայց **առանձնացված L2-ից ոչ մեծ**։ Հենց այս պատուհանը գտնելն է հաջորդ առաջադրանքի բովանդակությունը։
 
 ### Առաջադրանք, որտեղ LRU-ն իրոք երևում է
 
